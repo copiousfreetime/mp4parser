@@ -1,0 +1,150 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.coremedia.drm.isobox4j</groupId>
+  <artifactId>isoviewer</artifactId>
+  <packaging>jar</packaging>
+  <name>ISO Viewer</name>
+  <version>1.0-alpha9-SNAPSHOT</version>
+  <description>The ISO Viewer is a UI Tool for viewing ISO Box files (see ISO/IEC 14496-12). Useful for looking into
+    Apple Quicktime Movies, DCF files, PDCF files, MP4 files and other ISO Box files.
+  </description>
+
+  <repositories>
+    <repository>
+      <id>coremedia.isobox4j.repository</id>
+      <name>CoreMedia Contributions IsoBox4j Maven Repository</name>
+      <url>https://contributions.coremedia.com/svn/isobox4j/maven/repo</url>
+    </repository>
+  </repositories>
+
+  <parent>
+    <groupId>com.coremedia.drm</groupId>
+    <artifactId>isobox4j-parent</artifactId>
+    <version>5</version>
+  </parent>
+
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+
+        <executions>
+          <execution>
+            <id>signit</id>
+            <phase>package</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <keystore>${project.basedir}/src/etc/keystore.jks</keystore>
+              <alias>isobox4j</alias>
+              <keypass>xxxxxx</keypass>
+              <storepass>xxxxxx</storepass>
+              <skip>false</skip>
+              <verbose>true</verbose>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <!-- Copy this project's dependencies to the release/lib directory -->
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/release-${project.version}/lib</outputDirectory>
+              <includeScope>runtime</includeScope>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Zip the release -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>packageApp</id>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+                <copy file="${project.build.directory}/../LICENSE.txt" todir="target/release-${project.version}/"/>
+                <copy file="${project.build.directory}/../NOTICE.txt" todir="target/release-${project.version}/"/>
+                <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                      todir="target/release-${project.version}/"/>
+                <zip destfile="${project.build.directory}/isoviewer-${project.version}.zip">
+                  <zipfileset dir="target/release-${project.version}/" prefix="isoviewer" includes="**/*"/>
+                </zip>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Deploy and Install the created ZIP file -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/isoviewer-${project.version}.zip</file>
+                  <type>zip</type>
+                  <classifier>bin</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Create executable jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.coremedia.iso.gui.Main</mainClass>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>lib</classpathPrefix>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.coremedia.drm.isobox4j</groupId>
+      <artifactId>isoparser</artifactId>
+      <version>142-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+  <scm>
+    <connection>scm:svn:https://contributions.coremedia.com/svn/isobox4j/tags/isoviewer-1.0-alpha6</connection>
+  </scm>
+</project>

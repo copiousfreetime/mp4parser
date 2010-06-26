@@ -138,7 +138,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.coremedia.drm.isobox4j</groupId>
+      <groupId>com.googlecode.mp4parser</groupId>
       <artifactId>isoparser</artifactId>
       <version>142-SNAPSHOT</version>
     </dependency>

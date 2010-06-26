@@ -47,7 +47,7 @@ public class GenericSamplePane extends JLabel {
 
     TrackMetaData trackMetaData = sample.getParent().getParentTrack().getTrackMetaData();
     long sampleDescriptionIndex = 0;
-    SampleDescriptionBox sampleDescriptionBox = trackMetaData.getSampleDescriptionBox(sampleDescriptionIndex);
+    SampleDescriptionBox sampleDescriptionBox = trackMetaData.getSampleDescriptionBox();
 
 
     if (sampleDescriptionBox != null) {

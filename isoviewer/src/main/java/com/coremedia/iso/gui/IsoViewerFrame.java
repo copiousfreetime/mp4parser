@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.FileRandomAccessDataSource;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;

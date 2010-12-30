@@ -31,7 +31,13 @@ import javax.swing.event.TreeSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -240,7 +246,7 @@ public class IsoViewerFrame extends JFrame {
                             super.write(b, off, len);
                         }
                     }
-                }, false));
+                }));
                 bytes = baos.toByteArray();
             } else if (object instanceof Track) {
                 bytes = new byte[0];
@@ -249,14 +255,14 @@ public class IsoViewerFrame extends JFrame {
                 List<Sample> s = chunk.getSamples();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 for (Sample sample : s) {
-                    sample.getContent(new IsoOutputStream(baos, false));
+                    sample.getContent(new IsoOutputStream(baos));
                 }
                 bytes = baos.toByteArray();
                 baos.close();
             } else if (object instanceof Sample) {
                 Sample sample = (Sample) object;
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                sample.getContent(new IsoOutputStream(baos, false));
+                sample.getContent(new IsoOutputStream(baos));
                 bytes = baos.toByteArray();
             } else {
                 bytes = new byte[0];

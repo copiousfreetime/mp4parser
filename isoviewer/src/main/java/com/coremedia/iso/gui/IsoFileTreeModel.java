@@ -18,7 +18,7 @@ package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.BoxContainer;
+import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MediaDataBox;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
@@ -49,8 +49,8 @@ public class IsoFileTreeModel implements TreeModel {
   public int getChildCount(Object parent) {
     parent = ((IsoFileTreeNode) parent).getObject();
     if (parent != null) {
-      if (parent instanceof BoxContainer) {
-        BoxContainer container = (BoxContainer) parent;
+      if (parent instanceof ContainerBox) {
+        ContainerBox container = (ContainerBox) parent;
         return container.getBoxes() == null ? 0 : container.getBoxes().length;
       } else if (parent instanceof MediaDataBox) {
         return ((MediaDataBox) parent).getTracks() == null ? 0 : ((MediaDataBox) parent).getTracks().size();
@@ -65,7 +65,7 @@ public class IsoFileTreeModel implements TreeModel {
 
 
   public boolean isLeaf(Object node) {
-    return !(((IsoFileTreeNode) node).getObject() instanceof BoxContainer)
+    return !(((IsoFileTreeNode) node).getObject() instanceof ContainerBox)
             && !(((IsoFileTreeNode) node).getObject() instanceof MediaDataBox)
             && !(((IsoFileTreeNode) node).getObject() instanceof Chunk)
             && !(((IsoFileTreeNode) node).getObject() instanceof Track);
@@ -79,8 +79,8 @@ public class IsoFileTreeModel implements TreeModel {
 
   public Object getChild(Object parent, int index) {
     parent = ((IsoFileTreeNode) parent).getObject();
-    if (parent instanceof BoxContainer) {
-      BoxContainer container = (BoxContainer) parent;
+    if (parent instanceof ContainerBox) {
+      ContainerBox container = (ContainerBox) parent;
       return new IsoFileTreeNode(container.getBoxes()[index]);
 
     } else if (parent instanceof MediaDataBox) {
@@ -100,8 +100,8 @@ public class IsoFileTreeModel implements TreeModel {
 
     parent = ((IsoFileTreeNode) parent).getObject();
     child = ((IsoFileTreeNode) child).getObject();
-    if (parent instanceof BoxContainer) {
-      BoxContainer container = (BoxContainer) parent;
+    if (parent instanceof ContainerBox) {
+      ContainerBox container = (ContainerBox) parent;
       Box[] boxes = container.getBoxes();
       for (int i = 0; i < boxes.length; i++) {
         if (boxes[i].equals(child)) {

@@ -18,6 +18,7 @@ package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.BoxInterface;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MediaDataBox;
 import com.coremedia.iso.mdta.Chunk;
@@ -102,7 +103,7 @@ public class IsoFileTreeModel implements TreeModel {
     child = ((IsoFileTreeNode) child).getObject();
     if (parent instanceof ContainerBox) {
       ContainerBox container = (ContainerBox) parent;
-      Box[] boxes = container.getBoxes();
+      BoxInterface[] boxes = container.getBoxes();
       for (int i = 0; i < boxes.length; i++) {
         if (boxes[i].equals(child)) {
           return i;

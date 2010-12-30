@@ -25,8 +25,8 @@ import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.coremedia.iso.mdta.Sample;
 
-import javax.swing.JLabel;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -85,7 +85,7 @@ public class GenericSamplePane extends JLabel {
     buffer.append("<table>");
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try {
-      sample.getContent(new IsoOutputStream(baos, false));
+      sample.getContent(new IsoOutputStream(baos));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -113,7 +113,7 @@ public class GenericSamplePane extends JLabel {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
     try {
-      sample.getContent(new IsoOutputStream(baos, false));
+      sample.getContent(new IsoOutputStream(baos));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

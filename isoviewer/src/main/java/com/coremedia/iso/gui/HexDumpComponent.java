@@ -24,7 +24,11 @@ import com.coremedia.iso.mdta.Track;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.List;
 
 /**
@@ -64,7 +68,7 @@ public class HexDumpComponent extends JComponent {
             super.write(b, off, len);
           }
         }
-      }, false));
+      }));
       bytes = baos.toByteArray();
     } else if (o instanceof Track) {
       Track track = (Track) o;
@@ -72,7 +76,7 @@ public class HexDumpComponent extends JComponent {
     } else if (o instanceof Chunk) {
       Chunk chunk = (Chunk) o;
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      IsoOutputStream isoOutputStream = new IsoOutputStream(byteArrayOutputStream, false);
+      IsoOutputStream isoOutputStream = new IsoOutputStream(byteArrayOutputStream);
       List<Sample> samples = chunk.getSamples();
       for (Sample sample : samples) {
         sample.getContent(isoOutputStream);
@@ -82,7 +86,7 @@ public class HexDumpComponent extends JComponent {
     } else if (o instanceof Sample) {
       Sample sample = (Sample) o;
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      sample.getContent(new IsoOutputStream(baos, false));
+      sample.getContent(new IsoOutputStream(baos));
       bytes = baos.toByteArray();
     } else {
       bytes = new byte[0];

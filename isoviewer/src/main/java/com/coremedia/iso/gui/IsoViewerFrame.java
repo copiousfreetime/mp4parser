@@ -116,7 +116,7 @@ public class IsoViewerFrame extends JFrame {
                 try {
                     File tmpFile = new File(file.getParentFile(), file.getName() + ".tmp");
                     OutputStream os = new FileOutputStream(tmpFile);
-                    isoFile.write(os);
+                    isoFile.getBox(new IsoOutputStream(os));
                     os.close();
                     file.delete();
                     tmpFile.renameTo(file);

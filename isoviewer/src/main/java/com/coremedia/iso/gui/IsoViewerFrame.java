@@ -19,7 +19,7 @@ package com.coremedia.iso.gui;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.gui.hex.JHexEditor;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
@@ -222,10 +222,10 @@ public class IsoViewerFrame extends JFrame {
             detailPanel.add(detailPane, BorderLayout.CENTER);
             detailPanel.revalidate();
             byte[] bytes;
-            if (object instanceof Box) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream((int) ((Box) object).getSize());
+            if (object instanceof AbstractBox) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream((int) ((AbstractBox) object).getSize());
 
-                ((Box) object).getBox(new IsoOutputStream(new FilterOutputStream(baos) {
+                ((AbstractBox) object).getBox(new IsoOutputStream(new FilterOutputStream(baos) {
                     int count = 0;
 
                     public void write(int b) throws IOException {

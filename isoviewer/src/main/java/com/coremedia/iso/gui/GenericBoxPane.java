@@ -17,26 +17,16 @@
 package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.FullBox;
 import com.coremedia.iso.gui.transferhelper.StringTransferValue;
 import com.coremedia.iso.gui.transferhelper.TransferHelperFactory;
 import com.coremedia.iso.gui.transferhelper.TransferValue;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.Container;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -46,7 +36,6 @@ import java.beans.PropertyDescriptor;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,7 +46,7 @@ import java.util.List;
  * Detailed view of a Box.
  */
 public class GenericBoxPane extends JPanel {
-    private Box box;
+    private AbstractBox box;
     GridBagLayout gridBagLayout;
     GridBagConstraints gridBagConstraints;
 
@@ -83,7 +72,7 @@ public class GenericBoxPane extends JPanel {
             "sampleSizeAtIndex",
             "numOfBytesToFirstChild");
 
-    public GenericBoxPane(Box box) {
+    public GenericBoxPane(AbstractBox box) {
         this.box = box;
         gridBagLayout = new GridBagLayout();
         gridBagConstraints = new GridBagConstraints();
@@ -135,7 +124,6 @@ public class GenericBoxPane extends JPanel {
             valueBuffer.append("[");
             IsoBufferWrapper ibw = new IsoBufferWrapper(box.getDeadBytes());
             long length = ibw.size();
-
 
 
             boolean trucated = false;
@@ -193,7 +181,7 @@ public class GenericBoxPane extends JPanel {
                 String name = propertyDescriptor.getName();
                 if (!skipList.contains(name) &&
                         propertyDescriptor.getReadMethod() != null &&
-                        !Box.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
+                        !AbstractBox.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
                     Object value = propertyDescriptor.getReadMethod().invoke(box, (Object[]) null);
                     if (value == null) {
                         add(name, new NonEditableJTextField(""));

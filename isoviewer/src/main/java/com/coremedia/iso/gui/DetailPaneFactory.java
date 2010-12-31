@@ -16,25 +16,24 @@
 
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.mdta.Sample;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Gets the correct detail pane for an object (Box or Sample by now).
  */
 public class DetailPaneFactory {
-  public JComponent createDetailPane(Object object) {
-    if (object instanceof Box) {
-      return new GenericBoxPane((Box) object);
-    } else if (object instanceof Sample) {
-      return new GenericSamplePane((Sample) object);
+    public JComponent createDetailPane(Object object) {
+        if (object instanceof AbstractBox) {
+            return new GenericBoxPane((AbstractBox) object);
+        } else if (object instanceof Sample) {
+            return new GenericSamplePane((Sample) object);
+        }
+        JPanel result = new JPanel();
+        result.setLayout(new BorderLayout());
+        return result;
     }
-    JPanel result = new JPanel();
-    result.setLayout(new BorderLayout());
-    return result;
-  }
 }

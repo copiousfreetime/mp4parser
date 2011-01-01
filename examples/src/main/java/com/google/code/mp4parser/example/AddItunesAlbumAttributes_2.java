@@ -2,11 +2,9 @@ package com.google.code.mp4parser.example;
 
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoFileConvenienceHelper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.PropertyBoxParserImpl;
-import com.coremedia.iso.boxes.MetaBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.UserDataBox;
 import com.coremedia.iso.boxes.apple.AppleAlbumBox;
 import com.coremedia.iso.boxes.apple.AppleItemListBox;
 
@@ -29,12 +27,11 @@ public class AddItunesAlbumAttributes_2 {
         PropertyBoxParserImpl boxParser = new PropertyBoxParserImpl(properties);
         IsoFile isoFile = new IsoFile(isoBufferWrapper, boxParser);
         isoFile.parse();
-        MovieBox movieBox = isoFile.getBoxes(MovieBox.class)[0];
-        UserDataBox userDataBox = movieBox.getBoxes(UserDataBox.class)[0];
-        MetaBox metaBox = userDataBox.getBoxes(MetaBox.class)[0];
-        AppleItemListBox appleItemListBox = metaBox.getBoxes(AppleItemListBox.class)[0];
-        AppleAlbumBox[] appleAlbumBoxes = appleItemListBox.getBoxes(AppleAlbumBox.class);
-        for (AppleAlbumBox appleAlbumBox : appleAlbumBoxes) {
+        AppleItemListBox appleItemListBox =
+                (AppleItemListBox) IsoFileConvenienceHelper.get(isoFile, "moov/udta/meta/ilst");
+        AppleAlbumBox appleAlbumBox =
+                (AppleAlbumBox) IsoFileConvenienceHelper.get(appleItemListBox, "\u00a9alb");
+        if (appleAlbumBox != null) {
             appleItemListBox.removeBox(appleAlbumBox);
         }
         AppleAlbumBox albumBox = new AppleAlbumBox();

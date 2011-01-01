@@ -23,7 +23,13 @@ public class AddItunesAlbumAttributes_2 {
     public static void main(String[] args) throws IOException {
         IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapper(new File(args[0]));
         Properties properties = new Properties();
-        properties.load(AddItunesAlbumAttributes_2.class.getResourceAsStream("/com/google/code/mp4parser/example/just_a_few.properties"));
+
+        properties.setProperty("ilst-\u00A9alb", "com.coremedia.iso.boxes.apple.AppleAlbumBox()");
+        properties.setProperty("moov", "com.coremedia.iso.boxes.MovieBox()");
+        properties.setProperty("meta", "com.coremedia.iso.boxes.MetaBox()");
+        properties.setProperty("udta", "com.coremedia.iso.boxes.UserDataBox()");
+        properties.setProperty("meta-ilst", "com.coremedia.iso.boxes.apple.AppleItemListBox()");
+        properties.setProperty("default", "com.coremedia.iso.boxes.UnknownBox(type)");
         PropertyBoxParserImpl boxParser = new PropertyBoxParserImpl(properties);
         IsoFile isoFile = new IsoFile(isoBufferWrapper, boxParser);
         isoFile.parse();

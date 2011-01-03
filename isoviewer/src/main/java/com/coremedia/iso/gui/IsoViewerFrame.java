@@ -18,6 +18,7 @@ package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoFileConvenienceHelper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.gui.hex.JHexEditor;
@@ -37,10 +38,6 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -159,20 +156,7 @@ public class IsoViewerFrame extends JFrame {
     public void open(File file) {
         this.file = file;
         try {
-            ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
-            long length = file.length();
-            long currentPos = 0;
-            FileChannel fc = new RandomAccessFile(file, "r").getChannel();
-            while (length > 0) {
-                if (length > Integer.MAX_VALUE) {
-                    buffers.add(fc.map(FileChannel.MapMode.READ_ONLY, currentPos, Integer.MAX_VALUE));
-                    length -= Integer.MAX_VALUE;
-                } else {
-                    buffers.add(fc.map(FileChannel.MapMode.READ_ONLY, currentPos, length));
-                    length = 0;
-                }
-            }
-            this.isoFile = new IsoFile(new IsoBufferWrapper(buffers));
+            this.isoFile = new IsoFile(new IsoBufferWrapper(file));
             long start = System.currentTimeMillis();
             final List<LogRecord> messages = new LinkedList<LogRecord>();
             Handler myTemperaryLogHandler = new Handler() {
@@ -189,7 +173,7 @@ public class IsoViewerFrame extends JFrame {
             Logger.getLogger("").addHandler(myTemperaryLogHandler);
             isoFile.parse();
             isoFile.parseMdats();
-            isoFile.switchToAutomaticChunkOffsetBox();
+            IsoFileConvenienceHelper.switchToAutomaticChunkOffsetBox(isoFile);
             Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
             System.err.println("Parsing took " + ((System.currentTimeMillis() - start) / 1000) + "seconds.");
             tree.setModel(new IsoFileTreeModel(isoFile));

@@ -20,7 +20,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TrackMetaData;
-import com.coremedia.iso.boxes.rtp.HintSampleEntry;
+import com.coremedia.iso.boxes.rtp.RtpHintSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.coremedia.iso.mdta.Sample;
@@ -36,25 +36,24 @@ import java.util.Arrays;
  *
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry
- * @see com.coremedia.iso.boxes.rtp.HintSampleEntry
+ * @see com.coremedia.iso.boxes.rtp.RtpHintSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  */
 public class GenericSamplePane extends JLabel {
-  public GenericSamplePane(Sample sample) {
+  public GenericSamplePane(Sample<?> sample) {
     Font font = new Font("Courier New", Font.PLAIN, 12);
     setFont(font);
     setVerticalAlignment(JLabel.TOP);
 
-    TrackMetaData trackMetaData = sample.getParent().getParentTrack().getTrackMetaData();
-    long sampleDescriptionIndex = 0;
+    TrackMetaData<?> trackMetaData = sample.getParent().getParentTrack().getTrackMetaData();
     SampleDescriptionBox sampleDescriptionBox = trackMetaData.getSampleDescriptionBox();
 
 
     if (sampleDescriptionBox != null) {
-      SampleEntry[] sampleEntries = sampleDescriptionBox.getBoxes(SampleEntry.class);
+      SampleEntry[] sampleEntries = sampleDescriptionBox.getBoxes(SampleEntry.class, false);
 
 
-      if (sampleEntries.length > 0 && (sampleEntries[0] instanceof HintSampleEntry)) {
+      if (sampleEntries.length > 0 && (sampleEntries[0] instanceof RtpHintSampleEntry)) {
         setText(createHintSampleUI(sample));
       } else if (sampleEntries.length > 0 &&
               (sampleEntries[0] instanceof AudioSampleEntry) &&
@@ -64,6 +63,8 @@ public class GenericSamplePane extends JLabel {
     } else {
       setText("no SampleDescriptionBox found");
     }
+    setFont(font);
+    setVerticalAlignment(JLabel.TOP);
   }
 
   protected static void makeNameValueRow(StringBuffer buffer, String name, String value) {
@@ -77,7 +78,7 @@ public class GenericSamplePane extends JLabel {
     return rv;
   }
 
-  private static String createSamrSampleUI(Sample sample) {
+  private static String createSamrSampleUI(Sample<?> sample) {
     StringBuffer buffer = new StringBuffer();
     buffer.append("<html><h1>");
     buffer.append("SAMR Sample");
@@ -104,7 +105,7 @@ public class GenericSamplePane extends JLabel {
     return buffer.toString();
   }
 
-  private static String createHintSampleUI(Sample sample) {
+  private static String createHintSampleUI(Sample<?> sample) {
     StringBuffer buffer = new StringBuffer();
     buffer.append("<html><h1>");
     buffer.append("RTP Hint Sample");

@@ -23,6 +23,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MediaDataBox;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
+import com.coremedia.iso.mdta.SampleImpl;
 import com.coremedia.iso.mdta.Track;
 
 import javax.swing.event.TreeModelListener;
@@ -140,28 +141,30 @@ public class IsoFileTreeModel implements TreeModel {
             this.object = object;
         }
 
-        public Object getObject() {
-            return object;
-        }
-
-        public String toString() {
-            if (object instanceof IsoFile) {
-                return "ISO Base Media File";
-            } else if (object instanceof AbstractBox) {
-                AbstractBox box = (AbstractBox) object;
-                try {
-                    return new String(box.getType(), "ISO-8859-1") + " (" + box.getDisplayName() + ")";
-                } catch (UnsupportedEncodingException e) {
-                    return new String(box.getType()) + " (" + box.getDisplayName() + ")";
-                }
-            } else if (object instanceof Track) {
-                return "Track (trackId=" + Long.toString(((Track) object).getTrackId()) + ")";
-            } else if (object instanceof Chunk) {
-                return "Chunk at " + ((Chunk) object).calculateOffset();
-            } else if (object instanceof Sample) {
-                return "Sample";
-            }
-            throw new UnsupportedOperationException();
-        }
+    public Object getObject() {
+      return object;
     }
+
+    public String toString() {
+      if (object instanceof IsoFile) {
+        return "ISO Base Media File";
+      } else if (object instanceof AbstractBox) {
+        AbstractBox box = (AbstractBox ) object;
+        try {
+          return new String(box.getType(), "ISO-8859-1") + " (" + box.getDisplayName() + ")";
+        } catch (UnsupportedEncodingException e) {
+          return new String(box.getType()) + " (" + box.getDisplayName() + ")";
+        }
+      } else if (object instanceof Track) {
+        return "Track (trackId=" + Long.toString(((Track) object).getTrackId()) + ")";
+      } else if (object instanceof Chunk) {
+        return "Chunk at " + ((Chunk) object).calculateOffset();
+      } else if (object instanceof SampleImpl) {
+        final SampleImpl sample = (SampleImpl) object;
+        return sample.getOffset() + "@" +
+                (sample.isSyncSample() ? "Sample (syncSample)" : "Sample") + " - " + sample.getSize() + " bytes";
+      }
+      throw new UnsupportedOperationException();
+    }
+  }
 }

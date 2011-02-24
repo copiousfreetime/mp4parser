@@ -157,7 +157,7 @@ public class IsoViewerFrame extends JFrame {
         this.file = file;
         try {
             this.isoFile = new IsoFile(new IsoBufferWrapper(file));
-            long start = System.currentTimeMillis();
+            long start = System.nanoTime();
             final List<LogRecord> messages = new LinkedList<LogRecord>();
             Handler myTemperaryLogHandler = new Handler() {
                 public void publish(LogRecord record) {
@@ -173,9 +173,9 @@ public class IsoViewerFrame extends JFrame {
             Logger.getLogger("").addHandler(myTemperaryLogHandler);
             isoFile.parse();
             isoFile.parseMdats();
-            IsoFileConvenienceHelper.switchToAutomaticChunkOffsetBox(isoFile);
+            //IsoFileConvenienceHelper.switchToAutomaticChunkOffsetBox(isoFile);
             Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
-            System.err.println("Parsing took " + ((System.currentTimeMillis() - start) / 1000) + "seconds.");
+            System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
             tree.setModel(new IsoFileTreeModel(isoFile));
             if (!messages.isEmpty()) {
                 String message = "";
@@ -212,6 +212,7 @@ public class IsoViewerFrame extends JFrame {
                 ((AbstractBox) object).getBox(new IsoOutputStream(new FilterOutputStream(baos) {
                     int count = 0;
 
+                    @Override
                     public void write(int b) throws IOException {
                         if (count < 10000) {
                             count++;
@@ -219,12 +220,14 @@ public class IsoViewerFrame extends JFrame {
                         }
                     }
 
+                    @Override
                     public void write(byte[] b) throws IOException {
                         if (count < 10000) {
                             super.write(b);
                         }
                     }
 
+                    @Override
                     public void write(byte[] b, int off, int len) throws IOException {
                         if (count < 10000) {
                             super.write(b, off, len);

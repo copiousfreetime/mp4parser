@@ -36,10 +36,10 @@ import java.beans.PropertyDescriptor;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -116,20 +116,29 @@ public class GenericBoxPane extends JPanel {
         } catch (UnsupportedEncodingException e) {
             add("type", new NonEditableJTextField(new String(box.getType())));
         }
+        final byte[] guid = box.getUserType();
+        if (guid != null && guid.length > 0) {
+            ByteBuffer b = ByteBuffer.wrap(guid);
+            b.order(ByteOrder.BIG_ENDIAN);
+            UUID uuid = new UUID(b.getLong(), b.getLong());
+            add("userType", new NonEditableJTextField(uuid.toString()));
+        }
         add("size", new NonEditableJTextField(String.valueOf(box.getSize())));
 
         if (box.getDeadBytes().length > 0) {
 
-            StringBuffer valueBuffer = new StringBuffer();
+            StringBuilder valueBuffer = new StringBuilder();
             valueBuffer.append("[");
             IsoBufferWrapper ibw = new IsoBufferWrapper(box.getDeadBytes());
+            //rewind in case somebody else read the dead bytes (like IsoViewerFrame#showDetails calling AbstractBox#getBox)
+            ibw.position(0);
             long length = ibw.size();
 
 
-            boolean trucated = false;
+            boolean truncated = false;
 
             if (length > 1000) {
-                trucated = true;
+                truncated = true;
                 length = 1000;
             }
 
@@ -140,7 +149,7 @@ public class GenericBoxPane extends JPanel {
                 byte item = ibw.read();
                 valueBuffer.append(item);
             }
-            if (trucated) {
+            if (truncated) {
                 valueBuffer.append(", ...");
             }
             valueBuffer.append("]");

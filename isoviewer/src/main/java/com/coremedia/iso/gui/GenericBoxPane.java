@@ -36,6 +36,7 @@ import java.beans.PropertyDescriptor;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.NumberFormat;
@@ -159,6 +160,19 @@ public class GenericBoxPane extends JPanel {
             FullBox fullBox = (FullBox) box;
             add("version", new NonEditableJTextField(String.valueOf(fullBox.getVersion())));
             add("flags", new NonEditableJTextField(Integer.toHexString(fullBox.getFlags())));
+        }
+        try {
+            Method m = box.getClass().getMethod("getEntries", null);
+            List l = (List) m.invoke(box);
+            JList jl = new JList(l.toArray());
+            add("entries", jl);
+
+        } catch (NoSuchMethodException e) {
+            // don't mind
+        } catch (InvocationTargetException e) {
+            // don't mind
+        } catch (IllegalAccessException e) {
+            // don't mind
         }
         gridBagConstraints.gridwidth = 2;
         gridBagLayout.setConstraints(new JSeparator(), gridBagConstraints);

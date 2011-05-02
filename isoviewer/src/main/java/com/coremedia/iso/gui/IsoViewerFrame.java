@@ -172,7 +172,7 @@ public class IsoViewerFrame extends JFrame {
             };
             Logger.getLogger("").addHandler(myTemperaryLogHandler);
             isoFile.parse();
-            isoFile.parseMdats();
+            //isoFile.parseMdats();
             //IsoFileConvenienceHelper.switchToAutomaticChunkOffsetBox(isoFile);
             Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
             System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");

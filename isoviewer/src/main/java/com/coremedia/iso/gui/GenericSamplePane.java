@@ -63,6 +63,12 @@ public class GenericSamplePane extends JLabel {
     } else {
       setText("no SampleDescriptionBox found");
     }
+
+      String description = sample.getDescription();
+      if (description != null) {
+          setText(description);
+      }
+
     setFont(font);
     setVerticalAlignment(JLabel.TOP);
   }

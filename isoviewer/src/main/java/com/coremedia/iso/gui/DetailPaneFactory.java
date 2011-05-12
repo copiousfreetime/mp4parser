@@ -30,7 +30,7 @@ public class DetailPaneFactory {
         if (object instanceof AbstractBox) {
             return new GenericBoxPane((AbstractBox) object);
         } else if (object instanceof Sample) {
-            return new GenericSamplePane((Sample) object);
+            return new GenericSamplePane((Sample<?>) object);
         }
         JPanel result = new JPanel();
         result.setLayout(new BorderLayout());

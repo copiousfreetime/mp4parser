@@ -18,9 +18,9 @@ package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoFileConvenienceHelper;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
+import com.coremedia.iso.boxes.TrackMetaDataContainer;
 import com.coremedia.iso.gui.hex.JHexEditor;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
@@ -160,13 +160,16 @@ public class IsoViewerFrame extends JFrame {
             long start = System.nanoTime();
             final List<LogRecord> messages = new LinkedList<LogRecord>();
             Handler myTemperaryLogHandler = new Handler() {
+                @Override
                 public void publish(LogRecord record) {
                     messages.add(record);
                 }
 
+                @Override
                 public void flush() {
                 }
 
+                @Override
                 public void close() throws SecurityException {
                 }
             };
@@ -238,16 +241,16 @@ public class IsoViewerFrame extends JFrame {
             } else if (object instanceof Track) {
                 bytes = new byte[0];
             } else if (object instanceof Chunk) {
-                Chunk chunk = (Chunk) object;
-                List<Sample> s = chunk.getSamples();
+                Chunk<?> chunk = (Chunk<?>) object;
+                List<? extends Sample<? extends TrackMetaDataContainer>> s = chunk.getSamples();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                for (Sample sample : s) {
+                for (Sample<?> sample : s) {
                     sample.getContent(new IsoOutputStream(baos));
                 }
                 bytes = baos.toByteArray();
                 baos.close();
             } else if (object instanceof Sample) {
-                Sample sample = (Sample) object;
+                Sample<?> sample = (Sample<?>) object;
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 sample.getContent(new IsoOutputStream(baos));
                 bytes = baos.toByteArray();

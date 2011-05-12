@@ -18,17 +18,14 @@ package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
+import com.coremedia.iso.boxes.TrackMetaDataContainer;
 import com.coremedia.iso.mdta.Chunk;
 import com.coremedia.iso.mdta.Sample;
 import com.coremedia.iso.mdta.Track;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -50,6 +47,7 @@ public class HexDumpComponent extends JComponent {
             ((AbstractBox) o).getBox(new IsoOutputStream(new FilterOutputStream(baos) {
                 int count = 0;
 
+                @Override
                 public void write(int b) throws IOException {
                     if (count < 10000) {
                         count++;
@@ -57,12 +55,14 @@ public class HexDumpComponent extends JComponent {
                     }
                 }
 
+                @Override
                 public void write(byte[] b) throws IOException {
                     if (count < 10000) {
                         super.write(b);
                     }
                 }
 
+                @Override
                 public void write(byte[] b, int off, int len) throws IOException {
                     if (count < 10000) {
                         super.write(b, off, len);
@@ -71,20 +71,20 @@ public class HexDumpComponent extends JComponent {
             }));
             bytes = baos.toByteArray();
         } else if (o instanceof Track) {
-            Track track = (Track) o;
+            Track<?> track = (Track<?>) o;
             bytes = new byte[0];
         } else if (o instanceof Chunk) {
-            Chunk chunk = (Chunk) o;
+            Chunk<?> chunk = (Chunk<?>) o;
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             IsoOutputStream isoOutputStream = new IsoOutputStream(byteArrayOutputStream);
-            List<Sample> samples = chunk.getSamples();
-            for (Sample sample : samples) {
+            List<? extends Sample<? extends TrackMetaDataContainer>> samples = chunk.getSamples();
+            for (Sample<?> sample : samples) {
                 sample.getContent(isoOutputStream);
             }
             isoOutputStream.close();
             bytes = byteArrayOutputStream.toByteArray();
         } else if (o instanceof Sample) {
-            Sample sample = (Sample) o;
+            Sample<?> sample = (Sample<?>) o;
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             sample.getContent(new IsoOutputStream(baos));
             bytes = baos.toByteArray();
@@ -103,6 +103,7 @@ public class HexDumpComponent extends JComponent {
         repaint();
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
 
         if (lines != null) {
@@ -129,7 +130,7 @@ public class HexDumpComponent extends JComponent {
     protected String makeTextRawDataDump(byte[] inArray) {
         int length = inArray.length;
         ByteArrayInputStream in = new ByteArrayInputStream(inArray);
-        StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
         int rows = (length + 15) / 16;
         if (rows > 0xfff) {
             rows = 0x1000;

@@ -22,7 +22,6 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.MediaDataBox;
 import com.coremedia.iso.mdta.Chunk;
-import com.coremedia.iso.mdta.Sample;
 import com.coremedia.iso.mdta.SampleImpl;
 import com.coremedia.iso.mdta.Track;
 
@@ -55,11 +54,11 @@ public class IsoFileTreeModel implements TreeModel {
                 ContainerBox container = (ContainerBox) parent;
                 return container.getBoxes() == null ? 0 : container.getBoxes().length;
             } else if (parent instanceof MediaDataBox) {
-                return ((MediaDataBox) parent).getTracks() == null ? 0 : ((MediaDataBox) parent).getTracks().size();
+                return ((MediaDataBox<?>) parent).getTracks() == null ? 0 : ((MediaDataBox<?>) parent).getTracks().size();
             } else if (parent instanceof Track) {
-                return ((Track) parent).getChunks() == null ? 0 : ((Track) parent).getChunks().size();
+                return ((Track<?>) parent).getChunks() == null ? 0 : ((Track<?>) parent).getChunks().size();
             } else if (parent instanceof Chunk) {
-                return ((Chunk) parent).getSamples() == null ? 0 : ((Chunk) parent).getSamples().size();
+                return ((Chunk<?>) parent).getSamples() == null ? 0 : ((Chunk<?>) parent).getSamples().size();
             }
         }
         return 0;
@@ -86,13 +85,13 @@ public class IsoFileTreeModel implements TreeModel {
             return new IsoFileTreeNode(container.getBoxes()[index]);
 
         } else if (parent instanceof MediaDataBox) {
-            return new IsoFileTreeNode(((MediaDataBox) parent).getTracks().get(index));
+            return new IsoFileTreeNode(((MediaDataBox<?>) parent).getTracks().get(index));
 
         } else if (parent instanceof Chunk) {
-            return new IsoFileTreeNode(((Chunk) parent).getSamples().get(index));
+            return new IsoFileTreeNode(((Chunk<?>) parent).getSamples().get(index));
 
         } else if (parent instanceof Track) {
-            return new IsoFileTreeNode(((Track) parent).getChunks().get(index));
+            return new IsoFileTreeNode(((Track<?>) parent).getChunks().get(index));
 
         }
         return null;
@@ -111,17 +110,17 @@ public class IsoFileTreeModel implements TreeModel {
                 }
             }
         } else if (parent instanceof MediaDataBox) {
-            MediaDataBox container = (MediaDataBox) parent;
+            MediaDataBox<?> container = (MediaDataBox<?>) parent;
             //noinspection SuspiciousMethodCalls
             return container.getTracks().indexOf(child);
 
         } else if (parent instanceof Track) {
-            Track track = (Track) parent;
+            Track<?> track = (Track<?>) parent;
             //noinspection SuspiciousMethodCalls
             return track.getChunks().indexOf(child);
 
         } else if (parent instanceof Chunk) {
-            Chunk chunk = (Chunk) parent;
+            Chunk<?> chunk = (Chunk<?>) parent;
             //noinspection SuspiciousMethodCalls
             return chunk.getSamples().indexOf(child);
 
@@ -156,13 +155,15 @@ public class IsoFileTreeModel implements TreeModel {
           return new String(box.getType()) + " (" + box.getDisplayName() + ")";
         }
       } else if (object instanceof Track) {
-        return "Track (trackId=" + Long.toString(((Track) object).getTrackId()) + ")";
+        return "Track (trackId=" + Long.toString(((Track<?>) object).getTrackId()) + ")";
       } else if (object instanceof Chunk) {
-        return "Chunk at " + ((Chunk) object).calculateOffset();
+        final Chunk<?> chunk = (Chunk<?>) object;
+        return "Chunk at " + (chunk.calculateOffset() + chunk.getParentMediaDataBox().getOffset());
       } else if (object instanceof SampleImpl) {
-        final SampleImpl sample = (SampleImpl) object;
+        final SampleImpl<?> sample = (SampleImpl<?>) object;
         return sample.getOffset() + "@" +
-                (sample.isSyncSample() ? "Sample (syncSample)" : "Sample") + " - " + sample.getSize() + " bytes";
+                "Sample " + sample.getSampleNumber() + (sample.isSyncSample() ? " (IDR)" : "") +
+                " - " + sample.getSize() + " bytes ";
       }
       throw new UnsupportedOperationException();
     }

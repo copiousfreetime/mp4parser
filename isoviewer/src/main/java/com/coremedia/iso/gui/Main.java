@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.gui;
 
+import com.coremedia.iso.IsoFile;
+
 import javax.swing.*;
 import java.io.File;
 
@@ -35,7 +37,7 @@ public final class Main {
       e.printStackTrace();
 
     }
-    IsoViewerFrame frame = new IsoViewerFrame();
+    IsoViewerFrame frame = new IsoViewerFrame(IsoFile.class);
     frame.pack();
     frame.setSize(1024, 600);
     frame.setVisible(true);

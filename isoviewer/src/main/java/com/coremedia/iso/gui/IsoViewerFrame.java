@@ -38,6 +38,8 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -48,6 +50,7 @@ import java.util.logging.Logger;
  * The main UI class for the ISO viewer. Contains all other UI components.
  */
 public class IsoViewerFrame extends JFrame {
+    private Class<? extends IsoFile> isoFileClazz;
     private JTree tree;
     private JPanel detailPanel;
     private File file;
@@ -56,12 +59,13 @@ public class IsoViewerFrame extends JFrame {
     private JMenuItem save = new JMenuItem("Save");
 
 
-    public IsoViewerFrame() {
+    public IsoViewerFrame(Class<? extends IsoFile> isoFileClazz) {
         super("CoreMedia ISO Base Media File Format Viewer");
         createMenu();
         createLayout();
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.isoFileClazz = isoFileClazz;
     }
 
     protected void createLayout() {
@@ -156,7 +160,8 @@ public class IsoViewerFrame extends JFrame {
     public void open(File file) {
         this.file = file;
         try {
-            this.isoFile = new IsoFile(new IsoBufferWrapper(file));
+            final Constructor<? extends IsoFile> constructor = isoFileClazz.getConstructor(IsoBufferWrapper.class);
+            this.isoFile = constructor.newInstance(new IsoBufferWrapper(file));
             long start = System.nanoTime();
             final List<LogRecord> messages = new LinkedList<LogRecord>();
             Handler myTemperaryLogHandler = new Handler() {
@@ -193,6 +198,14 @@ public class IsoViewerFrame extends JFrame {
             }
 
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
 

@@ -50,14 +50,14 @@ public class GenericSamplePane extends JLabel {
 
 
     if (sampleDescriptionBox != null) {
-      SampleEntry[] sampleEntries = sampleDescriptionBox.getBoxes(SampleEntry.class, false);
+      java.util.List<SampleEntry> sampleEntries = sampleDescriptionBox.getBoxes(SampleEntry.class, false);
 
 
-      if (sampleEntries.length > 0 && (sampleEntries[0] instanceof RtpHintSampleEntry)) {
+      if (sampleEntries.size() > 0 && (sampleEntries.get(0) instanceof RtpHintSampleEntry)) {
         setText(createHintSampleUI(sample));
-      } else if (sampleEntries.length > 0 &&
-              (sampleEntries[0] instanceof AudioSampleEntry) &&
-              Arrays.equals(sampleEntries[0].getType(), IsoFile.fourCCtoBytes(AudioSampleEntry.TYPE1))) {
+      } else if (sampleEntries.size() > 0 &&
+              (sampleEntries.get(0) instanceof AudioSampleEntry) &&
+              Arrays.equals(sampleEntries.get(0).getType(), IsoFile.fourCCtoBytes(AudioSampleEntry.TYPE1))) {
         setText(createSamrSampleUI(sample));
       }
     } else {

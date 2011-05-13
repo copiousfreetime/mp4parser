@@ -29,6 +29,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 /**
  * Adapter for an <code>IsoFile</code> to act as a <code>TreeModel</code>
@@ -52,7 +53,7 @@ public class IsoFileTreeModel implements TreeModel {
         if (parent != null) {
             if (parent instanceof ContainerBox) {
                 ContainerBox container = (ContainerBox) parent;
-                return container.getBoxes() == null ? 0 : container.getBoxes().length;
+                return container.getBoxes() == null ? 0 : container.getBoxes().size();
             } else if (parent instanceof MediaDataBox) {
                 return ((MediaDataBox<?>) parent).getTracks() == null ? 0 : ((MediaDataBox<?>) parent).getTracks().size();
             } else if (parent instanceof Track) {
@@ -82,7 +83,7 @@ public class IsoFileTreeModel implements TreeModel {
         parent = ((IsoFileTreeNode) parent).getObject();
         if (parent instanceof ContainerBox) {
             ContainerBox container = (ContainerBox) parent;
-            return new IsoFileTreeNode(container.getBoxes()[index]);
+            return new IsoFileTreeNode(container.getBoxes().get(index));
 
         } else if (parent instanceof MediaDataBox) {
             return new IsoFileTreeNode(((MediaDataBox<?>) parent).getTracks().get(index));
@@ -103,9 +104,9 @@ public class IsoFileTreeModel implements TreeModel {
         child = ((IsoFileTreeNode) child).getObject();
         if (parent instanceof ContainerBox) {
             ContainerBox container = (ContainerBox) parent;
-            Box[] boxes = container.getBoxes();
-            for (int i = 0; i < boxes.length; i++) {
-                if (boxes[i].equals(child)) {
+            List<Box> boxes = container.getBoxes();
+            for (int i = 0; i < boxes.size(); i++) {
+                if (boxes.get(i).equals(child)) {
                     return i;
                 }
             }

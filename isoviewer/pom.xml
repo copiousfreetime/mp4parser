@@ -1,95 +1,97 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.coremedia.drm.isobox4j</groupId>
-  <artifactId>isoviewer</artifactId>
-  <packaging>jar</packaging>
-  <name>ISO Viewer</name>
-  <version>1.1-SNAPSHOT</version>
-  <description>The ISO Viewer is a UI Tool for viewing ISO Box files (see ISO/IEC 14496-12). Useful for looking into
-    Apple Quicktime Movies, DCF files, PDCF files, MP4 files and other ISO Box files.
-  </description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.coremedia.drm.isobox4j</groupId>
+    <artifactId>isoviewer</artifactId>
+    <packaging>jar</packaging>
+    <name>ISO Viewer</name>
+    <version>1.1-SNAPSHOT</version>
+    <description>The ISO Viewer is a UI Tool for viewing ISO Box files (see ISO/IEC 14496-12). Useful for looking into
+        Apple Quicktime Movies, DCF files, PDCF files, MP4 files and other ISO Box files.
+    </description>
 
-  <distributionManagement>
-    <repository>
-      <id>local</id>
-      <url>file://${project.basedir}/target/release</url>
-    </repository>
-  </distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>localfs</id>
+            <url>file://${project.basedir}/target/release</url>
+        </repository>
+    </distributionManagement>
 
 
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.1</version>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.1</version>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
 
-<!--      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
+            <!--      <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
 
-        <executions>
-          <execution>
-            <id>signit</id>
-            <phase>package</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-            <configuration>
-              <keystore>${project.basedir}/src/etc/keystore.jks</keystore>
-              <alias>isobox4j</alias>
-              <keypass>xxxxxx</keypass>
-              <storepass>xxxxxx</storepass>
-              <skip>false</skip>
-              <verbose>true</verbose>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>-->
-    <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>1.3.3</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      
+              <executions>
+                <execution>
+                  <id>signit</id>
+                  <phase>package</phase>
+                  <goals>
+                    <goal>sign</goal>
+                  </goals>
+                  <configuration>
+                    <keystore>${project.basedir}/src/etc/keystore.jks</keystore>
+                    <alias>isobox4j</alias>
+                    <keypass>xxxxxx</keypass>
+                    <storepass>xxxxxx</storepass>
+                    <skip>false</skip>
+                    <verbose>true</verbose>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>1.3.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-      <!-- Create executable jar -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>com.coremedia.iso.gui.Main</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.googlecode.mp4parser</groupId>
-      <artifactId>isoparser</artifactId>
-      <version>1.0-beta-3-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
+            <!-- Create executable jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.coremedia.iso.gui.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-  <scm>
-    <url>http://code.google.com/p/mp4parser/source/browse/</url>
-    <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/isoviewer</connection>
-  </scm>
+    <dependencies>
+        <dependency>
+            <groupId>com.googlecode.mp4parser</groupId>
+            <artifactId>isoparser</artifactId>
+            <version>1.0-beta-3-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <scm>
+        <url>http://code.google.com/p/mp4parser/source/browse/</url>
+        <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/isoviewer</connection>
+    </scm>
 </project>

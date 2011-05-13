@@ -28,6 +28,7 @@ import com.coremedia.iso.mdta.Track;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
@@ -86,6 +87,11 @@ public class IsoFileTreeModel implements TreeModel {
             return new IsoFileTreeNode(container.getBoxes().get(index));
 
         } else if (parent instanceof MediaDataBox) {
+            try {
+                ((MediaDataBox) parent).getIsoFile().parseMdats();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             return new IsoFileTreeNode(((MediaDataBox<?>) parent).getTracks().get(index));
 
         } else if (parent instanceof Chunk) {

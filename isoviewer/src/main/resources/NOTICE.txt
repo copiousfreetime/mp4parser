@@ -7,6 +7,9 @@
 This product includes software developed by
 CoreMedia AG (http://www.coremedia.com/).
 
+This product includes software developed by
+castLabs GmbH (http://www.castlabs.com/).
+
 This product includes software (Base64 Encoder extracted from commons-codec) developed by
 The Apache Software Foundation (http://www.apache.org/).
 

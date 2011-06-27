@@ -17,7 +17,6 @@
 package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.FullBox;
 import com.coremedia.iso.gui.transferhelper.StringTransferValue;
@@ -127,11 +126,11 @@ public class GenericBoxPane extends JPanel {
         }
         add("size", new NonEditableJTextField(String.valueOf(box.getSize())));
 
-        if (box.getDeadBytes().length > 0) {
+        if (box.getDeadBytes() != null) {
 
             StringBuilder valueBuffer = new StringBuilder();
             valueBuffer.append("[");
-            IsoBufferWrapper ibw = new IsoBufferWrapperImpl(box.getDeadBytes());
+            IsoBufferWrapper ibw = box.getDeadBytes();
             //rewind in case somebody else read the dead bytes (like IsoViewerFrame#showDetails calling AbstractBox#getBox)
             ibw.position(0);
             long length = ibw.size();
@@ -163,7 +162,7 @@ public class GenericBoxPane extends JPanel {
             add("flags", new NonEditableJTextField(Integer.toHexString(fullBox.getFlags())));
         }
         try {
-            Method m = box.getClass().getMethod("getEntries", null);
+            Method m = box.getClass().getMethod("getEntries");
             List l = (List) m.invoke(box);
             JList jl = new JList(l.toArray());
             add("entries", jl);

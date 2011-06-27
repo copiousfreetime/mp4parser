@@ -17,6 +17,7 @@
 package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.FullBox;
 import com.coremedia.iso.gui.transferhelper.StringTransferValue;
@@ -130,7 +131,7 @@ public class GenericBoxPane extends JPanel {
 
             StringBuilder valueBuffer = new StringBuilder();
             valueBuffer.append("[");
-            IsoBufferWrapper ibw = new IsoBufferWrapper(box.getDeadBytes());
+            IsoBufferWrapper ibw = new IsoBufferWrapperImpl(box.getDeadBytes());
             //rewind in case somebody else read the dead bytes (like IsoViewerFrame#showDetails calling AbstractBox#getBox)
             ibw.position(0);
             long length = ibw.size();

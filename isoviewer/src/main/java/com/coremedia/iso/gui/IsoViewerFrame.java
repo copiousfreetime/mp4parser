@@ -16,9 +16,7 @@
 
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.TrackMetaDataContainer;
 import com.coremedia.iso.gui.hex.JHexEditor;
@@ -32,12 +30,7 @@ import javax.swing.event.TreeSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
@@ -161,7 +154,7 @@ public class IsoViewerFrame extends JFrame {
         this.file = file;
         try {
             final Constructor<? extends IsoFile> constructor = isoFileClazz.getConstructor(IsoBufferWrapper.class);
-            this.isoFile = constructor.newInstance(new IsoBufferWrapper(file));
+            this.isoFile = constructor.newInstance(new IsoBufferWrapperImpl(file));
             long start = System.nanoTime();
             final List<LogRecord> messages = new LinkedList<LogRecord>();
             Handler myTemperaryLogHandler = new Handler() {
@@ -181,7 +174,7 @@ public class IsoViewerFrame extends JFrame {
             Logger.getLogger("").addHandler(myTemperaryLogHandler);
             isoFile.parse();
             isoFile.parseMdats();
-            //IsoFileConvenienceHelper.switchToAutomaticChunkOffsetBox(isoFile);
+            IsoFileConvenienceHelper.switchToAutomaticChunkOffsetBox(isoFile);
             Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
             System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
             tree.setModel(new IsoFileTreeModel(isoFile));

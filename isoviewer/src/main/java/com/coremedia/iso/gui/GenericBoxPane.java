@@ -130,10 +130,10 @@ public class GenericBoxPane extends JPanel {
 
             StringBuilder valueBuffer = new StringBuilder();
             valueBuffer.append("[");
-            IsoBufferWrapper ibw = box.getDeadBytes();
+            ByteBuffer ibw = box.getDeadBytes()[0];
             //rewind in case somebody else read the dead bytes (like IsoViewerFrame#showDetails calling AbstractBox#getBox)
             ibw.position(0);
-            long length = ibw.size();
+            long length = ibw.remaining();
 
 
             boolean truncated = false;
@@ -147,7 +147,7 @@ public class GenericBoxPane extends JPanel {
                 if (j > 0) {
                     valueBuffer.append(", ");
                 }
-                byte item = ibw.read();
+                byte item = ibw.get();
                 valueBuffer.append(item);
             }
             if (truncated) {

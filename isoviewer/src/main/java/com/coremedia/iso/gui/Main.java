@@ -27,25 +27,25 @@ import java.io.File;
  * A possible command line argument is the file to show.
  */
 public final class Main {
-  private Main() {
-  }
-
-  public static void main(String[] args) {
-    try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch (Exception e) {
-      e.printStackTrace();
-
+    private Main() {
     }
-    IsoViewerFrame frame = new IsoViewerFrame(IsoFile.class);
-    frame.pack();
-    frame.setSize(1024, 600);
-    frame.setVisible(true);
-    if (args.length > 0) {
-      File file = new File(args[0]);
-      if (file.exists()) {
-        frame.open(file);
-      }
+
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+        IsoViewerFrame frame = new IsoViewerFrame(IsoFile.class);
+        frame.pack();
+        frame.setSize(1024, 600);
+        frame.setVisible(true);
+        if (args.length > 0) {
+            File file = new File(args[0]);
+            if (file.exists()) {
+                frame.open(file);
+            }
+        }
     }
-  }
 }

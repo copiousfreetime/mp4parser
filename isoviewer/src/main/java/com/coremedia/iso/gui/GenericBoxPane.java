@@ -33,6 +33,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -130,10 +131,15 @@ public class GenericBoxPane extends JPanel {
 
             StringBuilder valueBuffer = new StringBuilder();
             valueBuffer.append("[");
-            ByteBuffer ibw = box.getDeadBytes()[0];
+            IsoBufferWrapper ibw = box.getDeadBytes();
             //rewind in case somebody else read the dead bytes (like IsoViewerFrame#showDetails calling AbstractBox#getBox)
-            ibw.position(0);
-            long length = ibw.remaining();
+            long length;
+            try {
+                ibw.position(0);
+                length = ibw.remaining();
+            } catch (IOException e) {
+                throw new RuntimeException("Actually I don't care", e);
+            }
 
 
             boolean truncated = false;
@@ -147,7 +153,12 @@ public class GenericBoxPane extends JPanel {
                 if (j > 0) {
                     valueBuffer.append(", ");
                 }
-                byte item = ibw.get();
+                byte item = 0;
+                try {
+                    item = ibw.read();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 valueBuffer.append(item);
             }
             if (truncated) {

@@ -154,7 +154,7 @@ public class IsoViewerFrame extends JFrame {
         this.file = file;
         try {
             final Constructor<? extends IsoFile> constructor = isoFileClazz.getConstructor(IsoBufferWrapper.class);
-            this.isoFile = constructor.newInstance(new IsoBufferWrapper(file));
+            this.isoFile = constructor.newInstance(new IsoBufferWrapperImpl(file));
             long start = System.nanoTime();
             final List<LogRecord> messages = new LinkedList<LogRecord>();
             Handler myTemperaryLogHandler = new Handler() {

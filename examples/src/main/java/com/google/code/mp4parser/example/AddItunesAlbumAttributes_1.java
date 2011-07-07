@@ -1,9 +1,6 @@
 package com.google.code.mp4parser.example;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoFileConvenienceHelper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.apple.AppleAlbumBox;
 import com.coremedia.iso.boxes.apple.AppleItemListBox;
 
@@ -18,7 +15,7 @@ import java.io.IOException;
  */
 public class AddItunesAlbumAttributes_1 {
     public static void main(String[] args) throws IOException {
-        IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapper(new File(args[0]));
+        IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapperImpl(new File(args[0]));
         IsoFile isoFile = new IsoFile(isoBufferWrapper);
         isoFile.parse();
         AppleItemListBox appleItemListBox =

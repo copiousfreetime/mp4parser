@@ -17,15 +17,18 @@
 package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.FullBox;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.gui.transferhelper.StringTransferValue;
 import com.coremedia.iso.gui.transferhelper.TransferHelperFactory;
 import com.coremedia.iso.gui.transferhelper.TransferValue;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,9 +51,20 @@ import java.util.List;
  * Detailed view of a Box.
  */
 public class GenericBoxPane extends JPanel {
-    private AbstractBox box;
+    private Box box;
     GridBagLayout gridBagLayout;
     GridBagConstraints gridBagConstraints;
+    static Properties names = new Properties();
+
+    static {
+        try {
+            names.load(GenericBoxPane.class.getResourceAsStream("/names.properties"));
+        } catch (IOException e) {
+            // i dont care
+            throw new RuntimeException(e);
+        }
+    }
+
 
     private static final Collection<String> skipList = Arrays.asList(
             "class",
@@ -61,7 +75,6 @@ public class GenericBoxPane extends JPanel {
             "size",
             "displayName",
             "contentSize",
-            "offset",
             "header",
             "version",
             "flags",
@@ -74,7 +87,7 @@ public class GenericBoxPane extends JPanel {
             "sampleSizeAtIndex",
             "numOfBytesToFirstChild");
 
-    public GenericBoxPane(AbstractBox box) {
+    public GenericBoxPane(com.coremedia.iso.boxes.Box box) {
         this.box = box;
         gridBagLayout = new GridBagLayout();
         gridBagConstraints = new GridBagConstraints();
@@ -102,7 +115,12 @@ public class GenericBoxPane extends JPanel {
 
     protected void addHeader() {
         JLabel displayName = new JLabel();
-        displayName.setText(box.getDisplayName());
+        if (box instanceof UnknownBox) {
+            displayName.setText("Unknown Box - " + IsoFile.bytesToFourCC(box.getType()));
+        } else {
+            displayName.setText(names.getProperty(IsoFile.bytesToFourCC(box.getType()), IsoFile.bytesToFourCC(box.getType())));
+        }
+
         Font curFont = displayName.getFont();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridx = 0;
@@ -127,46 +145,7 @@ public class GenericBoxPane extends JPanel {
         }
         add("size", new NonEditableJTextField(String.valueOf(box.getSize())));
 
-        if (box.getDeadBytes() != null) {
 
-            StringBuilder valueBuffer = new StringBuilder();
-            valueBuffer.append("[");
-            IsoBufferWrapper ibw = box.getDeadBytes();
-            //rewind in case somebody else read the dead bytes (like IsoViewerFrame#showDetails calling AbstractBox#getBox)
-            long length;
-            try {
-                ibw.position(0);
-                length = ibw.remaining();
-            } catch (IOException e) {
-                throw new RuntimeException("Actually I don't care", e);
-            }
-
-
-            boolean truncated = false;
-
-            if (length > 1000) {
-                truncated = true;
-                length = 1000;
-            }
-
-            for (int j = 0; j < length; j++) {
-                if (j > 0) {
-                    valueBuffer.append(", ");
-                }
-                byte item = 0;
-                try {
-                    item = ibw.read();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                valueBuffer.append(item);
-            }
-            if (truncated) {
-                valueBuffer.append(", ...");
-            }
-            valueBuffer.append("]");
-            add("deadBytes", new NonEditableJTextField(valueBuffer.toString()));
-        }
         if (box instanceof FullBox) {
             FullBox fullBox = (FullBox) box;
             add("version", new NonEditableJTextField(String.valueOf(fullBox.getVersion())));
@@ -175,8 +154,11 @@ public class GenericBoxPane extends JPanel {
         try {
             Method m = box.getClass().getMethod("getEntries");
             List l = (List) m.invoke(box);
+            JScrollPane jScrollPane = new JScrollPane();
+            jScrollPane.getVerticalScrollBar().setUnitIncrement(16);
             JList jl = new JList(l.toArray());
-            add("entries", jl);
+            jScrollPane.getViewport().add(jl);
+            add("entries", jScrollPane);
 
         } catch (NoSuchMethodException e) {
             // don't mind
@@ -216,7 +198,7 @@ public class GenericBoxPane extends JPanel {
                 if (!skipList.contains(name) &&
                         propertyDescriptor.getReadMethod() != null &&
                         !AbstractBox.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
-                    Object value = propertyDescriptor.getReadMethod().invoke(box, (Object[]) null);
+                    final Object value = propertyDescriptor.getReadMethod().invoke(box, (Object[]) null);
                     if (value == null) {
                         add(name, new NonEditableJTextField(""));
                     } else if (Number.class.isAssignableFrom(value.getClass())) {
@@ -241,29 +223,55 @@ public class GenericBoxPane extends JPanel {
                             add(name, new NonEditableJTextField(value.toString()));
                         }
                     } else if (value.getClass().isArray()) {
-                        StringBuffer valueBuffer = new StringBuffer();
-                        valueBuffer.append("[");
                         int length = Array.getLength(value);
+                        if (length < 50) {
 
-                        boolean trucated = false;
+                            StringBuffer valueBuffer = new StringBuffer();
+                            valueBuffer.append("[");
 
-                        if (length > 1000) {
-                            trucated = true;
-                            length = 1000;
-                        }
-                        for (int j = 0; j < length; j++) {
-                            if (j > 0) {
-                                valueBuffer.append(", ");
+
+                            boolean trucated = false;
+
+                            if (length > 1000) {
+                                trucated = true;
+                                length = 1000;
                             }
-                            Object item = Array.get(value, j);
-                            valueBuffer.append(item != null ? item.toString() : "");
+                            for (int j = 0; j < length; j++) {
+                                if (j > 0) {
+                                    valueBuffer.append(", ");
+                                }
+                                Object item = Array.get(value, j);
+                                valueBuffer.append(item != null ? item.toString() : "");
+                            }
+                            if (trucated) {
+                                valueBuffer.append(", ...");
+                            }
+                            valueBuffer.append("]");
+                            add(name, new NonEditableJTextField(valueBuffer.toString()));
+                        } else {
+
+                            JScrollPane jScrollPane = new JScrollPane();
+                            jScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+                            JList jl = new JList();
+                            final int finalLength = length;
+                            jl.setModel(new ListModel() {
+                                public int getSize() {
+                                    return finalLength;
+                                }
+
+                                public Object getElementAt(int index) {
+                                    return Array.get(value, index);
+                                }
+
+                                public void addListDataListener(ListDataListener l) {
+                                }
+
+                                public void removeListDataListener(ListDataListener l) {
+                                }
+                            });
+                            jScrollPane.getViewport().add(jl);
+                            add(name, jScrollPane);
                         }
-                        if (trucated) {
-                            valueBuffer.append(", ...");
-                        }
-                        valueBuffer.append("]");
-                        value = valueBuffer.toString();
-                        add(name, new NonEditableJTextField(value.toString()));
                     }
 
 

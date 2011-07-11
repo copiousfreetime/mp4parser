@@ -1,6 +1,7 @@
 package com.coremedia.iso.gui.transferhelper;
 
-import com.coremedia.iso.boxes.AbstractBox;
+import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.Box;
 
 import javax.swing.*;
 import java.lang.reflect.Method;
@@ -14,7 +15,7 @@ import java.lang.reflect.Method;
  */
 public final class TransferHelperFactory {
     public static TransferValue getNumberTransferHelper(Class aClass,
-                                                        AbstractBox box, Method writeMethod, JFormattedTextField jftf) {
+                                                        Box  box, Method writeMethod, JFormattedTextField jftf) {
         if (Byte.class == aClass || byte.class == aClass) {
             return new ByteTransferValue(jftf, box, writeMethod);
         } else if (Double.class == aClass || double.class == aClass) {

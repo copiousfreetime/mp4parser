@@ -16,6 +16,8 @@
 
 package com.coremedia.iso.gui.hex;
 
+import com.coremedia.iso.IsoBufferWrapper;
+
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import java.awt.BorderLayout;
@@ -37,7 +39,7 @@ import java.awt.event.MouseWheelListener;
  * Combines a hex view and an ASCII view to a fully fledged hex editor.
  */
 public class JHexEditor extends JPanel implements FocusListener, AdjustmentListener, MouseWheelListener {
-  byte[] buff;
+  IsoBufferWrapper buff;
   public int cursor;
   protected static Font font = new Font("Monospaced", 0, 12);
   protected int border = 2;
@@ -46,7 +48,7 @@ public class JHexEditor extends JPanel implements FocusListener, AdjustmentListe
   private int inicio = 0;
   private int numberOfVisibleLines = 10;
 
-  public JHexEditor(byte[] buff) {
+  public JHexEditor(IsoBufferWrapper buff) {
     super();
     this.buff = buff;
 
@@ -55,7 +57,7 @@ public class JHexEditor extends JPanel implements FocusListener, AdjustmentListe
     scrollBar = new JScrollBar(JScrollBar.VERTICAL);
     scrollBar.addAdjustmentListener(this);
     scrollBar.setMinimum(0);
-    scrollBar.setMaximum(buff.length / getNumberOfVisibleLines());
+    scrollBar.setMaximum((int) (buff.size() / getNumberOfVisibleLines()));
 
     JPanel p1, p2, p3;
     //centro
@@ -88,8 +90,8 @@ public class JHexEditor extends JPanel implements FocusListener, AdjustmentListe
     FontMetrics fn = getFontMetrics(font);
     Rectangle rec = this.getBounds();
     numberOfVisibleLines = (rec.height / fn.getHeight()) - 2;
-    int n = (buff.length / 16);
-    if ((buff.length % 16) > 0) {
+    int n = (int) (buff.size() / 16);
+    if ((buff.size() % 16) > 0) {
       n++;
     }
     if (numberOfVisibleLines > n) {
@@ -104,7 +106,7 @@ public class JHexEditor extends JPanel implements FocusListener, AdjustmentListe
 
   protected void actualizaCursor() {
     int n = (cursor / 16);
-    if ((buff.length % 16) > 0) {
+    if ((buff.size() % 16) > 0) {
       n++;
     }
     if (n < inicio) {
@@ -157,7 +159,7 @@ public class JHexEditor extends JPanel implements FocusListener, AdjustmentListe
 
   public void mouseWheelMoved(MouseWheelEvent e) {
     inicio += (e.getUnitsToScroll());
-    int n = (buff.length / 16);
+    int n = (int) (buff.size() / 16);
     n += 4;
     if ((inicio + numberOfVisibleLines) >= n) {
       inicio = n - numberOfVisibleLines;
@@ -177,13 +179,13 @@ public class JHexEditor extends JPanel implements FocusListener, AdjustmentListe
         actualizaCursor();
         break;
       case 34:    // fin
-        if (cursor < (buff.length - (16 * numberOfVisibleLines))) {
+        if (cursor < (buff.size() - (16 * numberOfVisibleLines))) {
           cursor += (16 * numberOfVisibleLines);
         }
         actualizaCursor();
         break;
       case 35:    // fin
-        cursor = buff.length - 1;
+        cursor = (int) (buff.size() - 1);
         actualizaCursor();
         break;
       case 36:    // ini
@@ -199,11 +201,11 @@ public class JHexEditor extends JPanel implements FocusListener, AdjustmentListe
         actualizaCursor();
         break;
       case 39:    // -->
-        if (cursor != (buff.length - 1)) cursor++;
+        if (cursor != (buff.size() - 1)) cursor++;
         actualizaCursor();
         break;
       case 40:    // -->
-        if (cursor < (buff.length - 16)) cursor += 16;
+        if (cursor < (buff.size() - 16)) cursor += 16;
         actualizaCursor();
         break;
 

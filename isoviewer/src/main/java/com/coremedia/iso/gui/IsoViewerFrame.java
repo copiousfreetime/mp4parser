@@ -17,22 +17,22 @@
 package com.coremedia.iso.gui;
 
 import com.coremedia.iso.*;
-import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.TrackMetaDataContainer;
+import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.mdat.SampleList;
 import com.coremedia.iso.gui.hex.JHexEditor;
-import com.coremedia.iso.mdta.Chunk;
-import com.coremedia.iso.mdta.Sample;
-import com.coremedia.iso.mdta.Track;
 
+import javax.sound.midi.Track;
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.Box;
+import javax.swing.event.*;
+import javax.swing.plaf.basic.BasicTreeUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 public class IsoViewerFrame extends JFrame {
     private Class<? extends IsoFile> isoFileClazz;
     private JTree tree;
+    private JList trackList;
     private JPanel detailPanel;
     private File file;
     private IsoFile isoFile;
@@ -53,7 +54,7 @@ public class IsoViewerFrame extends JFrame {
 
 
     public IsoViewerFrame(Class<? extends IsoFile> isoFileClazz) {
-        super("CoreMedia ISO Base Media File Format Viewer");
+        super("MP4 Viewer");
         createMenu();
         createLayout();
 
@@ -63,13 +64,14 @@ public class IsoViewerFrame extends JFrame {
 
     protected void createLayout() {
         tree = new JTree(new Object[0]);
-        tree.setRootVisible(true);
+        tree.setRootVisible(false);
         tree.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
-                com.coremedia.iso.gui.IsoFileTreeModel.IsoFileTreeNode node = (com.coremedia.iso.gui.IsoFileTreeModel.IsoFileTreeNode) e.getPath().getLastPathComponent();
-                showDetails(node.getObject());
+                com.coremedia.iso.boxes.Box node = (com.coremedia.iso.boxes.Box) e.getPath().getLastPathComponent();
+                showDetails(node);
             }
         });
+        tree.setCellRenderer(new BoxNodeRenderer());
 
         detailPanel = new JPanel();
         detailPanel.setLayout(new BorderLayout());
@@ -79,14 +81,42 @@ public class IsoViewerFrame extends JFrame {
         rawDataSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         rawDataSplitPane.setBorder(null);
         rawDataSplitPane.setOneTouchExpandable(true);
-        rawDataSplitPane.setTopComponent(new JScrollPane(detailPanel));
-        rawDataSplitPane.setBottomComponent(new JHexEditor(new byte[0]));
-        rawDataSplitPane.setResizeWeight(0.5);
+        JScrollPane scrollPane = new JScrollPane(detailPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        rawDataSplitPane.setTopComponent(scrollPane);
+        rawDataSplitPane.setBottomComponent(new JHexEditor(new IsoBufferWrapperImpl(new byte[0])));
+        rawDataSplitPane.setResizeWeight(0.8);
 
         JSplitPane splitPane = new JSplitPane();
         splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setOneTouchExpandable(true);
-        splitPane.setLeftComponent(new JScrollPane(tree));
+        JTabbedPane jTabbedPane = new JTabbedPane();
+        jTabbedPane.add("Box Structure", new JScrollPane(tree));
+        jTabbedPane.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                int index = ((JTabbedPane) e.getSource()).getSelectedIndex();
+                if (index == 0) {
+                    Object selected = tree.getSelectionPath().getLastPathComponent();
+                    if (selected != null) {
+                        showDetails(selected);
+                    }
+                } else if (index == 1) {
+                    showSamples((TrackBox) trackList.getSelectedValue());
+                }
+            }
+        });
+
+        trackList = new JList();
+        trackList.setCellRenderer(new TrackListRenderer());
+        trackList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        trackList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                showSamples((TrackBox) ((JList) e.getSource()).getSelectedValue());
+            }
+        });
+
+        jTabbedPane.add("Tracks & Samples", trackList);
+        splitPane.setLeftComponent(jTabbedPane);
         splitPane.setRightComponent(rawDataSplitPane);
         splitPane.setResizeWeight(0.6);
 
@@ -95,6 +125,32 @@ public class IsoViewerFrame extends JFrame {
         contentPane.add(splitPane, BorderLayout.CENTER);
 
         setContentPane(contentPane);
+    }
+
+    private void showSamples(TrackBox tb) {
+        detailPanel.removeAll();
+        JComponent detailPane = new JPanel(new BorderLayout());
+
+        JList jlist = new JList();
+        jlist.setCellRenderer(new SampleListRenderer());
+        jlist.setModel(new SampleListModel(new SampleList(tb)));
+        jlist.setLayoutOrientation(JList.VERTICAL);
+        jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        jlist.setPrototypeCellValue(new SampleListModel.Entry(new IsoBufferWrapperImpl(new byte[1000]), 1000000000));
+        JScrollPane jScrollPane = new JScrollPane();
+        jScrollPane.getViewport().add(jlist);
+        detailPane.add(new JLabel("Track " + tb.getTrackHeaderBox().getTrackId()), BorderLayout.PAGE_START);
+        detailPane.add(jScrollPane, BorderLayout.CENTER);
+        jlist.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    rawDataSplitPane.setBottomComponent(new JHexEditor(((SampleListModel.Entry) ((JList) e.getSource()).getSelectedValue()).sample));
+                    ;
+                }
+            }
+        });
+        detailPanel.add(detailPane);
+        detailPanel.revalidate();
     }
 
     protected void createMenu() {
@@ -173,11 +229,11 @@ public class IsoViewerFrame extends JFrame {
             };
             Logger.getLogger("").addHandler(myTemperaryLogHandler);
             isoFile.parse();
-            isoFile.parseMdats();
-            IsoFileConvenienceHelper.switchToAutomaticChunkOffsetBox(isoFile);
+
             Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
             System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
             tree.setModel(new IsoFileTreeModel(isoFile));
+            trackList.setModel(new TrackListModel(isoFile));
             if (!messages.isEmpty()) {
                 String message = "";
                 for (LogRecord logRecord : messages) {
@@ -210,12 +266,15 @@ public class IsoViewerFrame extends JFrame {
         Cursor oldCursor = getCursor();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            JComponent detailPane = new DetailPaneFactory().createDetailPane(object);
+            JComponent detailPane = new JPanel();
+            if (object instanceof com.coremedia.iso.boxes.Box) {
+                detailPane = new GenericBoxPane((AbstractBox) object);
+            }
             detailPanel.removeAll();
             detailPanel.add(detailPane, BorderLayout.CENTER);
             detailPanel.revalidate();
             byte[] bytes;
-            if (object instanceof AbstractBox) {
+            if (object instanceof com.coremedia.iso.boxes.Box) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream((int) ((AbstractBox) object).getSize());
 
                 ((AbstractBox) object).getBox(new IsoOutputStream(new FilterOutputStream(baos) {
@@ -244,26 +303,10 @@ public class IsoViewerFrame extends JFrame {
                     }
                 }));
                 bytes = baos.toByteArray();
-            } else if (object instanceof Track) {
-                bytes = new byte[0];
-            } else if (object instanceof Chunk) {
-                Chunk<?> chunk = (Chunk<?>) object;
-                List<? extends Sample<? extends TrackMetaDataContainer>> s = chunk.getSamples();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                for (Sample<?> sample : s) {
-                    sample.getContent(new IsoOutputStream(baos));
-                }
-                bytes = baos.toByteArray();
-                baos.close();
-            } else if (object instanceof Sample) {
-                Sample<?> sample = (Sample<?>) object;
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                sample.getContent(new IsoOutputStream(baos));
-                bytes = baos.toByteArray();
             } else {
                 bytes = new byte[0];
             }
-            rawDataSplitPane.setBottomComponent(new JHexEditor(bytes));
+            rawDataSplitPane.setBottomComponent(new JHexEditor(new IsoBufferWrapperImpl(bytes)));
 
         } catch (IOException e) {
             e.printStackTrace();

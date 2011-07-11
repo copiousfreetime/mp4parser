@@ -38,14 +38,16 @@ public final class Main {
 
         }
         IsoViewerFrame frame = new IsoViewerFrame(IsoFile.class);
-        frame.pack();
-        frame.setSize(1024, 600);
-        frame.setVisible(true);
+
         if (args.length > 0) {
             File file = new File(args[0]);
             if (file.exists()) {
                 frame.open(file);
             }
         }
+
+        frame.pack();
+        frame.setSize(1024, 600);
+        frame.setVisible(true);
     }
 }

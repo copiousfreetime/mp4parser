@@ -28,128 +28,129 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 
 /**
  * Shows the right part of the hex editor. ASCII view.
  */
 public class JHexEditorASCII extends JComponent implements MouseListener, KeyListener {
-  private JHexEditor he;
+    private JHexEditor he;
 
-  public JHexEditorASCII(JHexEditor he) {
-    this.he = he;
-    addMouseListener(this);
-    addKeyListener(this);
-    addFocusListener(he);
-  }
-
-  public Dimension getPreferredSize() {
-    debug("getPreferredSize()");
-    return getMinimumSize();
-  }
-
-  public Dimension getMinimumSize() {
-    debug("getMinimumSize()");
-
-    Dimension d = new Dimension();
-    FontMetrics fn = getFontMetrics(JHexEditor.font);
-    int h = fn.getHeight();
-    int nl = he.getNumberOfVisibleLines();
-    d.setSize((fn.stringWidth(" ") + 1) * (16) + (he.border * 2) + 1, h * nl + (he.border * 2) + 1);
-    return d;
-  }
-
-  public void paint(Graphics g) {
-    debug("paint(" + g + ")");
-    debug("cursor=" + he.cursor + " buff.length=" + he.buff.length);
-    Dimension d = getMinimumSize();
-    g.setColor(Color.white);
-    g.fillRect(0, 0, d.width, d.height);
-    g.setColor(Color.black);
-
-    g.setFont(JHexEditor.font);
-
-    //datos ascii
-    int ini = he.getInicio() * 16;
-    int fin = ini + (he.getNumberOfVisibleLines() * 16);
-    if (fin > he.buff.length) fin = he.buff.length;
-
-    int x = 0;
-    int y = 0;
-    for (int n = ini; n < fin; n++) {
-      if (n == he.cursor) {
-        g.setColor(Color.blue);
-        if (hasFocus()) he.filledCursor(g, x, y, 1);
-        else he.cuadro(g, x, y, 1);
-        if (hasFocus()) g.setColor(Color.white);
-        else g.setColor(Color.black);
-      } else {
-        g.setColor(Color.black);
-      }
-
-      String s = Iso8859_1.convert(new byte[]{he.buff[n]});
-//      if ((he.buff[n] < 20) || (he.buff[n] > 126)) s = "" + (char) 16;
-      he.printString(g, s, (x++), y);
-      if (x == 16) {
-        x = 0;
-        y++;
-      }
+    public JHexEditorASCII(JHexEditor he) {
+        this.he = he;
+        addMouseListener(this);
+        addKeyListener(this);
+        addFocusListener(he);
     }
 
-  }
+    public Dimension getPreferredSize() {
+        debug("getPreferredSize()");
+        return getMinimumSize();
+    }
 
-  private void debug(String s) {
-    if (he.DEBUG) System.out.println("JHexEditorASCII ==> " + s);
-  }
+    public Dimension getMinimumSize() {
+        debug("getMinimumSize()");
 
-  // calcular la posicion del raton
-  public int calcularPosicionRaton(int x, int y) {
-    FontMetrics fn = getFontMetrics(JHexEditor.font);
-    x = x / (fn.stringWidth(" ") + 1);
-    y = y / fn.getHeight();
-    debug("x=" + x + " ,y=" + y);
-    return x + ((y + he.getInicio()) * 16);
-  }
+        Dimension d = new Dimension();
+        FontMetrics fn = getFontMetrics(JHexEditor.font);
+        int h = fn.getHeight();
+        int nl = he.getNumberOfVisibleLines();
+        d.setSize((fn.stringWidth(" ") + 1) * (16) + (he.border * 2) + 1, h * nl + (he.border * 2) + 1);
+        return d;
+    }
 
-  // mouselistener
-  public void mouseClicked(MouseEvent e) {
-    debug("mouseClicked(" + e + ")");
-    he.cursor = calcularPosicionRaton(e.getX(), e.getY());
-    this.requestFocus();
-    he.repaint();
-  }
+    public void paint(Graphics g) {
+        try {
+            debug("paint(" + g + ")");
+            debug("cursor=" + he.cursor + " buff.length=" + he.buff.size());
+            Dimension d = getMinimumSize();
+            g.setColor(Color.white);
+            g.fillRect(0, 0, d.width, d.height);
+            g.setColor(Color.black);
 
-  public void mousePressed(MouseEvent e) {
-  }
+            g.setFont(JHexEditor.font);
 
-  public void mouseReleased(MouseEvent e) {
-  }
+            //datos ascii
+            int ini = he.getInicio() * 16;
+            long fin = ini + (he.getNumberOfVisibleLines() * 16);
+            if (fin > he.buff.size()) fin = he.buff.size();
 
-  public void mouseEntered(MouseEvent e) {
-  }
+            int x = 0;
+            int y = 0;
 
-  public void mouseExited(MouseEvent e) {
-  }
+            he.buff.position(ini);
 
-  //KeyListener
-  public void keyTyped(KeyEvent e) {
-    debug("keyTyped(" + e + ")");
+            for (int n = ini; n < fin; n++) {
+                if (n == he.cursor) {
+                    g.setColor(Color.blue);
+                    if (hasFocus()) he.filledCursor(g, x, y, 1);
+                    else he.cuadro(g, x, y, 1);
+                    if (hasFocus()) g.setColor(Color.white);
+                    else g.setColor(Color.black);
+                } else {
+                    g.setColor(Color.black);
+                }
 
-    he.buff[he.cursor] = (byte) e.getKeyChar();
+                String s = Iso8859_1.convert(new byte[]{he.buff.read()});
+//      if ((he.buff[n] < 20) || (he.buff[n] > 126)) s = "" + (char) 16;
+                he.printString(g, s, (x++), y);
+                if (x == 16) {
+                    x = 0;
+                    y++;
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-    if (he.cursor != (he.buff.length - 1)) he.cursor++;
-    he.repaint();
-  }
+    private void debug(String s) {
+        if (he.DEBUG) System.out.println("JHexEditorASCII ==> " + s);
+    }
 
-  public void keyPressed(KeyEvent e) {
-    debug("keyPressed(" + e + ")");
-    he.keyPressed(e);
-  }
+    // calcular la posicion del raton
+    public int calcularPosicionRaton(int x, int y) {
+        FontMetrics fn = getFontMetrics(JHexEditor.font);
+        x = x / (fn.stringWidth(" ") + 1);
+        y = y / fn.getHeight();
+        debug("x=" + x + " ,y=" + y);
+        return x + ((y + he.getInicio()) * 16);
+    }
 
-  public void keyReleased(KeyEvent e) {
-    debug("keyReleased(" + e + ")");
-  }
+    // mouselistener
+    public void mouseClicked(MouseEvent e) {
+        debug("mouseClicked(" + e + ")");
+        he.cursor = calcularPosicionRaton(e.getX(), e.getY());
+        this.requestFocus();
+        he.repaint();
+    }
 
-  public boolean isFocusable() {
-    return true;
-  }
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
+    //KeyListener
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    public void keyReleased(KeyEvent e) {
+        debug("keyReleased(" + e + ")");
+    }
+
+    public boolean isFocusable() {
+        return true;
+    }
 }

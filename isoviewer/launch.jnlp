@@ -13,7 +13,7 @@
 	      <all-permissions/>
 	  </security>
      <resources>
-       <jar href="isoviewer-1.1.jar"/>
+       <jar href="isoviewer-1.2-SNAPSHOT.jar"/>
      </resources>
      <application-desc main-class="com.coremedia.iso.gui.Main"/>
 </jnlp>

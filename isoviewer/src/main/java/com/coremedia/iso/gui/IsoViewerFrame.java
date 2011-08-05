@@ -101,7 +101,9 @@ public class IsoViewerFrame extends JFrame {
                         showDetails(selected);
                     }
                 } else if (index == 1) {
-                    showSamples((TrackBox) trackList.getSelectedValue());
+                    if (trackList.getSelectedValue() != null) {
+                        showSamples((TrackBox) trackList.getSelectedValue());
+                    }
                 }
             }
         });

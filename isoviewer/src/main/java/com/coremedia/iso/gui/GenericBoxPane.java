@@ -158,6 +158,7 @@ public class GenericBoxPane extends JPanel {
             jScrollPane.getVerticalScrollBar().setUnitIncrement(16);
             JList jl = new JList(l.toArray());
             jScrollPane.getViewport().add(jl);
+            add("number Of Entries", new NonEditableJTextField(String.valueOf(l.size())));
             add("entries", jScrollPane);
 
         } catch (NoSuchMethodException e) {

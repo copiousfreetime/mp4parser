@@ -48,7 +48,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-
+                <version>2.3.1</version>
                 <executions>
                     <execution>
                         <id>signit</id>
@@ -66,14 +66,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-
-
-            <!-- Create executable jar -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -81,7 +73,9 @@
                         </manifest>
                     </archive>
                 </configuration>
+
             </plugin>
+
         </plugins>
     </build>
 

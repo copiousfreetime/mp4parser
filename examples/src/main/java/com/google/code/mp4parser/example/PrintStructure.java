@@ -2,14 +2,12 @@ package com.google.code.mp4parser.example;
 
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoBufferWrapperImpl;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 
-import javax.print.attribute.standard.MediaSize;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -34,9 +32,15 @@ public class PrintStructure {
             for (int i = 0; i < level; i++) {
                 System.out.print(" ");
             }
+
             System.out.println(type + "@" + (baseoffset + start) + " size: " + size);
             if (containers.contains(type)) {
                 print(isoBufferWrapper.getSegment(start + 8, size), level + 1, baseoffset + start + 8);
+            }
+            if (type.equals("meta")) {
+                isoBufferWrapper.position(start);
+                byte[] metaContent = isoBufferWrapper.read((int) size);
+                System.err.println(Base64.encode(metaContent));
             }
             isoBufferWrapper.position(end);
 
@@ -48,6 +52,7 @@ public class PrintStructure {
             "trak",
             "mdia",
             "minf",
+            "udta",
             "stbl"
     );
 }

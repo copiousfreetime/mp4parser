@@ -4,8 +4,9 @@ import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.Movie;
-import com.googlecode.mp4parser.authoring.TextTrackImpl;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.subtext.SrtParser;
+import com.googlecode.mp4parser.authoring.subtext.TextTrackImpl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -24,26 +25,19 @@ public class SubTitleExample {
 
         TextTrackImpl subTitleEng = new TextTrackImpl();
         subTitleEng.getTrackMetaData().setLanguage("eng");
-        TextTrackImpl subTitleDeu = new TextTrackImpl();
-        subTitleDeu.getTrackMetaData().setLanguage("deu");
 
-        subTitleDeu.getSubs().add(new TextTrackImpl.Line(5000, 6000, "Fünf"));
+
         subTitleEng.getSubs().add(new TextTrackImpl.Line(5000, 6000, "Five"));
-
-        subTitleDeu.getSubs().add(new TextTrackImpl.Line(8000, 9000, "Vier"));
         subTitleEng.getSubs().add(new TextTrackImpl.Line(8000, 9000, "Four"));
-
-        subTitleDeu.getSubs().add(new TextTrackImpl.Line(12000, 13000, "Drei"));
         subTitleEng.getSubs().add(new TextTrackImpl.Line(12000, 13000, "Three"));
-
-        subTitleDeu.getSubs().add(new TextTrackImpl.Line(16000, 17000, "Zwei"));
         subTitleEng.getSubs().add(new TextTrackImpl.Line(16000, 17000, "Two"));
-
-        subTitleDeu.getSubs().add(new TextTrackImpl.Line(20000, 21000, "eins"));
         subTitleEng.getSubs().add(new TextTrackImpl.Line(20000, 21000, "one"));
 
-        countVideo.addTrack(subTitleDeu);
         countVideo.addTrack(subTitleEng);
+
+        TextTrackImpl subTitleDeu = SrtParser.parse(SubTitleExample.class.getResourceAsStream("/count-subs-deutsch.srt"));
+        subTitleDeu.getTrackMetaData().setLanguage("deu");
+        countVideo.addTrack(subTitleDeu);
 
         IsoFile out = new DefaultMp4Builder().build(countVideo);
         FileOutputStream fos = new FileOutputStream(new File("output.mp4"));

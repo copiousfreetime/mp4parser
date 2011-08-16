@@ -5,6 +5,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.subtext.SrtParser;
 import com.googlecode.mp4parser.authoring.subtext.TextTrackImpl;
 
@@ -21,7 +22,7 @@ public class SubTitleExample {
     public static void main(String[] args) throws IOException {
         IsoFile countVideoIsoFile = new IsoFile(new IsoBufferWrapperImpl(readFully(SubTitleExample.class.getResourceAsStream("/count-video.mp4"))));
         countVideoIsoFile.parse();
-        Movie countVideo = new Movie(countVideoIsoFile);
+        Movie countVideo = new MovieCreator().build(countVideoIsoFile);
 
         TextTrackImpl subTitleEng = new TextTrackImpl();
         subTitleEng.getTrackMetaData().setLanguage("eng");

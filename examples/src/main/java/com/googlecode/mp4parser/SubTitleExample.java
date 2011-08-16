@@ -20,9 +20,7 @@ import java.io.InputStream;
  */
 public class SubTitleExample {
     public static void main(String[] args) throws IOException {
-        IsoFile countVideoIsoFile = new IsoFile(new IsoBufferWrapperImpl(readFully(SubTitleExample.class.getResourceAsStream("/count-video.mp4"))));
-        countVideoIsoFile.parse();
-        Movie countVideo = new MovieCreator().build(countVideoIsoFile);
+        Movie countVideo = new MovieCreator().build(new IsoBufferWrapperImpl(readFully(SubTitleExample.class.getResourceAsStream("/count-video.mp4"))));
 
         TextTrackImpl subTitleEng = new TextTrackImpl();
         subTitleEng.getTrackMetaData().setLanguage("eng");

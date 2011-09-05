@@ -2,7 +2,6 @@ package com.google.code.mp4parser.example;
 
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoBufferWrapperImpl;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +39,6 @@ public class PrintStructure {
             if (type.equals("meta")) {
                 isoBufferWrapper.position(start);
                 byte[] metaContent = isoBufferWrapper.read((int) size);
-                System.err.println(Base64.encode(metaContent));
             }
             isoBufferWrapper.position(end);
 

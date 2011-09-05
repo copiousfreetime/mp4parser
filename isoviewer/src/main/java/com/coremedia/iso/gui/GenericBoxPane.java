@@ -16,20 +16,33 @@
 
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.FullBox;
+import com.coremedia.iso.boxes.UnknownBox;
 import com.coremedia.iso.gui.transferhelper.StringTransferValue;
 import com.coremedia.iso.gui.transferhelper.TransferHelperFactory;
 import com.coremedia.iso.gui.transferhelper.TransferValue;
 
-import javax.swing.*;
-import javax.swing.border.LineBorder;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
+import javax.swing.ListModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
-import java.awt.*;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -44,8 +57,12 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
 
 /**
  * Detailed view of a Box.
@@ -188,10 +205,10 @@ public class GenericBoxPane extends JPanel {
                         editor.go();
                     }
                     Container c = GenericBoxPane.this.getParent();
-                    while (!(c instanceof IsoViewerFrame)) {
+                    while (!(c instanceof IsoViewerPanel)) {
                         c = c.getParent();
                     }
-                    ((IsoViewerFrame) c).showDetails(box);
+                    ((IsoViewerPanel) c).showDetails(box);
                 }
             });
             for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {

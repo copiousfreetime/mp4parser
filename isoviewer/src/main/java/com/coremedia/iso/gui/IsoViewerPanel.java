@@ -16,23 +16,44 @@
 
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.*;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.IsoBufferWrapperImpl;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.boxes.AbstractBox;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.coremedia.iso.gui.hex.JHexEditor;
+import com.googlecode.mp4parser.util.Path;
+import org.jdesktop.application.Action;
+import org.jdesktop.application.Resource;
 
-import javax.sound.midi.Track;
-import javax.swing.*;
-import javax.swing.Box;
-import javax.swing.event.*;
-import javax.swing.plaf.basic.BasicTreeUI;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -42,27 +63,30 @@ import java.util.logging.Logger;
 /**
  * The main UI class for the ISO viewer. Contains all other UI components.
  */
-public class IsoViewerFrame extends JFrame {
-    private Class<? extends IsoFile> isoFileClazz;
+public class IsoViewerPanel extends JPanel {
+
+
     private JTree tree;
     private JList trackList;
     private JPanel detailPanel;
-    private File file;
-    private IsoFile isoFile;
     private JSplitPane rawDataSplitPane;
-    private JMenuItem save = new JMenuItem("Save");
+
+    @Resource
+    private String trackViewDetailPaneHeader = "T %s";
+    @Resource
+    private String tabbedPaneHeaderTrack = "T&S";
+    @Resource
+    private String tabbedPaneHeaderBox = "BS";
+
+    private Object details;
 
 
-    public IsoViewerFrame(Class<? extends IsoFile> isoFileClazz) {
-        super("MP4 Viewer");
-        createMenu();
-        createLayout();
+    public IsoViewerPanel() {
 
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.isoFileClazz = isoFileClazz;
     }
 
-    protected void createLayout() {
+
+    public void createLayout() {
         tree = new JTree(new Object[0]);
         tree.setRootVisible(false);
         tree.addTreeSelectionListener(new TreeSelectionListener() {
@@ -91,7 +115,7 @@ public class IsoViewerFrame extends JFrame {
         splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setOneTouchExpandable(true);
         JTabbedPane jTabbedPane = new JTabbedPane();
-        jTabbedPane.add("Box Structure", new JScrollPane(tree));
+        jTabbedPane.add(tabbedPaneHeaderBox, new JScrollPane(tree));
         jTabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 int index = ((JTabbedPane) e.getSource()).getSelectedIndex();
@@ -117,16 +141,15 @@ public class IsoViewerFrame extends JFrame {
             }
         });
 
-        jTabbedPane.add("Tracks & Samples", trackList);
+        jTabbedPane.add(tabbedPaneHeaderTrack, trackList);
         splitPane.setLeftComponent(jTabbedPane);
         splitPane.setRightComponent(rawDataSplitPane);
         splitPane.setResizeWeight(0.6);
 
-        JPanel contentPane = new JPanel();
-        contentPane.setLayout(new BorderLayout());
-        contentPane.add(splitPane, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(splitPane, BorderLayout.CENTER);
 
-        setContentPane(contentPane);
+
     }
 
     private void showSamples(TrackBox tb) {
@@ -141,7 +164,7 @@ public class IsoViewerFrame extends JFrame {
         jlist.setPrototypeCellValue(new SampleListModel.Entry(new IsoBufferWrapperImpl(new byte[1000]), 1000000000));
         JScrollPane jScrollPane = new JScrollPane();
         jScrollPane.getViewport().add(jlist);
-        detailPane.add(new JLabel("Track " + tb.getTrackHeaderBox().getTrackId()), BorderLayout.PAGE_START);
+        detailPane.add(new JLabel(String.format(trackViewDetailPaneHeader, tb.getTrackHeaderBox().getTrackId())), BorderLayout.PAGE_START);
         detailPane.add(jScrollPane, BorderLayout.CENTER);
         jlist.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -155,122 +178,112 @@ public class IsoViewerFrame extends JFrame {
         detailPanel.revalidate();
     }
 
-    protected void createMenu() {
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu menu = new JMenu("File");
-        menuBar.add(menu);
+    JFileChooser fileChooser = new JFileChooser();
 
 
-        save.setEnabled(false);
-        save.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    File tmpFile = new File(file.getParentFile(), file.getName() + ".tmp");
-                    OutputStream os = new FileOutputStream(tmpFile);
-                    isoFile.getBox(new IsoOutputStream(os));
-                    os.close();
-                    file.delete();
-                    tmpFile.renameTo(file);
-                    tmpFile.delete();
-                    tmpFile.deleteOnExit();
-                    open(file);
-                } catch (IOException e1) {
-                    JDialog dialog = new JDialog(IsoViewerFrame.this, "Error", true);
-                    JLabel jLabel = new JLabel();
-                    jLabel.setText(e1.getMessage());
-                    dialog.add(jLabel);
-                    dialog.setVisible(true);
-                    e1.printStackTrace();
+    @Action(name = "open-iso-file")
+    public void open() {
+
+        int state = fileChooser.showOpenDialog(IsoViewerPanel.this);
+        if (state == JFileChooser.APPROVE_OPTION) {
+            try {
+                IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(fileChooser.getSelectedFile()));
+                long start = System.nanoTime();
+                final List<LogRecord> messages = new LinkedList<LogRecord>();
+                Handler myTemperaryLogHandler = new Handler() {
+                    @Override
+                    public void publish(LogRecord record) {
+                        messages.add(record);
+                    }
+
+                    @Override
+                    public void flush() {
+                    }
+
+                    @Override
+                    public void close() throws SecurityException {
+                    }
+                };
+                Logger.getLogger("").addHandler(myTemperaryLogHandler);
+                isoFile.parse();
+
+                Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
+                System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
+                Enumeration<TreePath> treePathEnumeration = tree.getExpandedDescendants(new TreePath(tree.getModel().getRoot()));
+                List<String> openPath = new LinkedList<String>();
+                Path oldMp4Path = null;
+                if (treePathEnumeration != null) {
+                    oldMp4Path = new Path((IsoFile) tree.getModel().getRoot());
+
+                    while (treePathEnumeration.hasMoreElements()) {
+                        TreePath treePath = treePathEnumeration.nextElement();
+                        openPath.add(oldMp4Path.createPath((Box) treePath.getLastPathComponent()));
+                    }
+                    for (String s : openPath) {
+                        System.err.println(s);
+                    }
                 }
+
+                tree.setModel(new IsoFileTreeModel(isoFile));
+                tree.revalidate();
+                Path nuMp4Path = new Path(isoFile);
+                if (!openPath.isEmpty()) {
+
+                    for (String s : openPath) {
+                        Box expanded = nuMp4Path.getPath(s);
+                        List path = new LinkedList();
+                        while (expanded != null) {
+                            path.add(expanded);
+                            expanded = expanded.getParent();
+                        }
+                        if (path.size() > 0) {
+                            Collections.reverse(path);
+                            TreePath tp = new TreePath(path.toArray());
+                            tree.expandPath(tp);
+                        }
+                    }
+                }
+
+
+                trackList.setModel(new TrackListModel(isoFile));
+                if (!messages.isEmpty()) {
+                    String message = "";
+                    for (LogRecord logRecord : messages) {
+                        message += logRecord.getMessage() + "\n";
+                    }
+                    JOptionPane.showMessageDialog(this,
+                            message,
+                            "Parser Messages",
+                            JOptionPane.WARNING_MESSAGE);
+
+                }
+                if (details instanceof Box && oldMp4Path != null) {
+                    String path = oldMp4Path.createPath((Box) details);
+                    Box nuDetail = nuMp4Path.getPath(path);
+                    if (nuDetail != null) {
+                        showDetails(nuDetail);
+                    } else {
+                        showDetails(isoFile);
+                    }
+                } else {
+                    showDetails(isoFile);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
 
-        JMenuItem open = new JMenuItem("Open...");
-        open.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                if (file != null) {
-                    fileChooser.setCurrentDirectory(file.getParentFile());
-                }
-                int state = fileChooser.showOpenDialog(IsoViewerFrame.this);
-                if (state == JFileChooser.APPROVE_OPTION) {
-                    open(fileChooser.getSelectedFile());
-
-                }
-            }
-        });
-
-
-        menu.add(open);
-        menu.add(save);
-
-        setJMenuBar(menuBar);
-    }
-
-    public void open(File file) {
-        this.file = file;
-        try {
-            final Constructor<? extends IsoFile> constructor = isoFileClazz.getConstructor(IsoBufferWrapper.class);
-            this.isoFile = constructor.newInstance(new IsoBufferWrapperImpl(file));
-            long start = System.nanoTime();
-            final List<LogRecord> messages = new LinkedList<LogRecord>();
-            Handler myTemperaryLogHandler = new Handler() {
-                @Override
-                public void publish(LogRecord record) {
-                    messages.add(record);
-                }
-
-                @Override
-                public void flush() {
-                }
-
-                @Override
-                public void close() throws SecurityException {
-                }
-            };
-            Logger.getLogger("").addHandler(myTemperaryLogHandler);
-            isoFile.parse();
-
-            Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
-            System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
-            tree.setModel(new IsoFileTreeModel(isoFile));
-            trackList.setModel(new TrackListModel(isoFile));
-            if (!messages.isEmpty()) {
-                String message = "";
-                for (LogRecord logRecord : messages) {
-                    message += logRecord.getMessage() + "\n";
-                }
-                JOptionPane.showMessageDialog(this,
-                        message,
-                        "Parser Messages",
-                        JOptionPane.WARNING_MESSAGE);
-
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         }
 
-        save.setEnabled(true);
-        setTitle(file.getAbsolutePath());
     }
 
     public void showDetails(Object object) {
+        details = object;
         Cursor oldCursor = getCursor();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             JComponent detailPane = new JPanel();
             if (object instanceof com.coremedia.iso.boxes.Box) {
-                detailPane = new GenericBoxPane((AbstractBox) object);
+                detailPane = new GenericBoxPane((com.coremedia.iso.boxes.Box) object);
             }
             detailPanel.removeAll();
             detailPanel.add(detailPane, BorderLayout.CENTER);

@@ -35,7 +35,6 @@ public class IsoViewer extends SingleFrameApplication {
         // isoViewerPanel.open();
         ApplicationActionMap map = ctx.getActionMap(isoViewerPanel);
         this.getMainFrame().setJMenuBar(createMenu(map));
-        System.err.println(map.get("open-iso-file"));
         show(isoViewerPanel);
 
     }

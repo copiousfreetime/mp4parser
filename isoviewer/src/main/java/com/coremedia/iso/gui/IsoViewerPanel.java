@@ -219,9 +219,6 @@ public class IsoViewerPanel extends JPanel {
                         TreePath treePath = treePathEnumeration.nextElement();
                         openPath.add(oldMp4Path.createPath((Box) treePath.getLastPathComponent()));
                     }
-                    for (String s : openPath) {
-                        System.err.println(s);
-                    }
                 }
 
                 tree.setModel(new IsoFileTreeModel(isoFile));

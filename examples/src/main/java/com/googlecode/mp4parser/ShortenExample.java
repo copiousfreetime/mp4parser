@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Shortens/Crops a track
  */
-public class Shorten {
+public class ShortenExample {
     public static void main(String[] args) throws IOException {
         Movie movie = new MovieCreator().build(new IsoBufferWrapperImpl(new File("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov")));
 
@@ -28,8 +28,8 @@ public class Shorten {
         movie.setTracks(new LinkedList<Track>());
         // remove all tracks we will create new tracks from the old
 
-        double startTime = 25.000;
-        double endTime = 35.000;
+        double startTime = 35.000;
+        double endTime = 45.000;
 
         boolean timeCorrected = false;
 
@@ -46,6 +46,7 @@ public class Shorten {
                     throw new RuntimeException("The startTime has already been corrected by another track with SyncSample. Not Supported.");
                 }
                 startTime = correctTimeToNextSyncSample(track, startTime);
+                endTime = correctTimeToNextSyncSample(track, endTime);
                 timeCorrected = true;
             }
         }
@@ -64,7 +65,8 @@ public class Shorten {
                     if (currentTime <= startTime) {
                         // current sample is still before the new starttime
                         startSample = currentSample;
-                    } else if (currentTime <= endTime) {
+                    }
+                    if (currentTime <= endTime) {
                         // current sample is after the new start time and still before the new endtime
                         endSample = currentSample;
                     } else {
@@ -79,7 +81,7 @@ public class Shorten {
         }
 
         IsoFile out = new DefaultMp4Builder().build(movie);
-        FileOutputStream fos = new FileOutputStream(new File("output.mp4"));
+        FileOutputStream fos = new FileOutputStream(new File(String.format("output-%f-%f.mp4", startTime, endTime)));
         out.getBox(new IsoOutputStream(fos));
         fos.close();
 

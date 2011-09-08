@@ -9,6 +9,7 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,8 +43,9 @@ public class AppendExample {
 
         IsoFile out = new DefaultMp4Builder().build(video);
         FileOutputStream fos = new FileOutputStream(new File(String.format("output.mp4")));
-        out.getBox(new IsoOutputStream(fos));
-        fos.close();
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        out.getBox(new IsoOutputStream(bos));
+        bos.close();
     }
 
 

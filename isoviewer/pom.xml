@@ -69,7 +69,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.coremedia.iso.gui.Main</mainClass>
+                            <mainClass>com.googlecode.mp4parser.isoviewer.IsoViewer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

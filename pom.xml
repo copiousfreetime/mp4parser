@@ -17,7 +17,6 @@
         <module>isoparser</module>
         <module>isoviewer</module>
         <module>examples</module>
-        <module>codecs</module>
     </modules>
 
     <properties>

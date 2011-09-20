@@ -54,7 +54,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.NumberFormat;
@@ -169,23 +168,7 @@ public class GenericBoxPane extends JPanel {
             add("version", new NonEditableJTextField(String.valueOf(fullBox.getVersion())));
             add("flags", new NonEditableJTextField(Integer.toHexString(fullBox.getFlags())));
         }
-        try {
-            Method m = box.getClass().getMethod("getEntries");
-            List l = (List) m.invoke(box);
-            JScrollPane jScrollPane = new JScrollPane();
-            jScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-            JList jl = new JList(l.toArray());
-            jScrollPane.getViewport().add(jl);
-            add("number Of Entries", new NonEditableJTextField(String.valueOf(l.size())));
-            add("entries", jScrollPane);
 
-        } catch (NoSuchMethodException e) {
-            // don't mind
-        } catch (InvocationTargetException e) {
-            // don't mind
-        } catch (IllegalAccessException e) {
-            // don't mind
-        }
         gridBagConstraints.gridwidth = 2;
         gridBagLayout.setConstraints(new JSeparator(), gridBagConstraints);
         gridBagConstraints.gridwidth = 1;
@@ -319,8 +302,30 @@ public class GenericBoxPane extends JPanel {
                                 add(name, jScrollPane);
                             }
                         }
-                    }
+                    } else if (List.class.isAssignableFrom(value.getClass())) {
+                        JScrollPane jScrollPane = new JScrollPane();
+                        jScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+                        JList jl = new JList();
+                        final int finalLength = ((List) value).size();
+                        jl.setModel(new ListModel() {
+                            public int getSize() {
+                                return finalLength;
+                            }
 
+                            public Object getElementAt(int index) {
+                                return ((List) value).get(index);
+                            }
+
+                            public void addListDataListener(ListDataListener l) {
+                            }
+
+                            public void removeListDataListener(ListDataListener l) {
+                            }
+                        });
+                        jScrollPane.getViewport().add(jl);
+                        add(name, jScrollPane);
+
+                    }
 
                 }
             }

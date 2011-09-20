@@ -39,6 +39,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -242,35 +243,12 @@ public class GenericBoxPane extends JPanel {
                         }
                     } else if (value.getClass().isArray()) {
                         int length = Array.getLength(value);
-                        if (length < 50) {
-
-                            StringBuffer valueBuffer = new StringBuffer();
-                            valueBuffer.append("[");
-
-
-                            boolean trucated = false;
-
-                            if (length > 1000) {
-                                trucated = true;
-                                length = 1000;
-                            }
-                            for (int j = 0; j < length; j++) {
-                                if (j > 0) {
-                                    valueBuffer.append(", ");
-                                }
-                                Object item = Array.get(value, j);
-                                valueBuffer.append(item != null ? item.toString() : "");
-                            }
-                            if (trucated) {
-                                valueBuffer.append(", ...");
-                            }
-                            valueBuffer.append("]");
-                            add(name, new NonEditableJTextField(valueBuffer.toString()));
-                        } else {
+                        if (value.getClass().getComponentType().isAssignableFrom(String.class)) {
 
                             JScrollPane jScrollPane = new JScrollPane();
                             jScrollPane.getVerticalScrollBar().setUnitIncrement(16);
                             JList jl = new JList();
+                            jl.setCellRenderer(new MultiLineCellRenderer());
                             final int finalLength = length;
                             jl.setModel(new ListModel() {
                                 public int getSize() {
@@ -288,7 +266,58 @@ public class GenericBoxPane extends JPanel {
                                 }
                             });
                             jScrollPane.getViewport().add(jl);
+                            jScrollPane.setPreferredSize(new Dimension(400, 200));
                             add(name, jScrollPane);
+                        } else {
+
+                            if (length < 50) {
+
+                                StringBuffer valueBuffer = new StringBuffer();
+                                valueBuffer.append("[");
+
+
+                                boolean trucated = false;
+
+                                if (length > 1000) {
+                                    trucated = true;
+                                    length = 1000;
+                                }
+                                for (int j = 0; j < length; j++) {
+                                    if (j > 0) {
+                                        valueBuffer.append(", ");
+                                    }
+                                    Object item = Array.get(value, j);
+                                    valueBuffer.append(item != null ? item.toString() : "");
+                                }
+                                if (trucated) {
+                                    valueBuffer.append(", ...");
+                                }
+                                valueBuffer.append("]");
+                                add(name, new NonEditableJTextField(valueBuffer.toString()));
+                            } else {
+
+                                JScrollPane jScrollPane = new JScrollPane();
+                                jScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+                                JList jl = new JList();
+                                final int finalLength = length;
+                                jl.setModel(new ListModel() {
+                                    public int getSize() {
+                                        return finalLength;
+                                    }
+
+                                    public Object getElementAt(int index) {
+                                        return Array.get(value, index);
+                                    }
+
+                                    public void addListDataListener(ListDataListener l) {
+                                    }
+
+                                    public void removeListDataListener(ListDataListener l) {
+                                    }
+                                });
+                                jScrollPane.getViewport().add(jl);
+                                add(name, jScrollPane);
+                            }
                         }
                     }
 

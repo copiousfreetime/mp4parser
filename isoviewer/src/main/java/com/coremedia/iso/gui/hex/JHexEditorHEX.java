@@ -25,7 +25,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.ImagingOpException;
 import java.io.IOException;
 
 /**
@@ -100,7 +99,7 @@ public class JHexEditorHEX extends JComponent implements MouseListener, KeyListe
                     g.setColor(Color.black);
                 }
 
-                String s = ("0" + Integer.toHexString(he.buff.read()));
+                String s = ("0" + Integer.toHexString(he.buff.readByte()));
                 s = s.substring(s.length() - 2);
                 he.printString(g, s, ((x++) * 3), y);
                 if (x == 16) {

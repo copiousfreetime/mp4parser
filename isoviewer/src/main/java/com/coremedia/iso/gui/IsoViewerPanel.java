@@ -16,10 +16,9 @@
 
 package com.coremedia.iso.gui;
 
+import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
@@ -49,8 +48,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.io.ByteArrayOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -285,40 +282,13 @@ public class IsoViewerPanel extends JPanel {
             detailPanel.removeAll();
             detailPanel.add(detailPane, BorderLayout.CENTER);
             detailPanel.revalidate();
-            byte[] bytes;
+            IsoBufferWrapper displayMe;
             if (object instanceof com.coremedia.iso.boxes.Box) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream((int) ((AbstractBox) object).getSize());
-
-                ((AbstractBox) object).getBox(new IsoOutputStream(new FilterOutputStream(baos) {
-                    int count = 0;
-
-                    @Override
-                    public void write(int b) throws IOException {
-                        if (count < 10000) {
-                            count++;
-                            out.write(b);
-                        }
-                    }
-
-                    @Override
-                    public void write(byte[] b) throws IOException {
-                        if (count < 10000) {
-                            super.write(b);
-                        }
-                    }
-
-                    @Override
-                    public void write(byte[] b, int off, int len) throws IOException {
-                        if (count < 10000) {
-                            super.write(b, off, len);
-                        }
-                    }
-                }));
-                bytes = baos.toByteArray();
+                displayMe = ((Box) object).getIsoFile().getOriginalIso().getSegment(((Box) object).getOffset(), ((Box) object).getSize());
             } else {
-                bytes = new byte[0];
+                displayMe = new IsoBufferWrapperImpl(new byte[]{});
             }
-            rawDataSplitPane.setBottomComponent(new JHexEditor(new IsoBufferWrapperImpl(bytes)));
+            rawDataSplitPane.setBottomComponent(new JHexEditor(displayMe));
 
         } catch (IOException e) {
             e.printStackTrace();

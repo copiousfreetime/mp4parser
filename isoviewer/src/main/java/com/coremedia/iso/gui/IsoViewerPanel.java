@@ -25,20 +25,10 @@ import com.coremedia.iso.boxes.mdat.SampleList;
 import com.coremedia.iso.gui.hex.JHexEditor;
 import com.googlecode.mp4parser.util.Path;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.Resource;
 
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTree;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -46,9 +36,11 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
-import java.awt.BorderLayout;
-import java.awt.Cursor;
+import java.awt.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -67,6 +59,9 @@ public class IsoViewerPanel extends JPanel {
     private JList trackList;
     private JPanel detailPanel;
     private JSplitPane rawDataSplitPane;
+    private ApplicationContext ctx;
+
+
 
     @Resource
     private String trackViewDetailPaneHeader = "T %s";
@@ -77,9 +72,11 @@ public class IsoViewerPanel extends JPanel {
 
     private Object details;
 
+    private Frame mainFrame;
 
-    public IsoViewerPanel() {
 
+    public IsoViewerPanel(Frame mainFrame) {
+        this.mainFrame = mainFrame;
     }
 
 
@@ -117,9 +114,11 @@ public class IsoViewerPanel extends JPanel {
             public void stateChanged(ChangeEvent e) {
                 int index = ((JTabbedPane) e.getSource()).getSelectedIndex();
                 if (index == 0) {
-                    Object selected = tree.getSelectionPath().getLastPathComponent();
-                    if (selected != null) {
-                        showDetails(selected);
+                    if (tree.getSelectionPath() != null) {
+                        Object selected = tree.getSelectionPath().getLastPathComponent();
+                        if (selected != null) {
+                            showDetails(selected);
+                        }
                     }
                 } else if (index == 1) {
                     if (trackList.getSelectedValue() != null) {
@@ -178,92 +177,106 @@ public class IsoViewerPanel extends JPanel {
     JFileChooser fileChooser = new JFileChooser();
 
 
+    public void open(File f) throws IOException {
+        IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(f));
+        long start = System.nanoTime();
+        final List<LogRecord> messages = new LinkedList<LogRecord>();
+        Handler myTemperaryLogHandler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                messages.add(record);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        Logger.getLogger("").addHandler(myTemperaryLogHandler);
+        isoFile.parse();
+
+        Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
+        System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
+        Enumeration<TreePath> treePathEnumeration = tree.getExpandedDescendants(new TreePath(tree.getModel().getRoot()));
+        List<String> openPath = new LinkedList<String>();
+        Path oldMp4Path = null;
+        if (treePathEnumeration != null) {
+            oldMp4Path = new Path((IsoFile) tree.getModel().getRoot());
+
+            while (treePathEnumeration.hasMoreElements()) {
+                TreePath treePath = treePathEnumeration.nextElement();
+                openPath.add(oldMp4Path.createPath((Box) treePath.getLastPathComponent()));
+            }
+        }
+
+        tree.setModel(new IsoFileTreeModel(isoFile));
+        tree.revalidate();
+        Path nuMp4Path = new Path(isoFile);
+        if (!openPath.isEmpty()) {
+
+            for (String s : openPath) {
+                Box expanded = nuMp4Path.getPath(s);
+                List path = new LinkedList();
+                while (expanded != null) {
+                    path.add(expanded);
+                    expanded = expanded.getParent();
+                }
+                if (path.size() > 0) {
+                    Collections.reverse(path);
+                    TreePath tp = new TreePath(path.toArray());
+                    tree.expandPath(tp);
+                }
+            }
+        }
+
+
+        trackList.setModel(new TrackListModel(isoFile));
+        if (!messages.isEmpty()) {
+            String message = "";
+            for (LogRecord logRecord : messages) {
+                message += logRecord.getMessage() + "\n";
+            }
+            JOptionPane.showMessageDialog(this,
+                    message,
+                    "Parser Messages",
+                    JOptionPane.WARNING_MESSAGE);
+
+        }
+        if (details instanceof Box && oldMp4Path != null) {
+            String path = oldMp4Path.createPath((Box) details);
+            Box nuDetail = nuMp4Path.getPath(path);
+            if (nuDetail != null) {
+                showDetails(nuDetail);
+            } else {
+                showDetails(isoFile);
+            }
+        } else {
+            showDetails(isoFile);
+        }
+        mainFrame.setTitle("Iso Viewer - " + f.getAbsolutePath());
+
+    }
+
+
     @Action(name = "open-iso-file")
     public void open() {
 
         int state = fileChooser.showOpenDialog(IsoViewerPanel.this);
         if (state == JFileChooser.APPROVE_OPTION) {
             try {
-                IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(fileChooser.getSelectedFile()));
-                long start = System.nanoTime();
-                final List<LogRecord> messages = new LinkedList<LogRecord>();
-                Handler myTemperaryLogHandler = new Handler() {
-                    @Override
-                    public void publish(LogRecord record) {
-                        messages.add(record);
-                    }
-
-                    @Override
-                    public void flush() {
-                    }
-
-                    @Override
-                    public void close() throws SecurityException {
-                    }
-                };
-                Logger.getLogger("").addHandler(myTemperaryLogHandler);
-                isoFile.parse();
-
-                Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
-                System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
-                Enumeration<TreePath> treePathEnumeration = tree.getExpandedDescendants(new TreePath(tree.getModel().getRoot()));
-                List<String> openPath = new LinkedList<String>();
-                Path oldMp4Path = null;
-                if (treePathEnumeration != null) {
-                    oldMp4Path = new Path((IsoFile) tree.getModel().getRoot());
-
-                    while (treePathEnumeration.hasMoreElements()) {
-                        TreePath treePath = treePathEnumeration.nextElement();
-                        openPath.add(oldMp4Path.createPath((Box) treePath.getLastPathComponent()));
-                    }
-                }
-
-                tree.setModel(new IsoFileTreeModel(isoFile));
-                tree.revalidate();
-                Path nuMp4Path = new Path(isoFile);
-                if (!openPath.isEmpty()) {
-
-                    for (String s : openPath) {
-                        Box expanded = nuMp4Path.getPath(s);
-                        List path = new LinkedList();
-                        while (expanded != null) {
-                            path.add(expanded);
-                            expanded = expanded.getParent();
-                        }
-                        if (path.size() > 0) {
-                            Collections.reverse(path);
-                            TreePath tp = new TreePath(path.toArray());
-                            tree.expandPath(tp);
-                        }
-                    }
-                }
-
-
-                trackList.setModel(new TrackListModel(isoFile));
-                if (!messages.isEmpty()) {
-                    String message = "";
-                    for (LogRecord logRecord : messages) {
-                        message += logRecord.getMessage() + "\n";
-                    }
-                    JOptionPane.showMessageDialog(this,
-                            message,
-                            "Parser Messages",
-                            JOptionPane.WARNING_MESSAGE);
-
-                }
-                if (details instanceof Box && oldMp4Path != null) {
-                    String path = oldMp4Path.createPath((Box) details);
-                    Box nuDetail = nuMp4Path.getPath(path);
-                    if (nuDetail != null) {
-                        showDetails(nuDetail);
-                    } else {
-                        showDetails(isoFile);
-                    }
-                } else {
-                    showDetails(isoFile);
-                }
+                open(fileChooser.getSelectedFile());
             } catch (IOException e) {
-                e.printStackTrace();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintStream ps = new PrintStream(baos);
+                e.printStackTrace(ps);
+                JOptionPane.showMessageDialog(this,
+                        new String(baos.toByteArray()),
+                        "e.getMessage()",
+                        JOptionPane.ERROR_MESSAGE);
+                ;
             }
 
         }

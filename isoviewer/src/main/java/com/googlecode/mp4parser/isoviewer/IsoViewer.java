@@ -2,15 +2,12 @@ package com.googlecode.mp4parser.isoviewer;
 
 
 import com.coremedia.iso.gui.IsoViewerPanel;
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ApplicationActionMap;
-import org.jdesktop.application.ApplicationContext;
-import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.*;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,17 +17,31 @@ public class IsoViewer extends SingleFrameApplication {
     String sessionFile = "sessionState.xml";
     ApplicationContext ctx = getContext();
     Logger logger = Logger.getLogger("IsoViewer");
+    File openInitially = null;
+
+
+    @Override
+    protected void initialize(String[] args) {
+        if (args.length > 0) {
+            openInitially = new File(args[0]);
+        }
+    }
 
     @Override
     protected void startup() {
         ResourceMap resource = ctx.getResourceMap();
-        isoViewerPanel = new IsoViewerPanel();
+        isoViewerPanel = new IsoViewerPanel(getMainFrame());
+
         resource.injectFields(isoViewerPanel);
         isoViewerPanel.createLayout();
         try {
+            if (openInitially != null) {
+                isoViewerPanel.open(openInitially);
+
+            }
             ctx.getSessionStorage().restore(this.getMainFrame(), sessionFile);
         } catch (IOException e) {
-            logger.log(Level.WARNING, "couldn't restore session", e);
+            logger.log(Level.WARNING, "couldn't restore session or open initial file given in command line", e);
         }
         // isoViewerPanel.open();
         ApplicationActionMap map = ctx.getActionMap(isoViewerPanel);

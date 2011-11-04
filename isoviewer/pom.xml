@@ -86,9 +86,9 @@
             <version>1.0-beta-4-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>net.java.dev.appframework</groupId>
-            <artifactId>appframework</artifactId>
-            <version>1.03</version>
+            <groupId>org.jdesktop.bsaf</groupId>
+            <artifactId>bsaf</artifactId>
+            <version>1.9.2</version>
         </dependency>
     </dependencies>
 

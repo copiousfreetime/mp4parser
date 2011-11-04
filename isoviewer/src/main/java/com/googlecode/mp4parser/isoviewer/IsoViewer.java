@@ -3,10 +3,12 @@ package com.googlecode.mp4parser.isoviewer;
 
 import com.coremedia.iso.gui.IsoViewerPanel;
 import org.jdesktop.application.*;
+import org.jdesktop.application.session.PropertySupport;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -22,9 +24,11 @@ public class IsoViewer extends SingleFrameApplication {
 
     @Override
     protected void initialize(String[] args) {
+
         if (args.length > 0) {
             openInitially = new File(args[0]);
         }
+
     }
 
     @Override
@@ -35,11 +39,16 @@ public class IsoViewer extends SingleFrameApplication {
         resource.injectFields(isoViewerPanel);
         isoViewerPanel.createLayout();
         try {
+
+
+            //ctx.getSessionStorage().restore(this.getMainFrame(), sessionFile);
             if (openInitially != null) {
                 isoViewerPanel.open(openInitially);
 
+            } else {
+                ctx.getSessionStorage().restore(isoViewerPanel, sessionFile);
             }
-            ctx.getSessionStorage().restore(this.getMainFrame(), sessionFile);
+
         } catch (IOException e) {
             logger.log(Level.WARNING, "couldn't restore session or open initial file given in command line", e);
         }
@@ -54,7 +63,8 @@ public class IsoViewer extends SingleFrameApplication {
     protected void shutdown() {
         super.shutdown();
         try {
-            ctx.getSessionStorage().save(this.getMainFrame(), sessionFile);
+            //ctx.getSessionStorage().save(this.getMainFrame(), sessionFile);
+            ctx.getSessionStorage().save(this.isoViewerPanel, sessionFile);
         } catch (IOException e) {
             logger.log(Level.WARNING, "couldn't save session", e);
         }

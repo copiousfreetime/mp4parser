@@ -27,6 +27,7 @@ import com.googlecode.mp4parser.util.Path;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.Resource;
+import org.jdesktop.application.session.PropertySupport;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -52,16 +53,13 @@ import java.util.logging.Logger;
 /**
  * The main UI class for the ISO viewer. Contains all other UI components.
  */
-public class IsoViewerPanel extends JPanel {
+public class IsoViewerPanel extends JPanel implements PropertySupport {
 
 
     private JTree tree;
     private JList trackList;
     private JPanel detailPanel;
     private JSplitPane rawDataSplitPane;
-    private ApplicationContext ctx;
-
-
 
     @Resource
     private String trackViewDetailPaneHeader = "T %s";
@@ -73,23 +71,27 @@ public class IsoViewerPanel extends JPanel {
     private Object details;
 
     private Frame mainFrame;
+    private File file;
 
 
     public IsoViewerPanel(Frame mainFrame) {
         this.mainFrame = mainFrame;
+        this.setName("IsoViewerPanel");
+
     }
 
 
-    public void createLayout() {
-        tree = new JTree(new Object[0]);
-        tree.setRootVisible(false);
+    public void createLayout()  {
+        IsoFile dummy = new IsoFile(new IsoBufferWrapperImpl(new byte[]{}));
+        tree = new BoxJTree();
+        tree.setModel(new IsoFileTreeModel(dummy));
         tree.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 com.coremedia.iso.boxes.Box node = (com.coremedia.iso.boxes.Box) e.getPath().getLastPathComponent();
                 showDetails(node);
             }
         });
-        tree.setCellRenderer(new BoxNodeRenderer());
+
 
         detailPanel = new JPanel();
         detailPanel.setLayout(new BorderLayout());
@@ -97,6 +99,7 @@ public class IsoViewerPanel extends JPanel {
 
 
         rawDataSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        rawDataSplitPane.setName("rawDataSplitPane");
         rawDataSplitPane.setBorder(null);
         rawDataSplitPane.setOneTouchExpandable(true);
         JScrollPane scrollPane = new JScrollPane(detailPanel);
@@ -109,7 +112,10 @@ public class IsoViewerPanel extends JPanel {
         splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setOneTouchExpandable(true);
         JTabbedPane jTabbedPane = new JTabbedPane();
-        jTabbedPane.add(tabbedPaneHeaderBox, new JScrollPane(tree));
+        jTabbedPane.setName("tracksOrBoxes");
+        JScrollPane jScrollPane = new JScrollPane(tree);
+        jScrollPane.setName("boxTreeScrollPane");
+        jTabbedPane.add(tabbedPaneHeaderBox, jScrollPane);
         jTabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 int index = ((JTabbedPane) e.getSource()).getSelectedIndex();
@@ -141,6 +147,7 @@ public class IsoViewerPanel extends JPanel {
         splitPane.setLeftComponent(jTabbedPane);
         splitPane.setRightComponent(rawDataSplitPane);
         splitPane.setResizeWeight(0.6);
+        splitPane.setName("treeLeftdataRight");
 
         this.setLayout(new BorderLayout());
         this.add(splitPane, BorderLayout.CENTER);
@@ -178,6 +185,7 @@ public class IsoViewerPanel extends JPanel {
 
 
     public void open(File f) throws IOException {
+        this.file = f;
         IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(f));
         long start = System.nanoTime();
         final List<LogRecord> messages = new LinkedList<LogRecord>();
@@ -200,37 +208,12 @@ public class IsoViewerPanel extends JPanel {
 
         Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
         System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
-        Enumeration<TreePath> treePathEnumeration = tree.getExpandedDescendants(new TreePath(tree.getModel().getRoot()));
-        List<String> openPath = new LinkedList<String>();
-        Path oldMp4Path = null;
-        if (treePathEnumeration != null) {
-            oldMp4Path = new Path((IsoFile) tree.getModel().getRoot());
 
-            while (treePathEnumeration.hasMoreElements()) {
-                TreePath treePath = treePathEnumeration.nextElement();
-                openPath.add(oldMp4Path.createPath((Box) treePath.getLastPathComponent()));
-            }
-        }
-
+        Path oldMp4Path = new Path((IsoFile) tree.getModel().getRoot());
         tree.setModel(new IsoFileTreeModel(isoFile));
         tree.revalidate();
         Path nuMp4Path = new Path(isoFile);
-        if (!openPath.isEmpty()) {
 
-            for (String s : openPath) {
-                Box expanded = nuMp4Path.getPath(s);
-                List path = new LinkedList();
-                while (expanded != null) {
-                    path.add(expanded);
-                    expanded = expanded.getParent();
-                }
-                if (path.size() > 0) {
-                    Collections.reverse(path);
-                    TreePath tp = new TreePath(path.toArray());
-                    tree.expandPath(tp);
-                }
-            }
-        }
 
 
         trackList.setModel(new TrackListModel(isoFile));
@@ -308,6 +291,18 @@ public class IsoViewerPanel extends JPanel {
         } finally {
             setCursor(oldCursor);
 
+        }
+    }
+
+    public Object getSessionState(Component c) {
+        return this.file.getAbsolutePath();
+    }
+
+    public void setSessionState(Component c, Object state) {
+        try {
+            open(new File(state.toString()));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

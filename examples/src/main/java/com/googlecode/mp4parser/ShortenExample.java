@@ -10,6 +10,7 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class ShortenExample {
         // remove all tracks we will create new tracks from the old
 
         double startTime = 35.000;
-        double endTime = 45.000;
+        double endTime = 145.000;
 
         boolean timeCorrected = false;
 
@@ -82,8 +83,9 @@ public class ShortenExample {
 
         IsoFile out = new DefaultMp4Builder().build(movie);
         FileOutputStream fos = new FileOutputStream(new File(String.format("output-%f-%f.mp4", startTime, endTime)));
-        out.getBox(new IsoOutputStream(fos));
-        fos.close();
+        BufferedOutputStream bos = new BufferedOutputStream(fos, 65535);
+        out.getBox(new IsoOutputStream(bos));
+        bos.close();
 
 
     }

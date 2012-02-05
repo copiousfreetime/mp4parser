@@ -3,6 +3,7 @@ package com.googlecode.mp4parser;
 import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.RandomAccessFileIsoBufferWrapperImpl;
 import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
@@ -23,7 +24,7 @@ import java.util.List;
  */
 public class ShortenExample {
     public static void main(String[] args) throws IOException {
-        Movie movie = new MovieCreator().build(new IsoBufferWrapperImpl(new File("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov")));
+        Movie movie = new MovieCreator().build(new RandomAccessFileIsoBufferWrapperImpl(new File("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov")));
 
         List<Track> tracks = movie.getTracks();
         movie.setTracks(new LinkedList<Track>());

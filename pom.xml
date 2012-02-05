@@ -17,6 +17,7 @@
         <module>isoparser</module>
         <module>isoviewer</module>
         <module>examples</module>
+        <module>androidtest</module>
         <!--<module>codecs</module>-->
     </modules>
 

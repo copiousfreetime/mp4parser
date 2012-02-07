@@ -34,7 +34,7 @@ public class Mp4ParserPerformance extends Activity {
         TextView tv = (TextView) findViewById(R.id.text);
         String text = "";
         try {
-           // Debug.startMethodTracing("mp4");
+            Debug.startMethodTracing("mp4");
             File sdCard = Environment.getExternalStorageDirectory();
             long a = System.currentTimeMillis();
             tv.append("1");
@@ -47,8 +47,8 @@ public class Mp4ParserPerformance extends Activity {
             movie.setTracks(new LinkedList<Track>());
             // remove all tracks we will create new tracks from the old
 
-            double startTime = 5.000;
-            double endTime = 15.000;
+            double startTime = 35.000;
+            double endTime = 145.000;
 
             boolean timeCorrected = false;
 
@@ -105,7 +105,7 @@ public class Mp4ParserPerformance extends Activity {
             text += "Building took " + (System.currentTimeMillis() - a) + "\n";
             tv.append("4");
             FileOutputStream fos = new FileOutputStream(new File(sdCard, String.format("output-%f-%f.mp4", startTime, endTime)));
-            BufferedOutputStream bos = new BufferedOutputStream(fos, 65535);
+            BufferedOutputStream bos = new BufferedOutputStream(fos, 1024*1024);
             a = System.currentTimeMillis();
             out.getBox(new IsoOutputStream(bos));
             bos.close();
@@ -123,8 +123,7 @@ public class Mp4ParserPerformance extends Activity {
         double[] timeOfSyncSamples = new double[track.getSyncSamples().length];
         long currentSample = 0;
         double currentTime = 0;
-        for (int i = 0; i < track.getDecodingTimeEntries().size(); i++) {
-            TimeToSampleBox.Entry entry = track.getDecodingTimeEntries().get(i);
+        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
             for (int j = 0; j < entry.getCount(); j++) {
                 if (Arrays.binarySearch(track.getSyncSamples(), currentSample + 1) >= 0) {
                     // samples always start with 1 but we start with zero therefore +1

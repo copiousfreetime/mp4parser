@@ -43,7 +43,7 @@ public class RawH264Track extends AbstractTrack implements StreamParams {
         //RawH264Track track = new RawH264Track(new IsoBufferWrapperImpl(new File("/home/sannies/suckerpunch-samurai_h640w_track1.h264")));
     }
 
-    public RawH264Track(IsoBufferWrapperImpl rawH264) throws IOException {
+    public RawH264Track(IsoBufferWrapper rawH264) throws IOException {
         InnerAccessUnit current = new InnerAccessUnit();
         InnerAccessUnit previous = new InnerAccessUnit();
 

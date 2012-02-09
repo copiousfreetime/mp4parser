@@ -82,7 +82,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
 
     @Override
     protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocateDirect(l2i(getContentSize()));
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
         IsoTypeWriter.writeUInt32(bb, entryCount);
         for (SampleEntry sampleEntry : sampleEntries) {
             IsoTypeWriter.writeUInt32(bb, sampleEntry.getSampleDelta());

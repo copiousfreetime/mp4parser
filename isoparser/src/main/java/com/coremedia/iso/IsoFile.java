@@ -24,6 +24,7 @@ import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
@@ -55,6 +56,10 @@ public class IsoFile extends AbstractContainerBox {
     @Override
     public void _parseDetails() {
         // there are no details to parse we should be just file
+    }
+
+    public void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, AbstractBoxParser abstractBoxParser) throws IOException {
+        throw new IOException("This method is not meant to be called. Use #parse() directly.");
     }
 
     public void parse() throws IOException {

@@ -63,7 +63,7 @@ public class SyncSampleBox extends AbstractFullBox {
 
     @Override
     protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(l2i(getContentSize()));
+        ByteBuffer byteBuffer = ByteBuffer.allocate(l2i(getContentSize()));
         writeVersionAndFlags(byteBuffer);
 
         IsoTypeWriter.writeUInt32(byteBuffer, sampleNumber.length);

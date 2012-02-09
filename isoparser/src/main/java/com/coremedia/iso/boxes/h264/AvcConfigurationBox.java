@@ -154,7 +154,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
     @Override
     protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocateDirect(l2i(getContentSize()));
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
         IsoTypeWriter.writeUInt8(bb, configurationVersion);
         IsoTypeWriter.writeUInt8(bb, avcProfileIndicaation);
         IsoTypeWriter.writeUInt8(bb, profileCompatibility);

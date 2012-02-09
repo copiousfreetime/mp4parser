@@ -103,7 +103,7 @@ public abstract class AbstractBox implements Box {
      * @param boxParser creates inner boxes
      * @throws IOException in case of an I/O error.
      */
-    public void parse(ReadableByteChannel in, long size, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
         if (in instanceof FileChannel) {
             content = ((FileChannel) in).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) in).position(), size);
         } else {

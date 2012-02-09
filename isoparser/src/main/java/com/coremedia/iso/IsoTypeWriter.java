@@ -4,6 +4,12 @@ import java.nio.ByteBuffer;
 
 public final class IsoTypeWriter {
 
+    public static void writeUInt64(ByteBuffer bb, long u)  {
+
+        writeUInt32(bb, ((u >> 32) & 0xFFFFFFFFl));
+        writeUInt32(bb, u & 0xFFFFFFFFl);
+
+    }
     public static void writeUInt32(ByteBuffer bb, long u)  {
 
         writeUInt16(bb, (int) ((u >> 16) & 0xFFFF));

@@ -16,10 +16,14 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.AbstractBoxParser;
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -38,4 +42,5 @@ public interface Box {
 
     void getBox(WritableByteChannel writableByteChannel) throws IOException;
 
+    void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;
 }

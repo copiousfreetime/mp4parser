@@ -16,16 +16,17 @@
 
 package com.coremedia.iso.boxes.mdat;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.AbstractBox;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * This box contains the media data. In video tracks, this box would contain video frames. A presentation may
@@ -38,89 +39,45 @@ import java.nio.channels.WritableByteChannel;
  * so Media Data Box headers and free space may easily be skipped, and files without any box structure may
  * also be referenced and used.
  */
-public final class MediaDataBox extends AbstractBox {
+public final class MediaDataBox implements Box {
     public static final String TYPE = "mdat";
+    ContainerBox parent;
 
-    private boolean smallBox = false;
+    ByteBuffer header;
+    ByteBuffer content;
 
-    private byte[] deadBytesBefore = new byte[0];
 
-    private long start, size;
-
-    public MediaDataBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+    public ContainerBox getParent() {
+        return parent;
     }
 
-    public byte[] getDeadBytesBefore() {
-        return deadBytesBefore;
+    public void setParent(ContainerBox parent) {
+        this.parent = parent;
     }
 
-
-    @Override
-    protected long getHeaderSize() {
-        return 4 + // size
-                4 + // type
-                (smallBox ? 0 : 8);
+    public byte[] getType() {
+        return IsoFile.fourCCtoBytes(TYPE);
     }
 
-    @Override
-    public void getBox(IsoOutputStream os) throws IOException {
-        os.write(getHeader());
-        os.write(getDeadBytesBefore());
-        getContent(os);
-        if (deadBytes != null) {
-            os.write(deadBytes);
-        }
-
+    public byte[] getUserType() {
+        return null;
     }
 
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        writableByteChannel.write(header);
+        writableByteChannel.write(content);
+    }
 
-    @Override
     public long getSize() {
-        long contentSize = getContentSize();  // avoid calling getContentSize() twice
-
-        long headerSize = getHeaderSize();
-        return headerSize + contentSize + (deadBytes == null ? 0 : deadBytes.length) + getDeadBytesBefore().length;
+        return header.capacity() + content.capacity();
     }
 
-
-    @Override
-    protected long getContentSize() {
-        return size;
-    }
-
-    @Override
-    public void parse(final IsoBufferWrapper in, long size, BoxParser boxParser) throws IOException {
-        long start = in.getFileChannel().position();
-        if (start - offset > 8) {
-            smallBox = false;
-        } else {
-            smallBox = true;
+    public void parse(ReadableByteChannel byteChannel, ByteBuffer header, long contentSize, AbstractBoxParser abstractBoxParser) throws IOException {
+        this.header = header;
+        if (contentSize > Integer.MAX_VALUE) {
+            throw new RuntimeException("This 'mdat' does not support large  boxes");
         }
-        this.size = size;
-        this.start = start;
-        in.getFileChannel().read(size);
+        content = ChannelHelper.readFully(byteChannel, l2i(contentSize));
+
     }
-
-    @Override
-    protected boolean isSmallBox() {
-        return smallBox;
-    }
-
-    @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        this.getIsoFile().getOriginalIso().transferSegment(start, size, os);
-    }
-
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("MediaDataBox");
-        sb.append("{offset=").append(getOffset());
-        sb.append(", size=").append(getSize());
-        sb.append('}');
-        return sb.toString();
-    }
-
 }

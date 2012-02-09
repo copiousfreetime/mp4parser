@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 
+import static com.coremedia.iso.boxes.CastUtils.l2i;
+
 /**
  * Created by IntelliJ IDEA.
  * User: sannies
@@ -15,12 +17,15 @@ import java.nio.channels.*;
 public class ChannelHelper {
     public static ByteBuffer readFully(final ReadableByteChannel channel, long size)
             throws IOException {
-        assert size < Integer.MAX_VALUE;
-        ByteBuffer buf = ByteBuffer.allocateDirect((int) size);
-        readFully(channel, buf, buf.remaining());
-        return buf;
-    }
 
+        if (channel instanceof FileChannel) {
+            return ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), size);
+        } else {
+            ByteBuffer buf = ByteBuffer.allocate(l2i(size));
+            readFully(channel, buf, buf.remaining());
+            return buf;
+        }
+    }
 
 
     public static void readFully(final ReadableByteChannel channel, final ByteBuffer buf)
@@ -52,7 +57,6 @@ public class ChannelHelper {
     }
 
 
-
     public static void close(SelectionKey key) {
         try {
             key.channel().close();
@@ -61,7 +65,6 @@ public class ChannelHelper {
         }
 
     }
-
 
 
 }

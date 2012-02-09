@@ -16,11 +16,13 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.AbstractBoxParser;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
@@ -98,7 +100,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    public void parse(ReadableByteChannel in, long size, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel in, ByteBuffer header,  long size, BoxParser boxParser) throws IOException {
 
 
         while (size >= 8) {
@@ -107,6 +109,9 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
 
             boxes.add(box);
             //update field after each box
+        }
+        if (size != 0) {
+            throw new IOException("Sebastian needs to fix it");
         }
 
     }

@@ -16,10 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
 
@@ -55,7 +52,7 @@ public class KeywordsBox extends AbstractFullBox {
     protected long getContentSize() {
         long contentSize = 2 + 1;
         for (String keyword : keywords) {
-            contentSize += 1 + utf8StringLengthInBytes(keyword) + 1;
+            contentSize += 1 + Utf8.utf8StringLengthInBytes(keyword) + 1;
         }
         return contentSize;
     }
@@ -76,7 +73,7 @@ public class KeywordsBox extends AbstractFullBox {
         isos.writeIso639(language);
         isos.writeUInt8(keywords.length);
         for (String keyword : keywords) {
-            isos.writeUInt8(utf8StringLengthInBytes(keyword) + 1);
+            isos.writeUInt8(Utf8.utf8StringLengthInBytes(keyword) + 1);
             isos.writeStringZeroTerm(keyword);
         }
     }

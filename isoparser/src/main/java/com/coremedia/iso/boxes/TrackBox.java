@@ -29,7 +29,7 @@ import java.io.IOException;
  * tracks shall remain in the file, even if the media data within them is not referenced by the hint tracks; after
  * deleting all hint tracks, the entire un-hinted presentation shall remain.
  */
-public class TrackBox extends AbstractContainerBox implements TrackMetaDataContainer {
+public class TrackBox extends AbstractContainerBox {
     public static final String TYPE = "trak";
 
     public TrackBox() {
@@ -62,10 +62,7 @@ public class TrackBox extends AbstractContainerBox implements TrackMetaDataConta
 
     }
 
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-    }
+
 
 
     public MediaBox getMediaBox() {

@@ -16,15 +16,11 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Contains information common to all visual tracks.
@@ -191,9 +187,9 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
 
             isos.writeUInt32(0);
             isos.writeUInt16(getFrameCount());
-            isos.writeUInt8(utf8StringLengthInBytes(getCompressorname()));
+            isos.writeUInt8(Utf8.utf8StringLengthInBytes(getCompressorname()));
             isos.writeStringNoTerm(getCompressorname());
-            int a = utf8StringLengthInBytes(getCompressorname());
+            int a = Utf8.utf8StringLengthInBytes(getCompressorname());
             while (a < 31) {
                 a++;
                 isos.write(0);

@@ -1,11 +1,12 @@
 package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.UserBox;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -16,32 +17,30 @@ public abstract class AbstractBoxParser implements BoxParser {
 
     private static Logger LOG = Logger.getLogger(AbstractBoxParser.class.getName());
 
-    public abstract AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, Box lastMovieFragmentBox);
+    public abstract AbstractBox createBox(byte[] type, byte[] userType, byte[] parent);
 
     /**
      * Parses the next size and type, creates a box instance and parses the box's content.
      *
-     * @param in                   the IsoBufferWrapper pointing to the ISO file
+     * @param inFC                 the FileChannel pointing to the ISO file
      * @param parent               the current box's parent (null if no parent)
-     * @param lastMovieFragmentBox
      * @return the box just parsed
      * @throws java.io.IOException if reading from <code>in</code> fails
      */
-    public AbstractBox parseBox(IsoBufferWrapper in, ContainerBox parent, Box lastMovieFragmentBox) throws IOException {
-        long offset = in.position();
-
-        long size = in.readUInt32();
+    public AbstractBox parseBox(ReadableByteChannel inFC, ContainerBox parent) throws IOException {
+        FileChannelIsoBufferWrapperImpl in = new FileChannelIsoBufferWrapperImpl(inFC);
+        ByteBuffer bb = ChannelHelper.readFully(inFC, 8);
+        
+        long size = IsoTypeReader.readUInt32(bb);
         // do plausibility check
         if (size < 8 && size > 1) {
             LOG.severe("Plausibility check failed: size < 8 (size = " + size + "). Stop parsing!");
             return null;
-        } else if ((offset + size) > in.size()) {
-            LOG.severe("Plausibility check failed: offset (" + offset + ") + size (" + size + ") > file size (" + in.size() + "). Stop parsing!");
-            return null;
         }
 
 
-        byte[] type = in.read(4);
+        byte[] type = new byte[4];
+        bb.get(type);
         String prefix = "";
         boolean iWant = false;
         if (iWant) {
@@ -50,7 +49,6 @@ public abstract class AbstractBoxParser implements BoxParser {
                 prefix = IsoFile.bytesToFourCC(t.getType()) + "/" + prefix;
                 t = t.getParent();
             }
-            System.err.println(prefix + IsoFile.bytesToFourCC(type) + "  - offset: " + offset);
         }
         byte[] usertype = null;
         long contentSize;
@@ -70,28 +68,18 @@ public abstract class AbstractBoxParser implements BoxParser {
             contentSize -= 16;
         }
         AbstractBox box = createBox(type, usertype,
-                parent.getType(), lastMovieFragmentBox);
-        box.offset = offset;
+                parent.getType());
         box.setParent(parent);
         LOG.finest("Parsing " + IsoFile.bytesToFourCC(box.getType()));
         // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
-        box.parse(in, contentSize, this, lastMovieFragmentBox);
+        box.parse(inFC, contentSize, this);
         // System.out.println("box = " + box);
-        if (in.position() - offset < size && contentSize != -1) {
-            // System.out.println("dead bytes found in " + box);
-            LOG.finer(IsoFile.bytesToFourCC(type) + " has dead bytes");
-            long length = (size - (in.position() - offset));
-            assert length < Integer.MAX_VALUE : "Ooops length larger than Integer.MAX_VALUE";
-            box.setDeadBytes(in.getSegment(in.position(), length));
-            in.skip(length);
-        }
 
 
         assert size == box.getSize() :
                 "Reconstructed Size is not equal to the number of parsed bytes! (" +
                         IsoFile.bytesToFourCC(box.getType()) + ")"
-                        + " Actual Box size: " + size + " Calculated size: " + box.getSize() +
-                        " at offset: " + offset;
+                        + " Actual Box size: " + size + " Calculated size: " + box.getSize();
         return box;
     }
 

@@ -50,7 +50,7 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
 
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        long sp = in.position();
+        long sp = this.offset + getHeaderSize();
         long dataBoxSize = in.readUInt32();
         String thisShouldBeData = in.readString(4);
         assert "data".equals(thisShouldBeData);

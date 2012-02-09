@@ -24,6 +24,8 @@ import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * This box contains the media data. In video tracks, this box would contain video frames. A presentation may
@@ -43,7 +45,7 @@ public final class MediaDataBox extends AbstractBox {
 
     private byte[] deadBytesBefore = new byte[0];
 
-    private IsoBufferWrapper isoBufferWrapper;
+    private long start, size;
 
     public MediaDataBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -67,10 +69,7 @@ public final class MediaDataBox extends AbstractBox {
         os.write(getDeadBytesBefore());
         getContent(os);
         if (deadBytes != null) {
-            deadBytes.position(0);
-            while (deadBytes.remaining() > 0) {
-                os.write(deadBytes.readByte());
-            }
+            os.write(deadBytes);
         }
 
     }
@@ -81,26 +80,26 @@ public final class MediaDataBox extends AbstractBox {
         long contentSize = getContentSize();  // avoid calling getContentSize() twice
 
         long headerSize = getHeaderSize();
-        return headerSize + contentSize + (deadBytes == null ? 0 : deadBytes.size()) + getDeadBytesBefore().length;
+        return headerSize + contentSize + (deadBytes == null ? 0 : deadBytes.length) + getDeadBytesBefore().length;
     }
 
 
     @Override
     protected long getContentSize() {
-        return isoBufferWrapper.size();
+        return size;
     }
 
     @Override
-    public void parse(final IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        long start = in.position();
+    public void parse(final IsoBufferWrapper in, long size, BoxParser boxParser) throws IOException {
+        long start = in.getFileChannel().position();
         if (start - offset > 8) {
             smallBox = false;
         } else {
             smallBox = true;
         }
-        this.isoBufferWrapper = in.getSegment(start, size);
-        in.position(start);
-        in.skip(size);
+        this.size = size;
+        this.start = start;
+        in.getFileChannel().read(size);
     }
 
     @Override
@@ -110,17 +109,7 @@ public final class MediaDataBox extends AbstractBox {
 
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {
-
-        isoBufferWrapper.position(0);
-
-        while (isoBufferWrapper.remaining() > 1024) {
-            byte[] buf = new byte[1024];
-            isoBufferWrapper.read(buf);
-            os.write(buf);
-        }
-        while (isoBufferWrapper.remaining() > 0) {
-            os.write(isoBufferWrapper.readByte());
-        }
+        this.getIsoFile().getOriginalIso().transferSegment(start, size, os);
     }
 
 

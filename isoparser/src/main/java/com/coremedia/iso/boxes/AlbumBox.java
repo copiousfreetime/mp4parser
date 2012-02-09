@@ -16,10 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
 
@@ -72,14 +69,14 @@ public class AlbumBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 2 + utf8StringLengthInBytes(albumTitle) + 1 + (trackNumber == -1 ? 0 : 1);
+        return 2 + Utf8.utf8StringLengthInBytes(albumTitle) + 1 + (trackNumber == -1 ? 0 : 1);
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         language = in.readIso639();
         albumTitle = in.readString();
-        size -= (utf8StringLengthInBytes(albumTitle) + 1 + 6);
+        size -= (Utf8.utf8StringLengthInBytes(albumTitle) + 1 + 6);
 
         if (size > 0) {
             trackNumber = in.readUInt8();

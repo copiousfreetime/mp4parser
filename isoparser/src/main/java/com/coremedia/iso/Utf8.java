@@ -29,4 +29,16 @@ public final class Utf8 {
       throw new Error(e);
     }
   }
+
+    public static int utf8StringLengthInBytes(String utf8) {
+        try {
+            if (utf8 != null) {
+                return utf8.getBytes("UTF-8").length;
+            } else {
+                return 0;
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException();
+        }
+    }
 }

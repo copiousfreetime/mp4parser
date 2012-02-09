@@ -72,7 +72,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     }
 
     @Override
-    public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent, Box lastMovieFragmentBox) {
+    public AbstractBox createBox(byte[] type, byte[] userType, byte[] parent) {
 
         FourCcToBox fourCcToBox = new FourCcToBox(type, userType, parent).invoke();
         String[] param = fourCcToBox.getParam();
@@ -96,9 +96,6 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
                 } else if ("parent".equals(param[i])) {
                     constructorArgs[i] = parent;
                     constructorArgsClazz[i] = byte[].class;
-                } else if ("lastMovieFragmentBox".equals(param[i])) {
-                    constructorArgs[i] = lastMovieFragmentBox;
-                    constructorArgsClazz[i] = MovieFragmentBox.class;
                 } else {
                     throw new InternalError("No such param: " + param[i]);
                 }

@@ -16,10 +16,7 @@
 
 package com.coremedia.iso.boxes.odf;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
@@ -41,7 +38,7 @@ public class OmaDrmIconUriBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return utf8StringLengthInBytes(iconUri);
+        return Utf8.utf8StringLengthInBytes(iconUri);
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {

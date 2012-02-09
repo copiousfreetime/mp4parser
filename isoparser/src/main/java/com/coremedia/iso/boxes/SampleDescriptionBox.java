@@ -63,7 +63,7 @@ public class SampleDescriptionBox extends FullContainerBox {
 
     @Override
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        parseHeader(in, size);
+        parseVersionAndFlags(in, size);
         long entryCount = in.readUInt32();
         if (entryCount > Integer.MAX_VALUE) {
             throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE subboxes");
@@ -76,7 +76,7 @@ public class SampleDescriptionBox extends FullContainerBox {
         if (in.position() - offset < size) {
             // System.out.println("dead bytes found in " + box);
             long length = (size - (in.position() - offset));
-            setDeadBytes(in.getSegment(in.position(), length));
+            setDeadBytes(in.read((int) length));
         }
     }
 

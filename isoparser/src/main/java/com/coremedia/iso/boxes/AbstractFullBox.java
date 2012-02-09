@@ -17,13 +17,13 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 
 /**
@@ -58,55 +58,19 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
         this.flags = flags;
     }
 
+
     /**
-     * Gets the box's content size without header size where header includes
-     * flags and version.
-     *
-     * @return Gets the box's content size
+     * Parses the version/flags header and returns the remaining box size.
+     * @return number of bytes read
      */
-    @Override
-    protected abstract long getContentSize();
-
-    @Override
-    protected long getHeaderSize() {
-        return super.getHeaderSize() + 4;
+    protected long parseVersionAndFlags() {
+        version = IsoTypeReader.readUInt8(content);
+        flags = IsoTypeReader.readUInt24(content);
+        return 4;
     }
-
-    @Override
-    public byte[] getHeader() {
-        try {
-            //TODO this is nearly identical to overriden method
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IsoOutputStream ios = new IsoOutputStream(baos);
-            if (this.getSize() < 4294967296L) {
-                ios.writeUInt32((int) this.getSize());
-                ios.write(getType());
-            } else {
-                ios.writeUInt32(1);
-                ios.write(getType());
-                ios.writeUInt64(getSize());
-            }
-            if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(UserBox.TYPE))) {
-                ios.write(getUserType());
-            }
-            ios.writeUInt8(version);
-            ios.writeUInt24(flags);
-
-            assert baos.size() == getHeaderSize();
-            return baos.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        parseHeader(in, size);
-    }
-
-    protected void parseHeader(IsoBufferWrapper in, long size) throws IOException {
-        version = in.readUInt8();
-        flags = in.readUInt24();
+    
+    protected void writeVersionAndFlags(ByteBuffer bb) {
+        IsoTypeWriter.writeUInt8(bb, version);
+        IsoTypeWriter.writeUInt24(bb, flags);
     }
 }

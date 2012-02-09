@@ -1,49 +1,44 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  *
  */
 public class ItemDataBox extends AbstractFullBox {
-    byte[] data;
+    ByteBuffer data;
     public static final String TYPE = "idat";
 
     public ItemDataBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public byte[] getData() {
+    public ByteBuffer getData() {
         return data;
     }
 
-    public void setData(byte[] data) {
+    public void setData(ByteBuffer data) {
         this.data = data;
     }
 
     @Override
     protected long getContentSize() {
-        return data.length;
+        return data.capacity();
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
+    protected void getContent(WritableByteChannel os) throws IOException {
         os.write(data);
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        long a = in.remaining();
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long b = in.remaining();
-        size -= (a - b);
-        assert size < Integer.MAX_VALUE;
-        data = new byte[(int) size];
-        in.read(data);
+    public void parse(ReadableByteChannel in, long size, BoxParser boxParser) throws IOException {
+        parseVersionAndFlags(in, size);
+        data = ChannelHelper.readFully(in, size - 4);
     }
 }

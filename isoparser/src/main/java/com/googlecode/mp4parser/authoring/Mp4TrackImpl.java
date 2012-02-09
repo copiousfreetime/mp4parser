@@ -7,17 +7,20 @@ import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
+import com.coremedia.iso.boxes.mdat.SegmentSampleList;
 import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
+import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Represents a single track of an MP4 file.
  */
-public class Mp4TrackImpl extends AbstractTrack {
+public class Mp4TrackImpl extends AbstractTrack implements FileChannelSegmentTrack{
+    FileChannel source;
 
-    private SampleList samples;
+    private SegmentSampleList samples;
     private SampleDescriptionBox sampleDescriptionBox;
     private List<TimeToSampleBox.Entry> decodingTimeEntries;
     private List<CompositionTimeToSample.Entry> compositionTimeEntries;
@@ -28,7 +31,8 @@ public class Mp4TrackImpl extends AbstractTrack {
 
 
     public Mp4TrackImpl(TrackBox trackBox) {
-        samples = new SampleList(trackBox);
+        source = trackBox.getIsoFile().getOriginalIso();
+        samples = new SegmentSampleList(trackBox);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
         AbstractMediaHeaderBox mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
         if (mihd instanceof VideoMediaHeaderBox) {
@@ -124,8 +128,12 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setLayer(tkhd.getLayer());
     }
 
-    public SampleList getSamples() {
+    public SegmentSampleList getSamples() {
         return samples;
+    }
+
+    public FileChannel getFileChannel() {
+        return source;
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {

@@ -1,9 +1,6 @@
 package com.googlecode.mp4parser.boxes.threegpp26245;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 
@@ -84,7 +81,7 @@ public class FontTableBox extends AbstractBox {
         }
 
         public int getSize() {
-            return utf8StringLengthInBytes(fontname) + 3;
+            return Utf8.utf8StringLengthInBytes(fontname) + 3;
         }
 
         @Override

@@ -17,10 +17,7 @@
 package com.coremedia.iso.boxes.rtp;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 
@@ -54,7 +51,7 @@ public class RtpMovieHintInformationBox extends AbstractBox {
     }
 
     protected long getContentSize() {
-        return utf8StringLengthInBytes(sdpText) + 4;
+        return Utf8.utf8StringLengthInBytes(sdpText) + 4;
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {

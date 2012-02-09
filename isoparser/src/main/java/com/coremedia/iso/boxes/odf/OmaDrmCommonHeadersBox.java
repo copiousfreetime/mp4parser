@@ -17,10 +17,7 @@
 package com.coremedia.iso.boxes.odf;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
@@ -178,9 +175,9 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         isos.writeUInt8(encryptionMethod);
         isos.writeUInt8(paddingScheme);
         isos.writeUInt64(plaintextLength);
-        isos.writeUInt16(utf8StringLengthInBytes(contentId));
-        isos.writeUInt16(rightsIssuerUrl != null ? utf8StringLengthInBytes(rightsIssuerUrl) : 0);
-        isos.writeUInt16(textualHeaders != null ? utf8StringLengthInBytes(textualHeaders) : 0);
+        isos.writeUInt16(Utf8.utf8StringLengthInBytes(contentId));
+        isos.writeUInt16(rightsIssuerUrl != null ? Utf8.utf8StringLengthInBytes(rightsIssuerUrl) : 0);
+        isos.writeUInt16(textualHeaders != null ? Utf8.utf8StringLengthInBytes(textualHeaders) : 0);
         isos.writeStringNoTerm(contentId);
         isos.writeStringNoTerm(rightsIssuerUrl);
         isos.writeStringNoTerm(textualHeaders);

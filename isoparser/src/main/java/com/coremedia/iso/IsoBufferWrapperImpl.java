@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -167,25 +168,21 @@ public class IsoBufferWrapperImpl extends AbstractIsoBufferWrapper {
     }
 
 
-    public IsoBufferWrapper getSegment(long startPos, long length) {
-        long savePos = this.position();
-        ArrayList<ByteBuffer> segments = new ArrayList<ByteBuffer>();
-        position(startPos);
-        while (length > 0) {
-            ByteBuffer currentSlice = parents[activeParent].slice();
-            if (currentSlice.remaining() >= length) {
-                currentSlice.limit((int) length); // thats ok we tested in the line before
-                length -= length;
-            } else {
-                // ok use up current bytebuffer and jump to next
-                length -= currentSlice.remaining();
-                parents[++activeParent].rewind();
-            }
-            segments.add(currentSlice);
+    public void transferSegment(long startOffset, long length, WritableByteChannel target) throws IOException {
+        long pos = position();
+        
+        position(startOffset);
+        while (length > 1024)  {
+            byte b[] = new byte[1024];
+            read(b);
+            target.write(ByteBuffer.wrap(b));
+            length -= 1024;
         }
-        position(savePos);
-        return new IsoBufferWrapperImpl(segments.toArray(new ByteBuffer[segments.size()]));
+        byte b[] = new byte[(int) length];
+        read(b);
+        target.write(ByteBuffer.wrap(b));
+
+        
+        position(pos);
     }
-
-
 }

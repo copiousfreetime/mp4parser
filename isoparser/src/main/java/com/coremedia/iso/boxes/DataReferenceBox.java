@@ -17,11 +17,12 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * The data reference object contains a table of data references (normally URLs) that declare the location(s) of
@@ -49,22 +50,23 @@ public class DataReferenceBox extends FullContainerBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        setVersion(in.readUInt8());
-        setFlags(in.readUInt24());
-        in.readUInt32();
-        long remainingContentSize = size - 8;
-        while (remainingContentSize > 0) {
-            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            remainingContentSize -= box.getSize();
-            boxes.add(box);
-        }
+    public void parse(ReadableByteChannel in, long size, BoxParser boxParser) throws IOException {
+        content = ChannelHelper.readFully(in, 8);
+        parseBoxes(size - 8, in, boxParser);
     }
 
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        content = null;
+    }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(getBoxes().size());
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb =  ByteBuffer.allocateDirect(8);
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, getBoxes().size());
+        os.write(bb);
         super.getContent(os);
     }
 

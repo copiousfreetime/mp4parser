@@ -16,20 +16,20 @@
 
 package com.coremedia.iso.boxes.h264;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.h264.model.PictureParameterSet;
 import com.googlecode.mp4parser.h264.model.SeqParameterSet;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Defined in ISO/IEC 14496-15:2004.
@@ -106,38 +106,33 @@ public final class AvcConfigurationBox extends AbstractBox {
         this.pictureParameterSets = pictureParameterSets;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        /*
-     unsigned int(8) configurationVersion = 1;
-     unsigned int(8) AVCProfileIndication;
-     unsigned int(8) profile_compatibility;
-     unsigned int(8) AVCLevelIndication;
-     bit(6) reserved = '111111'b;
-     unsigned int(2) lengthSizeMinusOne;
-     bit(3) reserved = '111'b;
-
-        */
-        configurationVersion = in.readUInt8();
-        avcProfileIndicaation = in.readUInt8();
-        profileCompatibility = in.readUInt8();
-        avcLevelIndication = in.readUInt8();
-        int temp = in.readUInt8();
+    @Override
+    public void _parseDetails() {
+        configurationVersion = IsoTypeReader.readUInt8(content);
+        avcProfileIndicaation = IsoTypeReader.readUInt8(content);
+        profileCompatibility = IsoTypeReader.readUInt8(content);
+        avcLevelIndication = IsoTypeReader.readUInt8(content);
+        int temp = IsoTypeReader.readUInt8(content);
         lengthSizeMinusOne = temp & 3;
-        long numberOfSeuqenceParameterSets = in.readUInt8() & 31;
+        long numberOfSeuqenceParameterSets = IsoTypeReader.readUInt8(content) & 31;
         for (int i = 0; i < numberOfSeuqenceParameterSets; i++) {
-            int sequenceParameterSetLength = in.readUInt16();
-            byte[] sequenceParameterSetNALUnit = in.read(sequenceParameterSetLength);
+            int sequenceParameterSetLength = IsoTypeReader.readUInt16(content);
+
+            byte[] sequenceParameterSetNALUnit =  new byte[sequenceParameterSetLength];
+            content.get(sequenceParameterSetNALUnit);
             sequenceParameterSets.add(sequenceParameterSetNALUnit);
         }
-        long numberOfPictureParameterSets = in.readUInt8();
+        long numberOfPictureParameterSets = IsoTypeReader.readUInt8(content);
         for (int i = 0; i < numberOfPictureParameterSets; i++) {
-            int pictureParameterSetLength = in.readUInt16();
-            byte[] pictureParameterSetNALUnit = in.read(pictureParameterSetLength);
+            int pictureParameterSetLength = IsoTypeReader.readUInt16(content);
+            byte[] pictureParameterSetNALUnit = new byte[pictureParameterSetLength];
+            content.get(pictureParameterSetNALUnit);
             pictureParameterSets.add(pictureParameterSetNALUnit);
         }
 
-
+        content = null;
     }
+
 
 
     protected long getContentSize() {
@@ -156,23 +151,28 @@ public final class AvcConfigurationBox extends AbstractBox {
         return size;
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt8(configurationVersion);
-        os.writeUInt8(avcProfileIndicaation);
-        os.writeUInt8(profileCompatibility);
-        os.writeUInt8(avcLevelIndication);
-        os.writeUInt8(lengthSizeMinusOne | (63 << 2));
-        os.writeUInt8((pictureParameterSets.size() & 31) | (7 << 5));
+
+    @Override
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocateDirect(l2i(getContentSize()));
+        IsoTypeWriter.writeUInt8(bb, configurationVersion);
+        IsoTypeWriter.writeUInt8(bb, avcProfileIndicaation);
+        IsoTypeWriter.writeUInt8(bb, profileCompatibility);
+        IsoTypeWriter.writeUInt8(bb, avcLevelIndication);
+        IsoTypeWriter.writeUInt8(bb, lengthSizeMinusOne | (63 << 2));
+        IsoTypeWriter.writeUInt8(bb, (pictureParameterSets.size() & 31) | (7 << 5));
         for (byte[] sequenceParameterSetNALUnit : sequenceParameterSets) {
-            os.writeUInt16(sequenceParameterSetNALUnit.length);
-            os.write(sequenceParameterSetNALUnit);
+            IsoTypeWriter.writeUInt16(bb, sequenceParameterSetNALUnit.length);
+            bb.put(sequenceParameterSetNALUnit);
         }
-        os.writeUInt8(pictureParameterSets.size());
+        IsoTypeWriter.writeUInt8(bb, pictureParameterSets.size());
         for (byte[] pictureParameterSetNALUnit : pictureParameterSets) {
-            os.writeUInt16(pictureParameterSetNALUnit.length);
-            os.write(pictureParameterSetNALUnit);
+            IsoTypeWriter.writeUInt16(bb, pictureParameterSetNALUnit.length);
+            bb.put(pictureParameterSetNALUnit);
         }
+        os.write(bb);
     }
+
 
     // just to display sps in isoviewer no practical use
     public String[] getPPS() {

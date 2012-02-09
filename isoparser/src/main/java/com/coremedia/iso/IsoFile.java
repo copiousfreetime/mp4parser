@@ -21,8 +21,11 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
@@ -30,16 +33,17 @@ import java.io.UnsupportedEncodingException;
  */
 public class IsoFile extends AbstractContainerBox {
     protected BoxParser boxParser = new PropertyBoxParserImpl();
-    protected IsoBufferWrapper originalIso;
+    ReadableByteChannel byteChannel;
 
-    public IsoFile(IsoBufferWrapper originalIso) {
+    public IsoFile(ReadableByteChannel byteChannel) {
         super(new byte[]{});
+        this.byteChannel = byteChannel;
         boxParser = createBoxParser();
-        this.originalIso = originalIso;
+
     }
 
-    public IsoFile(IsoBufferWrapper originalIso, BoxParser boxParser) {
-        this(originalIso);
+    public IsoFile(ReadableByteChannel byteChannel, BoxParser boxParser) {
+        this(byteChannel);
         this.boxParser = boxParser;
     }
 
@@ -47,32 +51,27 @@ public class IsoFile extends AbstractContainerBox {
         return new PropertyBoxParserImpl();
     }
 
+
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        throw new RuntimeException("This method is not meant to be used. Use parse() instead");
-        //super.parse(in, size, boxParser, lastMovieFragmentBox);    //To change body of overridden methods use File | Settings | File Templates.
+    public void _parseDetails() {
+        // there are no details to parse we should be just file
     }
 
     public void parse() throws IOException {
 
         boolean done = false;
-        Box lastMovieFragmentBox = null;
         while (!done) {
-            long sp = originalIso.position();
-            if (originalIso.remaining() >= 8) {
-                Box box = boxParser.parseBox(originalIso, this, lastMovieFragmentBox);
+            try {
+                Box box = boxParser.parseBox(byteChannel, this);
                 if (box != null) {
-                    if (box instanceof MovieFragmentBox) lastMovieFragmentBox = box;
                     boxes.add(box);
-                    assert box.calculateOffset() == sp : "calculated offset differs from offset in file";
                 } else {
                     done = true;
                 }
-            } else {
+            } catch (EOFException e) {
                 done = true;
             }
         }
-        parsed = done;
     }
 
 
@@ -131,16 +130,6 @@ public class IsoFile extends AbstractContainerBox {
     }
 
     @Override
-    public long calculateOffset() {
-        return 0;
-    }
-
-    @Override
-    public long getOffset() {
-        return 0;
-    }
-
-    @Override
     public IsoFile getIsoFile() {
         return this;
     }
@@ -150,18 +139,6 @@ public class IsoFile extends AbstractContainerBox {
         return 0;
     }
 
-    @Override
-    public byte[] getHeader() {
-        return new byte[0];
-    }
-
-    public BoxParser getBoxParser() {
-        return boxParser;
-    }
-
-    public IsoBufferWrapper getOriginalIso() {
-        return originalIso;
-    }
 
     /**
      * Shortcut to get the MovieBox since it is often needed and present in

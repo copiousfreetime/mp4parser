@@ -17,7 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
@@ -25,35 +25,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * A basic ISO box. No full box.
  */
 public abstract class AbstractBox implements Box {
-    public long offset;
-    private List<WriteListener> writeListeners = null;
-    protected boolean parsed;
-
-    /**
-     * Adds a Listener that will be called right before writing the box.
-     *
-     * @param writeListener the new Listener.
-     */
-    public void addWriteListener(WriteListener writeListener) {
-        if (writeListeners == null) {
-            writeListeners = new LinkedList<WriteListener>();
-        }
-        writeListeners.add(writeListener);
-    }
-
+    protected ByteBuffer content;
 
     public long getSize() {
-        return getContentSize() + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.size());
+        return getContentSize() + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.capacity());
     }
 
     protected long getHeaderSize() {
@@ -64,7 +48,8 @@ public abstract class AbstractBox implements Box {
     }
 
     /**
-     * Gets the box's content size without header size.
+     * Gets the box's content size without header size. Flags and version do not belong to the
+     * header - they belong to the content and add 4 bytes to the content size
      *
      * @return Gets the box's content size in bytes
      */
@@ -97,23 +82,8 @@ public abstract class AbstractBox implements Box {
         this.userType = userType;
     }
 
-
     public ContainerBox getParent() {
         return parent;
-    }
-
-
-    public boolean isParsed() {
-        return parsed;
-    }
-
-    public void setParsed(boolean parsed) {
-        this.parsed = parsed;
-    }
-
-
-    public long getOffset() {
-        return offset;
     }
 
     public void setParent(ContainerBox parent) {
@@ -128,25 +98,51 @@ public abstract class AbstractBox implements Box {
     /**
      * Pareses the given IsoBufferWrapper and returns the remaining bytes.
      *
-     * @param in                   the (part of the) iso file to parse
-     * @param size                 expected size of the box
-     * @param boxParser            creates inner boxes
-     * @param lastMovieFragmentBox latest of previously found moof boxes
+     * @param in        the (part of the) iso file to parse
+     * @param size      expected size of the box
+     * @param boxParser creates inner boxes
      * @throws IOException in case of an I/O error.
      */
-    public abstract void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException;
+    public void parse(ReadableByteChannel in, long size, BoxParser boxParser) throws IOException {
+        if (in instanceof FileChannel) {
+            content = ((FileChannel) in).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) in).position(), size);
+        } else {
+            assert size > Integer.MAX_VALUE;
+            content = ChannelHelper.readFully(in, size);
+        }
+    }
 
-    protected IsoBufferWrapper deadBytes = null;
+    /**
+     * Parses the boxes fields.
+     */
+    public final void parseDetails() {
+        if (content != null) {
+            ByteBuffer content = this.content;
+            _parseDetails();
+            assert this.content == null;
+            if (content.remaining()>0) {
+                deadBytes = content.slice();
+            }
+        }
+    }
 
-    public IsoBufferWrapper getDeadBytes() {
+    /**
+     * Implement the actual parsing of the box's fields here. External classes will always call
+     * {@link #parseDetails()} which encapsulates the call to this method with some safeguards.
+     */
+    public abstract void _parseDetails();
+
+    protected ByteBuffer deadBytes = null;
+
+    public ByteBuffer getDeadBytes() {
         return deadBytes;
     }
 
-    public void setDeadBytes(IsoBufferWrapper newDeadBytes) {
+    public void setDeadBytes(ByteBuffer newDeadBytes) {
         deadBytes = newDeadBytes;
     }
 
-    public byte[] getHeader() {
+    public void getHeader(WritableByteChannel byteChannel) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             IsoOutputStream ios = new IsoOutputStream(baos);
@@ -164,11 +160,11 @@ public abstract class AbstractBox implements Box {
 
             assert baos.size() == getHeaderSize() :
                     "written header size differs from calculated size: " + baos.size() + " vs. " + getHeaderSize();
-            return baos.toByteArray();
+            byteChannel.write(ByteBuffer.wrap(baos.toByteArray()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+
     }
 
     protected boolean isSmallBox() {
@@ -176,38 +172,17 @@ public abstract class AbstractBox implements Box {
     }
 
 
-    public void getBox(IsoOutputStream os) throws IOException {
-        long sp = os.getStreamPosition();
-
-        if (writeListeners != null) {
-            for (WriteListener writeListener : writeListeners) {
-                writeListener.beforeWrite(sp);
+    public void getBox(WritableByteChannel os) throws IOException {
+        getHeader(os);
+        if (content == null) {
+            getContent(os);
+            if (deadBytes != null) {
+                deadBytes.position(0);
+                while (deadBytes.remaining() > 0) {
+                    os.write(deadBytes);
+                }
             }
         }
-
-        os.write(getHeader());
-        getContent(os);
-        if (deadBytes != null) {
-            deadBytes.position(0);
-            while (deadBytes.remaining() > 0) {
-                os.write(deadBytes.readByte());
-            }
-        }
-
-
-        long writtenBytes = os.getStreamPosition() - sp;
-        String uuid;
-        if (getUserType() != null && getUserType().length == 16) {
-            ByteBuffer b = ByteBuffer.wrap(getUserType());
-            b.order(ByteOrder.BIG_ENDIAN);
-            uuid = new UUID(b.getLong(), b.getLong()).toString();
-        } else {
-            uuid = "--";
-        }
-        assert writtenBytes == getSize() : " getHeader + getContent + getDeadBytes (" + writtenBytes + ") of "
-                + IsoFile.bytesToFourCC(getType()) + " userType: " + uuid
-                + " doesn't match getSize (" + getSize() + ")";
-
     }
 
     /**
@@ -217,29 +192,5 @@ public abstract class AbstractBox implements Box {
      * @param os the box's content-sink.
      * @throws IOException in case of an exception in the underlying <code>OutputStream</code>.
      */
-    protected abstract void getContent(IsoOutputStream os) throws IOException;
-
-    public static int utf8StringLengthInBytes(String utf8) {
-        try {
-            if (utf8 != null) {
-                return utf8.getBytes("UTF-8").length;
-            } else {
-                return 0;
-            }
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException();
-        }
-    }
-
-
-    public long calculateOffset() {
-        long offsetFromParentBoxStart = parent.getNumOfBytesToFirstChild();
-        for (Box box : parent.getBoxes()) {
-            if (box.equals(this)) {
-                return parent.calculateOffset() + offsetFromParentBoxStart;
-            }
-            offsetFromParentBoxStart += box.getSize();
-        }
-        throw new InternalError("this box is not in the list of its parent's children");
-    }
+    protected abstract void getContent(WritableByteChannel os) throws IOException;
 }

@@ -6,7 +6,9 @@ import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.mdat.ByteArraySampleList;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
+import com.googlecode.mp4parser.authoring.ByteArrayTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
@@ -19,8 +21,9 @@ import java.util.*;
  * Time: 5:51 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Amf0Track extends AbstractTrack {
-    Map<Long, byte[]> rawSamples = new HashMap<Long, byte[]>();
+public class Amf0Track extends AbstractTrack implements ByteArrayTrack {
+    SortedMap<Long, byte[]> rawSamples = new TreeMap<Long, byte[]>() {
+    };
     private TrackMetaData trackMetaData = new TrackMetaData();
 
 
@@ -29,21 +32,15 @@ public class Amf0Track extends AbstractTrack {
      * @param rawSamples
      */
     public Amf0Track(Map<Long, byte[]> rawSamples) {
-        this.rawSamples = rawSamples;
+        this.rawSamples = new TreeMap<Long, byte[]>(rawSamples);
         trackMetaData.setCreationTime(new Date());
         trackMetaData.setModificationTime(new Date());
         trackMetaData.setTimescale(1000); // Text tracks use millieseconds
         trackMetaData.setLanguage("eng");
     }
 
-    public List<IsoBufferWrapper> getSamples() {
-        List<Long> keys = new LinkedList<Long>(rawSamples.keySet());
-        List<IsoBufferWrapper> ibws = new LinkedList<IsoBufferWrapper>();
-        Collections.sort(keys);
-        for (Long key : keys) {
-            ibws.add(new IsoBufferWrapperImpl(rawSamples.get(key)));
-        }
-        return ibws;
+    public List<byte[]> getSamples() {
+        return new ArrayList<byte[]>(rawSamples.values());
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {

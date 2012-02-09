@@ -20,14 +20,14 @@ import java.util.TreeMap;
 /**
  *
  */
-public class SampleList extends AbstractList<IsoBufferWrapper> {
+public abstract class SampleList<E>  extends AbstractList<E> {
 
     SortedMap<Long, Long> offsets2Sizes;
     List<Long> offsetKeys = null;
 
-    IsoBufferWrapper isoBufferWrapper;
 
-    private List<Long> getOffsetKeys() {
+
+    List<Long> getOffsetKeys() {
         if (offsetKeys == null) {
             List<Long> offsetKeys = new ArrayList<Long>(offsets2Sizes.size());
             for (Long aLong : offsets2Sizes.keySet()) {
@@ -44,7 +44,6 @@ public class SampleList extends AbstractList<IsoBufferWrapper> {
     }
 
     SortedMap<Long, Long> getOffsets(MovieFragmentBox moof, long trackId) {
-        isoBufferWrapper = moof.getIsoFile().getOriginalIso();
         SortedMap<Long, Long> offsets2Sizes = new TreeMap<Long, Long>();
         List<TrackFragmentBox> traf = moof.getBoxes(TrackFragmentBox.class);
         for (TrackFragmentBox trackFragmentBox : traf) {
@@ -70,7 +69,6 @@ public class SampleList extends AbstractList<IsoBufferWrapper> {
     }
 
     public SampleList(TrackBox trackBox) {
-        isoBufferWrapper = trackBox.getIsoFile().getOriginalIso();
         List<MovieExtendsBox> movieExtendsBoxes = trackBox.getParent().getBoxes(MovieExtendsBox.class);
         offsets2Sizes = new TreeMap<Long, Long>();
         if (movieExtendsBoxes.size() > 0) {
@@ -109,17 +107,6 @@ public class SampleList extends AbstractList<IsoBufferWrapper> {
 
     }
 
-    @Override
-    public IsoBufferWrapper get(int index) {
-        // it is a two stage lookup: from index to offset to size
-        Long offset = getOffsetKeys().get(index);
-        try {
-            return isoBufferWrapper.getSegment(offset, offsets2Sizes.get(offset));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
 
     public long getOffset(int index) {
         Iterator<Long> entries = offsets2Sizes.keySet().iterator();

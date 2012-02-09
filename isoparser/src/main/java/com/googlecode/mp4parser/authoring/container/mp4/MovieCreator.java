@@ -7,6 +7,7 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Mp4TrackImpl;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.List;
 
 /**
@@ -17,8 +18,8 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class MovieCreator {
-    public Movie build(IsoBufferWrapper isoBufferWrapper) throws IOException {
-        IsoFile isoFile = new IsoFile(isoBufferWrapper);
+    public Movie build(FileChannel fileChannel) throws IOException {
+        IsoFile isoFile = new IsoFile(fileChannel);
         isoFile.parse();
         Movie m = new Movie();
 

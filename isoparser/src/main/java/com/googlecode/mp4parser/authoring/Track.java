@@ -5,6 +5,8 @@ import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.mdat.SampleList;
+import com.coremedia.iso.boxes.mdat.Segment;
 
 import java.util.List;
 
@@ -16,7 +18,6 @@ import java.util.List;
  * corresponds to a streaming channel.
  */
 public interface Track {
-    List<IsoBufferWrapper> getSamples();
 
     SampleDescriptionBox getSampleDescriptionBox();
 

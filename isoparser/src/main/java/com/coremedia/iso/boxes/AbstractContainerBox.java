@@ -21,6 +21,8 @@ import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -96,17 +98,12 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+    public void parse(ReadableByteChannel in, long size, BoxParser boxParser) throws IOException {
 
 
         while (size >= 8) {
-            long sp = in.position();
-            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            long parsedBytes = in.position() - sp;
-            assert parsedBytes == box.getSize() ||
-                    box instanceof HandlerBox :
-                    box + " didn't parse well. number of parsed bytes (" + parsedBytes + ") doesn't match getSize (" + box.getSize() + ")";
-            size -= parsedBytes;
+            Box box = boxParser.parseBox(in, this);
+            size -= box.getSize();
 
             boxes.add(box);
             //update field after each box
@@ -115,7 +112,12 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
+    public void _parseDetails() {
+        content = null;
+    }
+
+    @Override
+    protected void getContent(WritableByteChannel os) throws IOException {
         for (Box boxe : boxes) {
             boxe.getBox(os);
         }

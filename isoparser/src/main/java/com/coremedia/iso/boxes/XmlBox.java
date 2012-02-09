@@ -1,9 +1,6 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
 
@@ -28,7 +25,7 @@ public class XmlBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return IsoFile.utf8StringLengthInBytes(xml);
+        return Utf8.utf8StringLengthInBytes(xml);
     }
 
     @Override

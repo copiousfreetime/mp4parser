@@ -47,7 +47,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        long entries = 4 + ((4 + 2) * entryCount);
+        long entries = 8 + ((4 + 2) * entryCount);
         int subsampleEntries = 0;
         for (SampleEntry sampleEntry : sampleEntries) {
             subsampleEntries += sampleEntry.getSubsampleCount() * (((getVersion() == 1) ? 4 : 2) + 1 + 1 + 4);
@@ -56,9 +56,8 @@ public class SubSampleInformationBox extends AbstractFullBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-
+    public void _parseDetails() {
+        parseVersionAndFlags();
         entryCount = in.readUInt32();
 
         for (int i = 0; i < entryCount; i++) {
@@ -76,6 +75,14 @@ public class SubSampleInformationBox extends AbstractFullBox {
             }
             sampleEntries.add(sampleEntry);
         }
+        content = null;
+    }
+
+    @Override
+    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
+
+
+
 
     }
 

@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes.odf;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullContainerBox;
 import com.coremedia.iso.boxes.UserDataBox;
@@ -63,11 +64,11 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
         for (Box boxe : boxes) {
             size += boxe.getSize();
         }
-        return size + 1 + utf8StringLengthInBytes(contentType);
+        return size + 1 + Utf8.utf8StringLengthInBytes(contentType);
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        parseHeader(in, size);
+        parseVersionAndFlags(in, size);
         int contentTypeLength = in.readUInt8();
         contentType = new String(in.read(contentTypeLength), "UTF-8");
         long remainingContentSize = size - 4 - 1 - contentTypeLength;
@@ -80,7 +81,7 @@ public class OmaDrmDiscreteHeadersBox extends FullContainerBox {
 
     protected void getContent(IsoOutputStream isos) throws IOException {
         long sp = isos.getStreamPosition();
-        isos.writeUInt8(utf8StringLengthInBytes(contentType));
+        isos.writeUInt8(Utf8.utf8StringLengthInBytes(contentType));
         isos.writeStringNoTerm(contentType);
         for (Box boxe : boxes) {
             boxe.getBox(isos);

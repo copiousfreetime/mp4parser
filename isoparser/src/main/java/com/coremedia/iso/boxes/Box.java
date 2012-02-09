@@ -20,6 +20,7 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Defines basic interaction possibilities for any ISO box. Each box has a parent box and a type.
@@ -29,20 +30,12 @@ public interface Box {
 
     void setParent(ContainerBox parent);
 
-    boolean isParsed();
-
     long getSize();
-
-    long getOffset();
-
-    long calculateOffset();
 
     byte[] getType();
 
     byte[] getUserType();
 
-    void getBox(IsoOutputStream os) throws IOException;
-
-    IsoFile getIsoFile();
+    void getBox(WritableByteChannel writableByteChannel) throws IOException;
 
 }

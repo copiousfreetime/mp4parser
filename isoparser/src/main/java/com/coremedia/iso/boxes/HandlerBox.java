@@ -17,10 +17,7 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -98,9 +95,9 @@ public class HandlerBox extends AbstractFullBox {
 
     protected long getContentSize() {
         if (zeroTerm) {
-            return 21 + utf8StringLengthInBytes(name);
+            return 21 + Utf8.utf8StringLengthInBytes(name);
         } else {
-            return 20 + utf8StringLengthInBytes(name);
+            return 20 + Utf8.utf8StringLengthInBytes(name);
         }
 
     }

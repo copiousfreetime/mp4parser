@@ -1,6 +1,9 @@
 package com.coremedia.iso;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Encapsulates access to underlying storage.
@@ -14,19 +17,9 @@ public interface IsoBufferWrapper {
 
     String readString() throws IOException;
 
-    long position() throws IOException;
-
-    long remaining() throws IOException;
-
     String readString(int i) throws IOException;
 
-    long skip(long size) throws IOException;
-
-    void position(long l) throws IOException;
-
     int read(byte[] buffer) throws IOException;
-
-    IsoBufferWrapper getSegment(long startOffset, long length) throws IOException;
 
     long readUInt32() throws IOException;
 
@@ -39,8 +32,6 @@ public interface IsoBufferWrapper {
     int read() throws IOException;
 
     int readUInt16() throws IOException;
-
-    long size();
 
     byte[] read(int i) throws IOException;
 
@@ -67,4 +58,8 @@ public interface IsoBufferWrapper {
      * @return offset to next byte in bit
      */
     int getReadBitsRemaining();
+
+    ReadableByteChannel getFileChannel();
+
+
 }

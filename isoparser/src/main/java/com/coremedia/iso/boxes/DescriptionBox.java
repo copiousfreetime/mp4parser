@@ -16,10 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
 
@@ -45,7 +42,7 @@ public class DescriptionBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 2 + utf8StringLengthInBytes(description) + 1;
+        return 2 + Utf8.utf8StringLengthInBytes(description) + 1;
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {

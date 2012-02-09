@@ -16,10 +16,7 @@
 
 package com.coremedia.iso.boxes.odf;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
@@ -66,7 +63,7 @@ public class OmaDrmGroupIdBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 5 + utf8StringLengthInBytes(groupId) + groupKey.length;
+        return 5 + Utf8.utf8StringLengthInBytes(groupId) + groupKey.length;
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
@@ -79,7 +76,7 @@ public class OmaDrmGroupIdBox extends AbstractFullBox {
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt16(utf8StringLengthInBytes(groupId));
+        isos.writeUInt16(Utf8.utf8StringLengthInBytes(groupId));
         isos.writeUInt8(gkEncryptionMethod);
         isos.writeUInt16(groupKey.length);
         isos.writeStringNoTerm(groupId);

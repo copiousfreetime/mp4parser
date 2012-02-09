@@ -16,10 +16,7 @@
 
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
@@ -66,9 +63,9 @@ public class BaseLocationBox extends AbstractFullBox {
     @Override
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeStringZeroTerm(baseLocation);
-        os.write(new byte[256 - IsoFile.utf8StringLengthInBytes(baseLocation) - 1]); // string plus term zero
+        os.write(new byte[256 - Utf8.utf8StringLengthInBytes(baseLocation) - 1]); // string plus term zero
         os.writeStringZeroTerm(purchaseLocation);
-        os.write(new byte[256 - IsoFile.utf8StringLengthInBytes(purchaseLocation) - 1]); // string plus term zero
+        os.write(new byte[256 - Utf8.utf8StringLengthInBytes(purchaseLocation) - 1]); // string plus term zero
         os.write(new byte[512]);
     }
 
@@ -76,9 +73,9 @@ public class BaseLocationBox extends AbstractFullBox {
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         baseLocation = in.readString();
-        in.skip(256 - IsoFile.utf8StringLengthInBytes(baseLocation) - 1);
+        in.skip(256 - Utf8.utf8StringLengthInBytes(baseLocation) - 1);
         purchaseLocation = in.readString();
-        in.skip(256 - IsoFile.utf8StringLengthInBytes(purchaseLocation) - 1);
+        in.skip(256 - Utf8.utf8StringLengthInBytes(purchaseLocation) - 1);
         in.skip(512);
     }
 

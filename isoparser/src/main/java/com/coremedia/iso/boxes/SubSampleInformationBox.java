@@ -1,13 +1,14 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * aligned(8) class SubSampleInformationBox
@@ -58,19 +59,20 @@ public class SubSampleInformationBox extends AbstractFullBox {
     @Override
     public void _parseDetails() {
         parseVersionAndFlags();
-        entryCount = in.readUInt32();
+
+        entryCount = IsoTypeReader.readUInt32(content);
 
         for (int i = 0; i < entryCount; i++) {
             SampleEntry sampleEntry = new SampleEntry();
-            sampleEntry.setSampleDelta(in.readUInt32());
-            int subsampleCount = in.readUInt16();
+            sampleEntry.setSampleDelta(IsoTypeReader.readUInt32(content));
+            int subsampleCount = IsoTypeReader.readUInt16(content);
             sampleEntry.setSubsampleCount(subsampleCount);
             for (int j = 0; j < subsampleCount; j++) {
                 SampleEntry.SubsampleEntry subsampleEntry = new SampleEntry.SubsampleEntry();
-                subsampleEntry.setSubsampleSize(getVersion() == 1 ? in.readUInt32() : in.readUInt16());
-                subsampleEntry.setSubsamplePriority(in.readUInt8());
-                subsampleEntry.setDiscardable(in.readUInt8());
-                subsampleEntry.setReserved(in.readUInt32());
+                subsampleEntry.setSubsampleSize(getVersion() == 1 ? IsoTypeReader.readUInt32(content) : IsoTypeReader.readUInt16(content));
+                subsampleEntry.setSubsamplePriority(IsoTypeReader.readUInt8(content));
+                subsampleEntry.setDiscardable(IsoTypeReader.readUInt8(content));
+                subsampleEntry.setReserved(IsoTypeReader.readUInt32(content));
                 sampleEntry.addSubsampleEntry(subsampleEntry);
             }
             sampleEntries.add(sampleEntry);
@@ -79,28 +81,21 @@ public class SubSampleInformationBox extends AbstractFullBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-
-
-
-
-    }
-
-    @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(entryCount);
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocateDirect(l2i(getContentSize()));
+        IsoTypeWriter.writeUInt32(bb, entryCount);
         for (SampleEntry sampleEntry : sampleEntries) {
-            os.writeUInt32(sampleEntry.getSampleDelta());
+            IsoTypeWriter.writeUInt32(bb, sampleEntry.getSampleDelta());
             List<SampleEntry.SubsampleEntry> subsampleEntries = sampleEntry.getSubsampleEntries();
             for (SampleEntry.SubsampleEntry subsampleEntry : subsampleEntries) {
                 if (getVersion() == 1) {
-                    os.writeUInt32(subsampleEntry.getSubsampleSize());
+                    IsoTypeWriter.writeUInt32(bb, subsampleEntry.getSubsampleSize());
                 } else {
-                    os.writeUInt16((int) subsampleEntry.getSubsampleSize());
+                    IsoTypeWriter.writeUInt16(bb, l2i(subsampleEntry.getSubsampleSize()));
                 }
-                os.writeUInt8(subsampleEntry.getSubsamplePriority());
-                os.writeUInt8(subsampleEntry.getDiscardable());
-                os.writeUInt32(subsampleEntry.getReserved());
+                IsoTypeWriter.writeUInt8(bb, subsampleEntry.getSubsamplePriority());
+                IsoTypeWriter.writeUInt8(bb, subsampleEntry.getDiscardable());
+                IsoTypeWriter.writeUInt32(bb, subsampleEntry.getReserved());
             }
         }
     }

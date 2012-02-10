@@ -72,7 +72,7 @@ public final class MediaDataBox implements Box {
         return header.capacity() + content.capacity();
     }
 
-    public void parse(ReadableByteChannel byteChannel, ByteBuffer header, long contentSize, AbstractBoxParser abstractBoxParser) throws IOException {
+    public void parse(ReadableByteChannel byteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         this.header = header;
         if (contentSize > Integer.MAX_VALUE) {
             throw new RuntimeException("This 'mdat' does not support large  boxes");

@@ -105,6 +105,8 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         return depth;
     }
 
+
+
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
         super.parse(in, size, boxParser, lastMovieFragmentBox);
         if (TYPE4.equals(IsoFile.bytesToFourCC(type))) {

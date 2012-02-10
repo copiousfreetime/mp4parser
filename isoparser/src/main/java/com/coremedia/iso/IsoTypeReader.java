@@ -65,7 +65,7 @@ public final class IsoTypeReader {
 
     }
 
-    public static long readUInt64(ByteBuffer byteBuffer) throws IOException {
+    public static long readUInt64(ByteBuffer byteBuffer) {
         long result = 0;
         // thanks to Erik Nicolas for finding a bug! Cast to long is definitivly needed
         result += readUInt32(byteBuffer) << 32;
@@ -76,4 +76,27 @@ public final class IsoTypeReader {
 
         return result;
     }
+
+    public static double readFixedPoint1616(ByteBuffer bb)  {
+        byte[] bytes = new byte[4];
+        bb.get(bytes);
+
+        int result = 0;
+        result |= ((bytes[0] << 24) & 0xFF000000);
+        result |= ((bytes[1] << 16) & 0xFF0000);
+        result |= ((bytes[2] << 8) & 0xFF00);
+        result |= ((bytes[3]) & 0xFF);
+        return ((double) result) / 65536;
+
+    }
+
+    public static float readFixedPoint88(ByteBuffer bb)  {
+        byte[] bytes = new byte[2];
+        bb.get(bytes);
+        short result = 0;
+        result |= ((bytes[0] << 8) & 0xFF00);
+        result |= ((bytes[1]) & 0xFF);
+        return ((float) result) / 256;
+    }
+
 }

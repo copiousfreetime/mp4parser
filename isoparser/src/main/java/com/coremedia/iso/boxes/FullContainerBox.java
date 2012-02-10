@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
@@ -83,7 +84,7 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     }
 
     @Override
-    public void parse(ReadableByteChannel in, long size, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
         content = ChannelHelper.readFully(in, 4);
         parseBoxes(size - 4, in, boxParser);
     }
@@ -99,6 +100,11 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
             Box box = boxParser.parseBox(in, this);
             remainingContentSize -= box.getSize();
             boxes.add(box);
+        }
+        
+        if (remainingContentSize != 0) {
+            deadBytes = ChannelHelper.readFully(in, remainingContentSize);
+            System.err.println("WARNING: Some sizes are wrong");
         }
     }
 

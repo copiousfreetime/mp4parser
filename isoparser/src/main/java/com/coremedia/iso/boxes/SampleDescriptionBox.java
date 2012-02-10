@@ -16,11 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * The sample description table gives detailed information about the coding type used, and any initialization
@@ -54,7 +55,7 @@ public class SampleDescriptionBox extends FullContainerBox {
 
     @Override
     protected long getContentSize() {
-        long size = 4;
+        long size = 8;
         for (Box box : boxes) {
             size += box.getSize();
         }
@@ -62,29 +63,23 @@ public class SampleDescriptionBox extends FullContainerBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        parseVersionAndFlags(in, size);
-        long entryCount = in.readUInt32();
-        if (entryCount > Integer.MAX_VALUE) {
-            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE subboxes");
-        }
-        long sp = in.position();
-        for (int i = 0; i < entryCount; i++) {
-            boxes.add(boxParser.parseBox(in, this, lastMovieFragmentBox));
-        }
-
-        if (in.position() - offset < size) {
-            // System.out.println("dead bytes found in " + box);
-            long length = (size - (in.position() - offset));
-            setDeadBytes(in.read((int) length));
-        }
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
+        content = ChannelHelper.readFully(in, 8);
+        parseBoxes(size - 8, in, boxParser);
     }
 
     @Override
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(boxes.size());
-        for (Box boxe : boxes) {
-            boxe.getBox(isos);
-        }
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        // ignore 4 bytes entry count
+        content = null;
+    }
+
+    @Override
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, boxes.size());
+        super.getContent(os);
     }
 }

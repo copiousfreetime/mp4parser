@@ -1,5 +1,6 @@
 package com.coremedia.iso;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public final class IsoTypeWriter {
@@ -34,6 +35,21 @@ public final class IsoTypeWriter {
 
     public static void writeUInt8(ByteBuffer bb, int i) {
         bb.put(int2byte(i));
+    }
+
+
+    public static void writeFixedPont1616(ByteBuffer bb, double v) throws IOException {
+        int result = (int) (v * 65536);
+        bb.put((byte) ((result & 0xFF000000) >> 24));
+        bb.put((byte) ((result & 0x00FF0000) >> 16));
+        bb.put((byte) ((result & 0x0000FF00) >> 8));
+        bb.put((byte) ((result & 0x000000FF)));
+    }
+
+    public static void writeFixedPont88(ByteBuffer bb, double v) throws IOException {
+        short result = (short) (v * 256);
+        bb.put((byte) ((result & 0xFF00) >> 8));
+        bb.put((byte) ((result & 0x00FF)));
     }
 
     private static byte int2byte(int i) {

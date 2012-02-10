@@ -18,6 +18,8 @@ package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoBufferWrapper;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
@@ -38,19 +40,18 @@ import java.util.List;
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  */
 public abstract class SampleEntry extends AbstractBox implements ContainerBox {
+
+
     private int dataReferenceIndex;
     protected List<Box> boxes = new LinkedList<Box>();
 
-    protected SampleEntry(byte[] type) {
-        super(type);
-    }
 
     protected SampleEntry(String type) {
         super(type);
     }
 
-    public void setType(byte[] type) {
-        this.type = type;
+    public void setType(String type) {
+        this.type = IsoFile.fourCCtoBytes(type);
     }
 
     public int getDataReferenceIndex() {
@@ -99,10 +100,10 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
         return getBoxes(clazz, false);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        byte[] tmp = in.read(6);
-        assert Arrays.equals(new byte[6], tmp) : "reserved byte not 0";
-        dataReferenceIndex = in.readUInt16();
+    @Override
+    public void _parseDetails() {
+        content.get(new byte[6]); // ignore 6 reserved bytes;
+        dataReferenceIndex = IsoTypeReader.readUInt16(content);
     }
 
     public long getNumOfBytesToFirstChild() {

@@ -26,6 +26,8 @@ import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -100,6 +102,12 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
         return getBoxes(clazz, false);
     }
 
+    @Override
+    public abstract void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException;
+
+    /**
+     * Parses the 6 reserved byte and the data reference index.
+     */
     @Override
     public void _parseDetails() {
         content.get(new byte[6]); // ignore 6 reserved bytes;

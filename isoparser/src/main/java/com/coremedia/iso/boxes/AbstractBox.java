@@ -104,7 +104,8 @@ public abstract class AbstractBox implements Box {
      * @throws IOException in case of an I/O error.
      */
     public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        if (in instanceof FileChannel) {
+        if (in instanceof FileChannel && size > 1024*1024) {
+            // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
             content = ((FileChannel) in).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) in).position(), size);
         } else {
             assert size > Integer.MAX_VALUE;

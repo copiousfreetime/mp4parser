@@ -16,12 +16,13 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Entry type for timed text samples defined in the timed text specification (ISO/IEC 14496-17).
@@ -50,37 +51,39 @@ public class TextSampleEntry extends SampleEntry {
     private BoxRecord boxRecord = new BoxRecord();
     private StyleRecord styleRecord = new StyleRecord();
 
-    public TextSampleEntry(byte[] type) {
+    public TextSampleEntry(String type) {
         super(type);
     }
 
-
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        displayFlags = in.readUInt32();
-        horizontalJustification = in.readUInt8();
-        verticalJustification = in.readUInt8();
-        backgroundColorRgba = new int[4];
-        backgroundColorRgba[0] = in.readUInt8();
-        backgroundColorRgba[1] = in.readUInt8();
-        backgroundColorRgba[2] = in.readUInt8();
-        backgroundColorRgba[3] = in.readUInt8();
-        size -= 18;
-
-        boxRecord = new BoxRecord();
-        boxRecord.parse(in);
-        size -= boxRecord.getSize();
-
-        styleRecord = new StyleRecord();
-        styleRecord.parse(in);
-        size -= styleRecord.getSize();
-
+    @Override
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
+        content = ChannelHelper.readFully(in, 38);
+        size -= 38;
         while (size > 0) {
-            Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
+            Box b = boxParser.parseBox(in, this);
             boxes.add(b);
             size -= b.getSize();
         }
     }
+
+    @Override
+    public void _parseDetails() {
+        super._parseDetails();
+        displayFlags = IsoTypeReader.readUInt32(content);
+        horizontalJustification = IsoTypeReader.readUInt8(content);
+        verticalJustification = IsoTypeReader.readUInt8(content);
+        backgroundColorRgba = new int[4];
+        backgroundColorRgba[0] = IsoTypeReader.readUInt8(content);
+        backgroundColorRgba[1] = IsoTypeReader.readUInt8(content);
+        backgroundColorRgba[2] = IsoTypeReader.readUInt8(content);
+        backgroundColorRgba[3] = IsoTypeReader.readUInt8(content);
+        boxRecord = new BoxRecord();
+        boxRecord.parse(content);
+
+        styleRecord = new StyleRecord();
+        styleRecord.parse(content);
+    }
+
 
     protected long getContentSize() {
         long contentSize = 18;
@@ -96,23 +99,32 @@ public class TextSampleEntry extends SampleEntry {
         return "TextSampleEntry";
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(new byte[6]);
-        isos.writeUInt16(getDataReferenceIndex());
+    @Override
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(38);
 
-        isos.writeUInt32(displayFlags);
-        isos.writeUInt8(horizontalJustification);
-        isos.writeUInt8(verticalJustification);
-        isos.writeUInt8(backgroundColorRgba[0]);
-        isos.writeUInt8(backgroundColorRgba[1]);
-        isos.writeUInt8(backgroundColorRgba[2]);
-        isos.writeUInt8(backgroundColorRgba[3]);
-        boxRecord.getContent(isos);
-        styleRecord.getContent(isos);
+        bb.put(new byte[6]);
+        IsoTypeWriter.writeUInt16(bb, getDataReferenceIndex());
+
+        IsoTypeWriter.writeUInt32(bb, displayFlags);
+        IsoTypeWriter.writeUInt8(bb, horizontalJustification);
+        IsoTypeWriter.writeUInt8(bb, verticalJustification);
+        IsoTypeWriter.writeUInt8(bb, backgroundColorRgba[0]);
+        IsoTypeWriter.writeUInt8(bb, backgroundColorRgba[1]);
+        IsoTypeWriter.writeUInt8(bb, backgroundColorRgba[2]);
+        IsoTypeWriter.writeUInt8(bb, backgroundColorRgba[3]);
+        boxRecord.getContent(bb);
+        styleRecord.getContent(bb);
+
+        os.write(bb);
 
         for (Box boxe : boxes) {
-            boxe.getBox(isos);
+            boxe.getBox(os);
         }
+    }
+
+    protected void getContent(IsoOutputStream isos) throws IOException {
+
     }
 
     public BoxRecord getBoxRecord() {
@@ -235,18 +247,18 @@ public class TextSampleEntry extends SampleEntry {
         int bottom;
         int right;
 
-        public void parse(IsoBufferWrapper in) throws IOException {
-            top = in.readUInt16();
-            left = in.readUInt16();
-            bottom = in.readUInt16();
-            right = in.readUInt16();
+        public void parse(ByteBuffer in) {
+            top = IsoTypeReader.readUInt16(in);
+            left = IsoTypeReader.readUInt16(in);
+            bottom = IsoTypeReader.readUInt16(in);
+            right = IsoTypeReader.readUInt16(in);
         }
 
-        public void getContent(IsoOutputStream isos) throws IOException {
-            isos.writeUInt16(top);
-            isos.writeUInt16(left);
-            isos.writeUInt16(bottom);
-            isos.writeUInt16(right);
+        public void getContent(ByteBuffer bb) throws IOException {
+            IsoTypeWriter.writeUInt16(bb, top);
+            IsoTypeWriter.writeUInt16(bb, left);
+            IsoTypeWriter.writeUInt16(bb, bottom);
+            IsoTypeWriter.writeUInt16(bb, right);
         }
 
         public int getSize() {
@@ -281,30 +293,30 @@ public class TextSampleEntry extends SampleEntry {
         int fontSize;
         int[] textColor = new int[]{0xff, 0xff, 0xff, 0xff};
 
-        public void parse(IsoBufferWrapper in) throws IOException {
-            startChar = in.readUInt16();
-            endChar = in.readUInt16();
-            fontId = in.readUInt16();
-            faceStyleFlags = in.readUInt8();
-            fontSize = in.readUInt8();
+        public void parse(ByteBuffer in) {
+            startChar = IsoTypeReader.readUInt16(in);
+            endChar = IsoTypeReader.readUInt16(in);
+            fontId = IsoTypeReader.readUInt16(in);
+            faceStyleFlags = IsoTypeReader.readUInt8(in);
+            fontSize = IsoTypeReader.readUInt8(in);
             textColor = new int[4];
-            textColor[0] = in.readUInt8();
-            textColor[1] = in.readUInt8();
-            textColor[2] = in.readUInt8();
-            textColor[3] = in.readUInt8();
+            textColor[0] = IsoTypeReader.readUInt8(in);
+            textColor[1] = IsoTypeReader.readUInt8(in);
+            textColor[2] = IsoTypeReader.readUInt8(in);
+            textColor[3] = IsoTypeReader.readUInt8(in);
         }
 
 
-        public void getContent(IsoOutputStream isos) throws IOException {
-            isos.writeUInt16(startChar);
-            isos.writeUInt16(endChar);
-            isos.writeUInt16(fontId);
-            isos.writeUInt8(faceStyleFlags);
-            isos.writeUInt8(fontSize);
-            isos.writeUInt8(textColor[0]);
-            isos.writeUInt8(textColor[1]);
-            isos.writeUInt8(textColor[2]);
-            isos.writeUInt8(textColor[3]);
+        public void getContent(ByteBuffer bb) throws IOException {
+            IsoTypeWriter.writeUInt16(bb, startChar);
+            IsoTypeWriter.writeUInt16(bb, endChar);
+            IsoTypeWriter.writeUInt16(bb, fontId);
+            IsoTypeWriter.writeUInt8(bb, faceStyleFlags);
+            IsoTypeWriter.writeUInt8(bb, fontSize);
+            IsoTypeWriter.writeUInt8(bb, textColor[0]);
+            IsoTypeWriter.writeUInt8(bb, textColor[1]);
+            IsoTypeWriter.writeUInt8(bb, textColor[2]);
+            IsoTypeWriter.writeUInt8(bb, textColor[3]);
         }
 
         public int getSize() {

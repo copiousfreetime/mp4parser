@@ -20,7 +20,7 @@ public abstract class AbstractBoxParser implements BoxParser {
 
     private static Logger LOG = Logger.getLogger(AbstractBoxParser.class.getName());
 
-    public abstract AbstractBox createBox(byte[] type, byte[] userType, byte[] parent);
+    public abstract AbstractBox createBox(String type, byte[] userType, String parent);
 
     /**
      * Parses the next size and type, creates a box instance and parses the box's content.
@@ -44,14 +44,13 @@ public abstract class AbstractBoxParser implements BoxParser {
         }
 
 
-        byte[] type = new byte[4];
-        header.get(type);
+        String type = IsoTypeReader.read4cc(header);
         String prefix = "";
         boolean iWant = false;
         if (iWant) {
             ContainerBox t = parent.getParent();
             while (t != null) {
-                prefix = IsoFile.bytesToFourCC(t.getType()) + "/" + prefix;
+                prefix = t.getType() + "/" + prefix;
                 t = t.getParent();
             }
         }
@@ -68,14 +67,13 @@ public abstract class AbstractBoxParser implements BoxParser {
         } else {
             contentSize = size - 8;
         }
-        if (Arrays.equals(type, IsoFile.fourCCtoBytes(UserBox.TYPE))) {
+        if (UserBox.TYPE.equals(type)) {
             usertype = in.read(16);
             contentSize -= 16;
         }
-        Box box = createBox(type, usertype,
-                parent.getType());
+        Box box = createBox(type, usertype, parent.getType());
         box.setParent(parent);
-        LOG.finest("Parsing " + IsoFile.bytesToFourCC(box.getType()));
+        LOG.finest("Parsing " + box.getType());
         // System.out.println("parsing " + Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
 
 
@@ -86,17 +84,17 @@ public abstract class AbstractBoxParser implements BoxParser {
         } else if (l2i(size - contentSize) == 16) {
             header = ByteBuffer.allocate(16);
             IsoTypeWriter.writeUInt32(header, 1);
-            header.put(type);
+            header.put(IsoFile.fourCCtoBytes(type));
             IsoTypeWriter.writeUInt64(header, size);
         } else if (l2i(size - contentSize) == 24) {
             header = ByteBuffer.allocate(24);
             IsoTypeWriter.writeUInt32(header, size);
-            header.put(type);
+            header.put(IsoFile.fourCCtoBytes(type));
             header.put(usertype);
         } else if (l2i(size - contentSize) == 32) {
             header = ByteBuffer.allocate(32);
             IsoTypeWriter.writeUInt32(header, size);
-            header.put(type);
+            header.put(IsoFile.fourCCtoBytes(type));
             IsoTypeWriter.writeUInt64( header, size);
             header.put(usertype);
         } else {
@@ -111,7 +109,7 @@ public abstract class AbstractBoxParser implements BoxParser {
 
         assert size == box.getSize() :
                 "Reconstructed Size is not equal to the number of parsed bytes! (" +
-                        IsoFile.bytesToFourCC(box.getType()) + ")"
+                        box.getType() + ")"
                         + " Actual Box size: " + size + " Calculated size: " + box.getSize();
         return box;
     }

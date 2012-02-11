@@ -55,8 +55,8 @@ public final class MediaDataBox implements Box {
         this.parent = parent;
     }
 
-    public byte[] getType() {
-        return IsoFile.fourCCtoBytes(TYPE);
+    public String getType() {
+        return TYPE;
     }
 
     public byte[] getUserType() {

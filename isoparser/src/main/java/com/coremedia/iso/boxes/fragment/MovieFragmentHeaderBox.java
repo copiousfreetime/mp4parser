@@ -16,14 +16,13 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * aligned(8) class MovieFragmentHeaderBox
@@ -37,11 +36,19 @@ public class MovieFragmentHeaderBox extends AbstractFullBox {
     private long sequenceNumber;
 
     public MovieFragmentHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {
-        return 4;
+        return 8;
+    }
+
+    @Override
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, sequenceNumber);
+        os.write(bb);
     }
 
     protected void getContent(IsoOutputStream os) throws IOException {
@@ -49,9 +56,10 @@ public class MovieFragmentHeaderBox extends AbstractFullBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        sequenceNumber = in.readUInt32();
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        sequenceNumber = IsoTypeReader.readUInt32(content);
+        content = null;
     }
 
     public long getSequenceNumber() {

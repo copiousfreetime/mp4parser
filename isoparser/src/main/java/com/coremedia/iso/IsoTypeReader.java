@@ -109,5 +109,10 @@ public final class IsoTypeReader {
         return result.toString();
     }
 
+    public static String read4cc(ByteBuffer bb ) {
+        byte[] b = new byte[4];
+        bb.get(b);
+        return IsoFile.bytesToFourCC(b);
+    }
 
 }

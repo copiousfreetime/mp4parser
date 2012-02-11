@@ -128,6 +128,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         }
     }
 
+
     public String toString() {
         StringBuilder buffer = new StringBuilder();
 
@@ -150,5 +151,9 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
      */
     public long getNumOfBytesToFirstChild() {
         return 8;
+    }
+
+    @Override
+    protected final void getContent(ByteBuffer bb) throws IOException {
     }
 }

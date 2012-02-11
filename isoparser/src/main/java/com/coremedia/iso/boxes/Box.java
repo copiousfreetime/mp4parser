@@ -36,7 +36,7 @@ public interface Box {
 
     long getSize();
 
-    byte[] getType();
+    String getType();
 
     byte[] getUserType();
 

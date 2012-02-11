@@ -153,8 +153,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb) throws IOException {
         IsoTypeWriter.writeUInt8(bb, configurationVersion);
         IsoTypeWriter.writeUInt8(bb, avcProfileIndicaation);
         IsoTypeWriter.writeUInt8(bb, profileCompatibility);
@@ -170,7 +169,6 @@ public final class AvcConfigurationBox extends AbstractBox {
             IsoTypeWriter.writeUInt16(bb, pictureParameterSetNALUnit.length);
             bb.put(pictureParameterSetNALUnit);
         }
-        os.write(bb);
     }
 
 

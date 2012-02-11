@@ -16,14 +16,13 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 
 public class TrackFragmentBaseMediaDecodeTimeBox extends AbstractFullBox {
     public static final String TYPE = "tfdt";
@@ -36,27 +35,31 @@ public class TrackFragmentBaseMediaDecodeTimeBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return getVersion() == 0 ? 4 : 8;
+        return getVersion() == 0 ? 8 : 12;
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         if (getVersion() == 1) {
-            os.writeUInt64(baseMediaDecodeTime);
+            IsoTypeWriter.writeUInt64(bb, baseMediaDecodeTime);
         } else {
-            os.writeUInt32(baseMediaDecodeTime);
+            IsoTypeWriter.writeUInt32(bb, baseMediaDecodeTime);
         }
     }
 
+
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    public void _parseDetails() {
+        parseVersionAndFlags();
         if (getVersion() == 1) {
-            baseMediaDecodeTime = in.readUInt64();
+            baseMediaDecodeTime = IsoTypeReader.readUInt64(content);
         } else {
-            baseMediaDecodeTime = in.readUInt32();
+            baseMediaDecodeTime = IsoTypeReader.readUInt32(content);
         }
+
     }
+
 
     public long getBaseMediaDecodeTime() {
         return baseMediaDecodeTime;

@@ -88,15 +88,12 @@ public class ClassificationBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
-
+    protected void getContent(ByteBuffer bb) throws IOException {
         bb.put (IsoFile.fourCCtoBytes(classificationEntity));
         IsoTypeWriter.writeUInt16(bb, classificationTableIndex);
         IsoTypeWriter.writeIso639(bb, language);
         bb.put(Utf8.convert(classificationInfo));
         bb.put((byte) 0);
-        os.write(bb);
     }
 
 

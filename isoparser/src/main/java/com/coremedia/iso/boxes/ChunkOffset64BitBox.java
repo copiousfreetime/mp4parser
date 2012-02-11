@@ -41,15 +41,12 @@ public class ChunkOffset64BitBox extends ChunkOffsetBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, chunkOffsets.length);
         for (long chunkOffset : chunkOffsets) {
             IsoTypeWriter.writeUInt64(bb, chunkOffset);
         }
-        os.write(bb);
-
     }
 
     protected void getContent(IsoOutputStream os) throws IOException {

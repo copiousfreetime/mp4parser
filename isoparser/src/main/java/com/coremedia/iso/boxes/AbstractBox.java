@@ -16,10 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.ChannelHelper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,6 +26,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * A basic ISO box. No full box.
@@ -44,7 +43,7 @@ public abstract class AbstractBox implements Box {
         return 4 + // size
                 4 + // type
                 (getContentSize() >= 4294967296L ? 8 : 0) +
-                (Arrays.equals(getType(), IsoFile.fourCCtoBytes(UserBox.TYPE)) ? 16 : 0);
+                (UserBox.TYPE.equals(getType()) ? 16 : 0);
     }
 
     /**
@@ -55,21 +54,21 @@ public abstract class AbstractBox implements Box {
      */
     protected abstract long getContentSize();
 
-    protected byte[] type;
+    protected String type;
     private byte[] userType;
     private ContainerBox parent;
 
 
     protected AbstractBox(String type) {
-        this.type = IsoFile.fourCCtoBytes(type);
-    }
-
-    protected AbstractBox(byte[] type) {
         this.type = type;
     }
 
+    protected AbstractBox(byte[] type) {
+        this.type = IsoFile.bytesToFourCC(type);
+    }
 
-    public byte[] getType() {
+
+    public String getType() {
         return type;
     }
 
@@ -104,7 +103,7 @@ public abstract class AbstractBox implements Box {
      * @throws IOException in case of an I/O error.
      */
     public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        if (in instanceof FileChannel && size > 1024*1024) {
+        if (in instanceof FileChannel && size > 1024 * 1024) {
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
             content = ((FileChannel) in).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) in).position(), size);
         } else {
@@ -121,7 +120,7 @@ public abstract class AbstractBox implements Box {
             ByteBuffer content = this.content;
             _parseDetails();
             assert this.content == null;
-            if (content.remaining()>0) {
+            if (content.remaining() > 0) {
                 deadBytes = content.slice();
             }
         }
@@ -145,30 +144,27 @@ public abstract class AbstractBox implements Box {
 
     public void getHeader(WritableByteChannel byteChannel) {
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IsoOutputStream ios = new IsoOutputStream(baos);
-            if (isSmallBox()) {
-                ios.writeUInt32((int) this.getContentSize() + 8);
-                ios.write(getType());
-            } else {
-                ios.writeUInt32(1);
-                ios.write(getType());
-                ios.writeUInt64(getContentSize() + 16);
-            }
-            if (Arrays.equals(getType(), IsoFile.fourCCtoBytes(UserBox.TYPE))) {
-                ios.write(userType);
-            }
 
-            assert baos.size() == getHeaderSize() :
-                    "written header size differs from calculated size: " + baos.size() + " vs. " + getHeaderSize();
-            byteChannel.write(ByteBuffer.wrap(baos.toByteArray()));
+            ByteBuffer ios = ByteBuffer.allocate((isSmallBox() ? 8 : 16) + (UserBox.TYPE.equals(getType()) ? 16 : 0));
+            if (isSmallBox()) {
+                IsoTypeWriter.writeUInt32(ios, this.getContentSize() + 8);
+                ios.put(IsoFile.fourCCtoBytes(getType()));
+            } else {
+                IsoTypeWriter.writeUInt32(ios, 1);
+                ios.put(IsoFile.fourCCtoBytes(getType()));
+                IsoTypeWriter.writeUInt64(ios, getContentSize() + 16);
+            }
+            if (UserBox.TYPE.equals(getType())) {
+                ios.put(userType);
+            }
+            byteChannel.write(ios);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    protected boolean isSmallBox() {
+    private boolean isSmallBox() {
         return (getContentSize() + 8) < 4294967296L;
     }
 
@@ -209,12 +205,22 @@ public abstract class AbstractBox implements Box {
         }
     }
 
+
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+        getContent(bb);
+        os.write(bb);
+    }
+
     /**
-     * Writes the box's content into the given <code>IsoOutputStream</code>. This MUST NOT include
-     * any header bytes.
+     * Writes the box's content into the given <code>ByteBuffer</code>. This must include flags
+     * and version in case of a full box. <code>bb</code> has been initialized with
+     * <code>getContentSize()</code> bytes.
      *
-     * @param os the box's content-sink.
+     * @param bb the box's content-sink.
      * @throws IOException in case of an exception in the underlying <code>OutputStream</code>.
      */
-    protected abstract void getContent(WritableByteChannel os) throws IOException;
+    protected abstract void getContent(ByteBuffer bb) throws IOException;
+
+
 }

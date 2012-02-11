@@ -16,14 +16,13 @@
 
 package com.coremedia.iso.boxes.rtp;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Contains basic information about the (rtp-) hint samples in this track.
@@ -35,7 +34,7 @@ public class RtpHintSampleEntry extends SampleEntry implements ContainerBox {
     private int highestCompatibleVersion;
     private long maxPacketSize;
 
-    public RtpHintSampleEntry(byte[] type) {
+    public RtpHintSampleEntry(String type) {
         super(type);
     }
 
@@ -62,30 +61,21 @@ public class RtpHintSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        hintTrackVersion = in.readUInt16();
-        highestCompatibleVersion = in.readUInt16();
-        maxPacketSize = in.readUInt32();
-        size -= 16;
-
-        while (size > 0) {
-            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            size -= box.getSize();
-            boxes.add(box);
-        }
+    public void _parseDetails() {
+        _parseReservedAndDataReferenceIndex();
+        hintTrackVersion = IsoTypeReader.readUInt16(content);
+        highestCompatibleVersion = IsoTypeReader.readUInt16(content);
+        maxPacketSize = IsoTypeReader.readUInt32(content);
+        _parseChildBoxes();
     }
 
     @Override
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(new byte[6]);
-        isos.writeUInt16(getDataReferenceIndex());
-        isos.writeUInt16(hintTrackVersion);
-        isos.writeUInt16(highestCompatibleVersion);
-        isos.writeUInt32(maxPacketSize);
-        for (Box boxe : boxes) {
-            boxe.getBox(isos);
-        }
+    protected void getContent(ByteBuffer bb) throws IOException {
+        _writeReservedAndDataReferenceIndex(bb);
+        IsoTypeWriter.writeUInt16(bb, hintTrackVersion);
+        IsoTypeWriter.writeUInt16(bb, highestCompatibleVersion);
+        IsoTypeWriter.writeUInt32(bb, maxPacketSize);
+        _writeChildBoxes(bb);
     }
 
     public String toString() {

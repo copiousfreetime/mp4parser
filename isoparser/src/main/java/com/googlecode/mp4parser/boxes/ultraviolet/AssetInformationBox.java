@@ -42,8 +42,7 @@ public class AssetInformationBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(WritableByteChannel os)  {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb)  {
         bb.put(Utf8.convert(profileVersion), 0, 4);
         bb.put(Utf8.convert(apid));
         bb.put((byte) 0);

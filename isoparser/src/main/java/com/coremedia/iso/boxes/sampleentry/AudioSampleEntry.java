@@ -110,15 +110,10 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         return bytesPerSample;
     }
 
-    @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        content = ChannelHelper.readFully(in, size); 
-        this.boxParser = boxParser;
-    }
 
     @Override
     public void _parseDetails() {
-        super._parseDetails();    //parses the six reserved bytes and dataReferenceIndex
+        _parseReservedAndDataReferenceIndex();    //parses the six reserved bytes and dataReferenceIndex
         // 8 bytes already parsed
         //reserved bits - used by qt
         soundVersion = IsoTypeReader.readUInt16(content);
@@ -148,40 +143,8 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
             soundVersion2Data = new byte[20];
             content.get(20);
         }
-        while (content.remaining() > 8) {
-            if (TYPE7.equals(IsoFile.bytesToFourCC(type))) {
-                //microsoft garbage
-                break;
-            }
-
-            Box b = null;
-
-            try {
-                b = boxParser.parseBox(new ReadableByteChannel() {
-
-                    public int read(ByteBuffer dst) {
-                        byte[] b = dst.array();
-                        int r = dst.remaining();
-                        content.get(b, dst.position(), r);
-                        return r;
-                    }
-
-                    public boolean isOpen() {
-                        return true;
-                    }
-
-                    public void close() throws IOException {
-                    }
-                }, this);
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            boxes.add(b);
-
-
-
-        }
-
+        _parseChildBoxes();
+        content = null;
     }
 
 
@@ -203,12 +166,8 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
-        bb.put(new byte[6]);
-
-
-        IsoTypeWriter.writeUInt16(bb,getDataReferenceIndex());
+    protected void getContent(ByteBuffer bb) throws IOException {
+        _writeReservedAndDataReferenceIndex(bb);
         IsoTypeWriter.writeUInt16(bb,soundVersion);
         IsoTypeWriter.writeUInt16(bb,reserved1);
         IsoTypeWriter.writeUInt32(bb,reserved2);
@@ -228,9 +187,6 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
         if (soundVersion == 2) {
             bb.put(soundVersion2Data);
         }
-
-        for (Box boxe : boxes) {
-            boxe.getBox(os);
-        }
+        _writeChildBoxes(bb);
     }
 }

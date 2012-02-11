@@ -56,19 +56,8 @@ public class TextSampleEntry extends SampleEntry {
     }
 
     @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        content = ChannelHelper.readFully(in, 38);
-        size -= 38;
-        while (size > 0) {
-            Box b = boxParser.parseBox(in, this);
-            boxes.add(b);
-            size -= b.getSize();
-        }
-    }
-
-    @Override
     public void _parseDetails() {
-        super._parseDetails();
+        _parseReservedAndDataReferenceIndex();
         displayFlags = IsoTypeReader.readUInt32(content);
         horizontalJustification = IsoTypeReader.readUInt8(content);
         verticalJustification = IsoTypeReader.readUInt8(content);
@@ -82,6 +71,7 @@ public class TextSampleEntry extends SampleEntry {
 
         styleRecord = new StyleRecord();
         styleRecord.parse(content);
+        _parseChildBoxes();
     }
 
 
@@ -100,12 +90,8 @@ public class TextSampleEntry extends SampleEntry {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(38);
-
-        bb.put(new byte[6]);
-        IsoTypeWriter.writeUInt16(bb, getDataReferenceIndex());
-
+    protected void getContent(ByteBuffer bb) throws IOException {
+        _writeReservedAndDataReferenceIndex(bb);
         IsoTypeWriter.writeUInt32(bb, displayFlags);
         IsoTypeWriter.writeUInt8(bb, horizontalJustification);
         IsoTypeWriter.writeUInt8(bb, verticalJustification);
@@ -116,15 +102,7 @@ public class TextSampleEntry extends SampleEntry {
         boxRecord.getContent(bb);
         styleRecord.getContent(bb);
 
-        os.write(bb);
-
-        for (Box boxe : boxes) {
-            boxe.getBox(os);
-        }
-    }
-
-    protected void getContent(IsoOutputStream isos) throws IOException {
-
+        _writeChildBoxes(bb);
     }
 
     public BoxRecord getBoxRecord() {

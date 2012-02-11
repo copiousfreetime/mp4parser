@@ -16,14 +16,15 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * aligned(8) class MovieExtendsHeaderBox extends FullBox('mehd', version, 0) {
@@ -44,22 +45,25 @@ public class MovieExtendsHeaderBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return getVersion() == 1 ? 8 : 4;
-    }
-
-    protected void getContent(IsoOutputStream os) throws IOException {
-        if (getVersion() == 1) {
-            os.writeUInt64(fragmentDuration);
-        } else {
-            os.writeUInt32(fragmentDuration);
-        }
+        return getVersion() == 1 ? 12 : 8;
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        fragmentDuration = getVersion() == 1 ? IsoTypeReader.readUInt64(content) : IsoTypeReader.readUInt32(content);
+    }
 
-        fragmentDuration = getVersion() == 1 ? in.readUInt64() : in.readUInt32();
+
+    @Override
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+        writeVersionAndFlags(bb);
+        if (getVersion() == 1) {
+            IsoTypeWriter.writeUInt64(bb, fragmentDuration);
+        } else {
+            IsoTypeWriter.writeUInt32(bb, fragmentDuration);
+        }
     }
 
     public long getFragmentDuration() {

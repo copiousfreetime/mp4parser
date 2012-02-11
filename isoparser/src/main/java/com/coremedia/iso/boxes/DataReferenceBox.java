@@ -61,13 +61,13 @@ public class DataReferenceBox extends FullContainerBox {
         content = null;
     }
 
+
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
+    public void getContentBeforeChildren(WritableByteChannel os) throws IOException {
         ByteBuffer bb =  ByteBuffer.allocate(8);
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, getBoxes().size());
         os.write(bb);
-        super.getContent(os);
     }
 
 }

@@ -16,18 +16,18 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -46,6 +46,7 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
 
     private int dataReferenceIndex;
     protected List<Box> boxes = new LinkedList<Box>();
+    private BoxParser boxParser;
 
 
     protected SampleEntry(String type) {
@@ -53,7 +54,7 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     }
 
     public void setType(String type) {
-        this.type = IsoFile.fourCCtoBytes(type);
+        this.type = type;
     }
 
     public int getDataReferenceIndex() {
@@ -103,15 +104,43 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     }
 
     @Override
-    public abstract void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException;
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
+        super.parse(in, header, size, boxParser);
+        this.boxParser = boxParser;
+    }
 
-    /**
-     * Parses the 6 reserved byte and the data reference index.
-     */
-    @Override
-    public void _parseDetails() {
+
+    public void _parseReservedAndDataReferenceIndex() {
         content.get(new byte[6]); // ignore 6 reserved bytes;
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
+    }
+
+    public void _parseChildBoxes() {
+        while (content.remaining() > 8) {
+            try {
+                boxes.add(boxParser.parseBox(new ByteBufferReadableByteChannel(content), this));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+        deadBytes = content.slice();
+    }
+
+    public void _writeReservedAndDataReferenceIndex(ByteBuffer bb) {
+        bb.put(new byte[6]);
+        IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
+    }
+
+    public void _writeChildBoxes(ByteBuffer bb) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        WritableByteChannel wbc = Channels.newChannel(baos);
+        for (Box box : boxes) {
+
+            box.getBox(wbc);
+        }
+        wbc.close();
+        bb.put(baos.toByteArray());
     }
 
     public long getNumOfBytesToFirstChild() {
@@ -120,5 +149,27 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
             sizeOfChildren += box.getSize();
         }
         return getSize() - sizeOfChildren;
+    }
+
+    class ByteBufferReadableByteChannel implements ReadableByteChannel {
+        ByteBuffer src;
+
+        ByteBufferReadableByteChannel(ByteBuffer src) {
+            this.src = src;
+        }
+
+        public int read(ByteBuffer dst) {
+            byte[] b = dst.array();
+            int r = dst.remaining();
+            src.get(b, dst.position(), r);
+            return r;
+        }
+
+        public boolean isOpen() {
+            return true;
+        }
+
+        public void close() throws IOException {
+        }
     }
 }

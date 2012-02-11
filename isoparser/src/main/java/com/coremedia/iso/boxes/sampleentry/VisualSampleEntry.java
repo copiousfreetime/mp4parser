@@ -106,7 +106,7 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
 
     @Override
     public void _parseDetails() {
-        super._parseDetails();
+        _parseReservedAndDataReferenceIndex();
         long tmp = IsoTypeReader.readUInt16(content);
         assert 0 == tmp : "reserved byte not 0";
         tmp = IsoTypeReader.readUInt16(content);
@@ -138,25 +138,8 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         tmp = IsoTypeReader.readUInt16(content);
         assert 0xFFFF == tmp;
 
+        _parseChildBoxes();
         content = null;
-        // commented out since it forbids deadbytes
-        //  assert size == 0 : "After parsing all boxes there are " + size + " bytes left. 0 bytes required";
-    }
-
-    @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        content = ChannelHelper.readFully(in, 78);
-        size -= 78;
-        while (size > 8) { // If there are just some stupid dead bytes don't try to make a new box
-            Box b = boxParser.parseBox(in, this);
-            boxes.add(b);
-            size -= b.getSize();
-        }
-        if (size != 0) {
-            throw new IOException("Sebastian needs to fix it - 7658743968");
-        }
-
-
     }
 
 
@@ -169,11 +152,8 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(78);
-        bb.put(new byte[6]);
-        IsoTypeWriter.writeUInt16(bb, getDataReferenceIndex());
-
+    protected void getContent(ByteBuffer bb) throws IOException {
+        _writeReservedAndDataReferenceIndex(bb);
         IsoTypeWriter.writeUInt16(bb, 0);
         IsoTypeWriter.writeUInt16(bb, 0);
         IsoTypeWriter.writeUInt32(bb, predefined[0]);
@@ -198,12 +178,8 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         }
         IsoTypeWriter.writeUInt16(bb, getDepth());
         IsoTypeWriter.writeUInt16(bb, 0xFFFF);
-        os.write(bb);
 
-        for (Box boxe : boxes) {
-            boxe.getBox(os);
-        }
-
+        _writeChildBoxes(bb);
 
     }
 

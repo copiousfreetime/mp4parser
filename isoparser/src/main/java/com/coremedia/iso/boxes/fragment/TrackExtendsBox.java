@@ -16,14 +16,15 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * aligned(8) class TrackExtendsBox extends FullBox('trex', 0, 0){
@@ -48,26 +49,29 @@ public class TrackExtendsBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 5 * 4;
-    }
-
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(trackId);
-        os.writeUInt32(defaultSampleDescriptionIndex);
-        os.writeUInt32(defaultSampleDuration);
-        os.writeUInt32(defaultSampleSize);
-        defaultSampleFlags.getContent(os);
+        return 5 * 4 + 4;
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, trackId);
+        IsoTypeWriter.writeUInt32(bb, defaultSampleDescriptionIndex);
+        IsoTypeWriter.writeUInt32(bb, defaultSampleDuration);
+        IsoTypeWriter.writeUInt32(bb, defaultSampleSize);
+        defaultSampleFlags.getContent(bb);
+        os.write(bb);
+    }
 
-        trackId = in.readUInt32();
-        defaultSampleDescriptionIndex = in.readUInt32();
-        defaultSampleDuration = in.readUInt32();
-        defaultSampleSize = in.readUInt32();
-        defaultSampleFlags = new SampleFlags(in.readUInt32());
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        trackId = IsoTypeReader.readUInt32(content);
+        defaultSampleDescriptionIndex = IsoTypeReader.readUInt32(content);
+        defaultSampleDuration = IsoTypeReader.readUInt32(content);
+        defaultSampleSize = IsoTypeReader.readUInt32(content);
+        defaultSampleFlags = new SampleFlags(IsoTypeReader.readUInt32(content));
     }
 
     public long getTrackId() {

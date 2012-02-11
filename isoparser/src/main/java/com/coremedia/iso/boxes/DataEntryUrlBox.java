@@ -41,10 +41,8 @@ public class DataEntryUrlBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(4);
+    protected void getContent(ByteBuffer bb ) throws IOException {
         writeVersionAndFlags(bb);
-        os.write(bb);
     }
 
     protected long getContentSize() {

@@ -128,10 +128,21 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
      * @throws IOException
      */
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
+    protected final void getContent(WritableByteChannel os) throws IOException {
+        getContentBeforeChildren(os);
         for (Box boxe : boxes) {
             boxe.getBox(os);
         }
+    }
+    
+    public void getContentBeforeChildren(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(4);
+        writeVersionAndFlags(bb);
+        os.write(bb);
+    }
+
+    protected final void getContent(ByteBuffer bb) throws IOException {
+
     }
 
     public long getNumOfBytesToFirstChild() {

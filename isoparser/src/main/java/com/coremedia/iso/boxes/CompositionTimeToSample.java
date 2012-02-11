@@ -52,15 +52,15 @@ public class CompositionTimeToSample extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb) throws IOException {
+
         IsoTypeWriter.writeUInt32(bb, entries.size());
 
         for (Entry entry : entries) {
             IsoTypeWriter.writeUInt32(bb, entry.getCount());
             IsoTypeWriter.writeUInt32(bb, entry.getOffset());
         }
-        os.write(bb);
+
     }
 
 

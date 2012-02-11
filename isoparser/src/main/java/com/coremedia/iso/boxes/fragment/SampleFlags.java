@@ -17,8 +17,10 @@
 package com.coremedia.iso.boxes.fragment;
 
 import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * bit(6) reserved=0;
@@ -59,13 +61,13 @@ public class SampleFlags {
             '}';
   }
 
-  public void getContent(IsoOutputStream os) throws IOException {
+  public void getContent( ByteBuffer os) throws IOException {
     long flags = reserved << 26;
     flags = flags | (sampleDependsOn << 24);
     flags = flags | (sampleHasRedundancy << 22);
     flags = flags | (samplePaddingValue << 19);
     flags = flags | ((sampleIsDifferenceSample ? 1 : 0) << 18);
     flags = flags | sampleDegradationPriority;
-    os.writeUInt32(flags);
+    IsoTypeWriter.writeUInt32(os, flags);
   }
 }

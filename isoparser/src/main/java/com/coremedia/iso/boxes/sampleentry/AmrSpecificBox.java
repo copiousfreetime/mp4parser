@@ -40,7 +40,7 @@ public class AmrSpecificBox extends AbstractBox {
     private int framesPerSample;
 
     public AmrSpecificBox() {
-        super(IsoFile.fourCCtoBytes("damr"));
+        super(TYPE);
     }
 
     public String getVendor() {
@@ -81,20 +81,16 @@ public class AmrSpecificBox extends AbstractBox {
     }
 
 
-    public void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(9);
+    public void getContent(ByteBuffer bb) throws IOException {
         bb.put(IsoFile.fourCCtoBytes(vendor));
-
         IsoTypeWriter.writeUInt8(bb, decoderVersion);
         IsoTypeWriter.writeUInt16(bb, modeSet);
         IsoTypeWriter.writeUInt8(bb, modeChangePeriod);
         IsoTypeWriter.writeUInt8(bb, framesPerSample);
-        os.write(bb);
-
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("AmrSpecificBox[vendor=").append(getVendor());
         buffer.append(";decoderVersion=").append(getDecoderVersion());
         buffer.append(";modeSet=").append(getModeSet());

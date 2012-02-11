@@ -58,8 +58,7 @@ public class DataEntryUrnBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb) throws IOException {
         bb.put(Utf8.convert(name));
         bb.put((byte) 0);
         bb.put(Utf8.convert(location));

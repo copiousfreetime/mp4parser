@@ -23,43 +23,24 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
 /**
  * A box with no internal structure. We readByte it and write it without looking into the content.
  */
 public abstract class LiteralBox extends AbstractBox {
-    private static Logger LOG = Logger.getLogger(LiteralBox.class.getName());
-
-    byte[] content;
 
     public LiteralBox(byte[] type) {
         super(type);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        if (size == -1) { // length = rest of file!
-            throw new IOException("box size of -1 is not supported. Boxsize -1 means box reaches until the end of the file.");
-        } else if (((int) size) != size) {
-            throw new IOException("The UnknownBox cannot be larger than 2^32 bytes(Plz enhance parser!!)");
-        } else {
-            content = in.read((int) size);
-        }
-    }
-
-    protected long getContentSize() {
-        return content.length;
-    }
-
     public String toString() {
-        return "UnknownBox[type=" + IsoFile.bytesToFourCC(getType()) + ";contentLength=" + (content != null ? content.length : "?") + "]";
+        return "UnknownBox[type=" + getType() + ";contentLength=" + (content != null ? content.capacity() : "?") + "]";
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.write(content);
-    }
 
-    public void setContent(byte[] content) {
+    public void setContent(ByteBuffer content) {
         this.content = content;
     }
 }

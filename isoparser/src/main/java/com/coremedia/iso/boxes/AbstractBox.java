@@ -36,7 +36,7 @@ public abstract class AbstractBox implements Box {
     protected ByteBuffer content;
 
     public long getSize() {
-        return getContentSize() + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.capacity());
+        return (content == null ? getContentSize() : content.capacity()) + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.capacity());
     }
 
     protected long getHeaderSize() {
@@ -202,6 +202,8 @@ public abstract class AbstractBox implements Box {
                     os.write(deadBytes);
                 }
             }
+        } else {
+            os.write(content);
         }
     }
 

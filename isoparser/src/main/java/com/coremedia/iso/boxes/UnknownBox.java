@@ -17,12 +17,31 @@
 package com.coremedia.iso.boxes;
 
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 /**
  * A box unknown to the ISO Parser. If there is no specific Box implementation for a Box this <code>UnknownBox</code>
  * will just hold the box's data.
  */
-public class UnknownBox extends LiteralBox {
-  public UnknownBox(byte[] type) {
-    super(type);
-  }
+public class UnknownBox extends AbstractBox {
+    public UnknownBox(byte[] type) {
+        super(type);
+    }
+
+    @Override
+    protected long getContentSize() {
+        return content.capacity();
+    }
+
+    @Override
+    public void _parseDetails() {
+        // nothing no details
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        content.rewind();
+        bb.put(content);
+    }
 }

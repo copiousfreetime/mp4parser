@@ -19,13 +19,32 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 /**
  * A free box. Just a placeholder to enable editing without rewriting the whole file.
  */
-public class FreeBox extends LiteralBox {
-  public static final String TYPE = "free";
+public class FreeBox extends AbstractBox {
+    public static final String TYPE = "free";
 
-  public FreeBox() {
-    super(IsoFile.fourCCtoBytes(TYPE));
-  }
+    public FreeBox() {
+        super(IsoFile.fourCCtoBytes(TYPE));
+    }
+
+    @Override
+    protected long getContentSize() {
+        return content.capacity();
+    }
+
+    @Override
+    public void _parseDetails() {
+        // nothing no details
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        content.rewind();
+        bb.put(content);
+    }
 }

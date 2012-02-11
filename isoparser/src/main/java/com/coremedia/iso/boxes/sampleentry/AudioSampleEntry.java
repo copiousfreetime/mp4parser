@@ -16,14 +16,18 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Contains basic information about the audio samples in this track. Format-specific information
@@ -60,8 +64,9 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     private int reserved1;
     private long reserved2;
     private byte[] soundVersion2Data;
+    private BoxParser boxParser;
 
-    public AudioSampleEntry(byte[] type) {
+    public AudioSampleEntry(String type) {
         super(type);
     }
 
@@ -106,50 +111,79 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
+        content = ChannelHelper.readFully(in, size); 
+        this.boxParser = boxParser;
+    }
+
+    @Override
+    public void _parseDetails() {
+        super._parseDetails();    //parses the six reserved bytes and dataReferenceIndex
         // 8 bytes already parsed
         //reserved bits - used by qt
-        soundVersion = in.readUInt16();
+        soundVersion = IsoTypeReader.readUInt16(content);
 
         //reserved
-        reserved1 = in.readUInt16();
-        reserved2 = in.readUInt32();
+        reserved1 = IsoTypeReader.readUInt16(content);
+        reserved2 = IsoTypeReader.readUInt32(content);
 
-        channelCount = in.readUInt16();
-        sampleSize = in.readUInt16();
+        channelCount = IsoTypeReader.readUInt16(content);
+        sampleSize = IsoTypeReader.readUInt16(content);
         //reserved bits - used by qt
-        compressionId = in.readUInt16();
+        compressionId = IsoTypeReader.readUInt16(content);
         //reserved bits - used by qt
-        packetSize = in.readUInt16();
+        packetSize = IsoTypeReader.readUInt16(content);
         //sampleRate = in.readFixedPoint1616();
-        sampleRate = in.readUInt32() >>> 16;
+        sampleRate = IsoTypeReader.readUInt32(content) >>> 16;
 
         //more qt stuff - see http://mp4v2.googlecode.com/svn-history/r388/trunk/src/atom_sound.cpp
         if (soundVersion > 0) {
-            samplesPerPacket = in.readUInt32();
-            bytesPerPacket = in.readUInt32();
-            bytesPerFrame = in.readUInt32();
-            bytesPerSample = in.readUInt32();
-            size -= 16;
+            samplesPerPacket = IsoTypeReader.readUInt32(content);
+            bytesPerPacket = IsoTypeReader.readUInt32(content);
+            bytesPerFrame = IsoTypeReader.readUInt32(content);
+            bytesPerSample = IsoTypeReader.readUInt32(content);
         }
         if (soundVersion == 2) {
-            soundVersion2Data = in.read(20);
-            size -= 20;
+            
+            soundVersion2Data = new byte[20];
+            content.get(20);
         }
-        size -= 28;
-        while (size > 8) {
+        while (content.remaining() > 8) {
             if (TYPE7.equals(IsoFile.bytesToFourCC(type))) {
                 //microsoft garbage
                 break;
             }
-            Box b = boxParser.parseBox(in, this, lastMovieFragmentBox);
+
+            Box b = null;
+
+            try {
+                b = boxParser.parseBox(new ReadableByteChannel() {
+
+                    public int read(ByteBuffer dst) {
+                        byte[] b = dst.array();
+                        int r = dst.remaining();
+                        content.get(b, dst.position(), r);
+                        return r;
+                    }
+
+                    public boolean isOpen() {
+                        return true;
+                    }
+
+                    public void close() throws IOException {
+                    }
+                }, this);
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
             boxes.add(b);
-            size -= b.getSize();
+
+
+
         }
-        // commented out since it forbids deadbytes
-        //assert size == 0 : "After parsing all boxes there are " + size + " bytes left. 0 bytes required";
+
     }
+
 
 
     @Override
@@ -169,31 +203,34 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     }
 
     @Override
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(new byte[6]);
-        isos.writeUInt16(getDataReferenceIndex());
-        isos.writeUInt16(soundVersion);
-        isos.writeUInt16(reserved1);
-        isos.writeUInt32(reserved2);
-        isos.writeUInt16(getChannelCount());
-        isos.writeUInt16(getSampleSize());
-        isos.writeUInt16(0);
-        isos.writeUInt16(0);
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+        bb.put(new byte[6]);
+
+
+        IsoTypeWriter.writeUInt16(bb,getDataReferenceIndex());
+        IsoTypeWriter.writeUInt16(bb,soundVersion);
+        IsoTypeWriter.writeUInt16(bb,reserved1);
+        IsoTypeWriter.writeUInt32(bb,reserved2);
+        IsoTypeWriter.writeUInt16(bb,getChannelCount());
+        IsoTypeWriter.writeUInt16(bb,getSampleSize());
+        IsoTypeWriter.writeUInt16(bb,0);
+        IsoTypeWriter.writeUInt16(bb,0);
         //isos.writeFixedPont1616(getSampleRate());
-        isos.writeUInt32(getSampleRate() << 16);
+        IsoTypeWriter.writeUInt32(bb,getSampleRate() << 16);
         if (soundVersion > 0) {
-            isos.writeUInt32(samplesPerPacket);
-            isos.writeUInt32(bytesPerPacket);
-            isos.writeUInt32(bytesPerFrame);
-            isos.writeUInt32(bytesPerSample);
+            IsoTypeWriter.writeUInt32(bb,samplesPerPacket);
+            IsoTypeWriter.writeUInt32(bb,bytesPerPacket);
+            IsoTypeWriter.writeUInt32(bb,bytesPerFrame);
+            IsoTypeWriter.writeUInt32(bb,bytesPerSample);
         }
 
         if (soundVersion == 2) {
-            isos.write(soundVersion2Data);
+            bb.put(soundVersion2Data);
         }
 
         for (Box boxe : boxes) {
-            boxe.getBox(isos);
+            boxe.getBox(os);
         }
     }
 }

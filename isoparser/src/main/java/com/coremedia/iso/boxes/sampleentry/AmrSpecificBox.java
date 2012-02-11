@@ -17,14 +17,13 @@
 package com.coremedia.iso.boxes.sampleentry;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * AMR audio format specific subbox of an audio sample entry.
@@ -68,21 +67,29 @@ public class AmrSpecificBox extends AbstractBox {
         return 9;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        assert size == 9;
-        vendor = IsoFile.bytesToFourCC(in.read(4));
-        decoderVersion = in.readUInt8();
-        modeSet = in.readUInt16();
-        modeChangePeriod = in.readUInt8();
-        framesPerSample = in.readUInt8();
+    @Override
+    public void _parseDetails() {
+        byte[] v = new byte[4];
+        content.get(v);
+        vendor = IsoFile.bytesToFourCC(v);
+
+        decoderVersion = IsoTypeReader.readUInt8(content);
+        modeSet = IsoTypeReader.readUInt16(content);
+        modeChangePeriod = IsoTypeReader.readUInt8(content);
+        framesPerSample = IsoTypeReader.readUInt8(content);
+        content = null;
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(IsoFile.fourCCtoBytes(vendor));
-        isos.writeUInt8(decoderVersion);
-        isos.writeUInt16(modeSet);
-        isos.writeUInt8(modeChangePeriod);
-        isos.writeUInt8(framesPerSample);
+
+    public void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(9);
+        bb.put(IsoFile.fourCCtoBytes(vendor));
+
+        IsoTypeWriter.writeUInt8(bb, decoderVersion);
+        IsoTypeWriter.writeUInt16(bb, modeSet);
+        IsoTypeWriter.writeUInt8(bb, modeChangePeriod);
+        IsoTypeWriter.writeUInt8(bb, framesPerSample);
+        os.write(bb);
 
     }
 

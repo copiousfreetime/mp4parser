@@ -176,7 +176,30 @@ public abstract class AbstractBox implements Box {
     public void getBox(WritableByteChannel os) throws IOException {
         getHeader(os);
         if (content == null) {
-            getContent(os);
+            class VerifyWriteWritableByteChannel implements WritableByteChannel {
+                WritableByteChannel writableByteChannel;
+                boolean hasWritten = false;
+
+                VerifyWriteWritableByteChannel(WritableByteChannel writableByteChannel) {
+                    this.writableByteChannel = writableByteChannel;
+                }
+
+                public int write(ByteBuffer src) throws IOException {
+                    hasWritten = true;
+                    return writableByteChannel.write(src);
+                }
+
+                public boolean isOpen() {
+                    return writableByteChannel.isOpen();
+                }
+
+                public void close() throws IOException {
+                    writableByteChannel.close();
+                }
+            }
+            VerifyWriteWritableByteChannel vwbc = new VerifyWriteWritableByteChannel(os);
+            getContent(vwbc);
+            assert vwbc.hasWritten;
             if (deadBytes != null) {
                 deadBytes.position(0);
                 while (deadBytes.remaining() > 0) {

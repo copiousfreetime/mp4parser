@@ -19,6 +19,10 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Only used within the DataReferenceBox. Find more information there.
@@ -46,15 +50,20 @@ public class DataEntryUrnBox extends AbstractFullBox {
         return Utf8.utf8StringLengthInBytes(name) + 1 + Utf8.utf8StringLengthInBytes(location) + 1;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        name = in.readString();
-        location = in.readString();
+    @Override
+    public void _parseDetails() {
+        name = IsoTypeReader.readString(content);
+        location = IsoTypeReader.readString(content);
+        content = null;
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeStringZeroTerm(name);
-        isos.writeStringZeroTerm(location);
+    @Override
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+        bb.put(Utf8.convert(name));
+        bb.put((byte) 0);
+        bb.put(Utf8.convert(location));
+        bb.put((byte) 0);
     }
 
     public String toString() {

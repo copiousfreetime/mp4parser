@@ -50,7 +50,7 @@ public class DataReferenceBox extends FullContainerBox {
     }
 
     @Override
-    public void parse(ReadableByteChannel in, long size, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
         content = ChannelHelper.readFully(in, 8);
         parseBoxes(size - 8, in, boxParser);
     }

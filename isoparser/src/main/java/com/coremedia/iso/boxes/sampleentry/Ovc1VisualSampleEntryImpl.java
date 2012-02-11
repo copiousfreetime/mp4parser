@@ -1,10 +1,13 @@
 package com.coremedia.iso.boxes.sampleentry;
 
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
@@ -41,6 +44,11 @@ public class Ovc1VisualSampleEntryImpl extends SampleEntry {
         IsoTypeWriter.writeUInt16(bb, getDataReferenceIndex());
         bb.put(vc1Content);
         os.write(bb);
+    }
+
+    @Override
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
+        content = ChannelHelper.readFully(in, size);
     }
 
     protected Ovc1VisualSampleEntryImpl() {

@@ -99,4 +99,15 @@ public final class IsoTypeReader {
         return ((float) result) / 256;
     }
 
+    public static String readIso639(ByteBuffer bb)  {
+        int bits = readUInt16(bb);
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < 3; i++) {
+            int c = (bits >> (2 - i) * 5) & 0x1f;
+            result.append((char) (c + 0x60));
+        }
+        return result.toString();
+    }
+
+
 }

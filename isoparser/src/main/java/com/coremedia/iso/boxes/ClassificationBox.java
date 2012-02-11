@@ -19,6 +19,10 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Classification of the media according to 3GPP 26.244.
@@ -72,23 +76,32 @@ public class ClassificationBox extends AbstractFullBox {
         return 4 + 2 + 2 + Utf8.utf8StringLengthInBytes(classificationInfo) + 1;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        classificationEntity = IsoFile.bytesToFourCC(in.read(4));
-        classificationTableIndex = in.readUInt16();
-        language = in.readIso639();
-        classificationInfo = in.readString();
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        byte[] cE = new byte[4];
+        content.get(cE);
+        classificationEntity = IsoFile.bytesToFourCC(cE);
+        classificationTableIndex = IsoTypeReader.readUInt16(content);
+        language = IsoTypeReader.readIso639(content);
+        classificationInfo = IsoTypeReader.readString(content);
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(IsoFile.fourCCtoBytes(classificationEntity));
-        isos.writeUInt16(classificationTableIndex);
-        isos.writeIso639(language);
-        isos.writeStringZeroTerm(classificationInfo);
+    @Override
+    protected void getContent(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+
+        bb.put (IsoFile.fourCCtoBytes(classificationEntity));
+        IsoTypeWriter.writeUInt16(bb, classificationTableIndex);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(classificationInfo));
+        bb.put((byte) 0);
+        os.write(bb);
     }
+
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("ClassificationBox[language=").append(getLanguage());
         buffer.append("classificationEntity=").append(getClassificationEntity());
         buffer.append(";classificationTableIndex=").append(getClassificationTableIndex());

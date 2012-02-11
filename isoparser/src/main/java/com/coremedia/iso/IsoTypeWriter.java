@@ -5,13 +5,14 @@ import java.nio.ByteBuffer;
 
 public final class IsoTypeWriter {
 
-    public static void writeUInt64(ByteBuffer bb, long u)  {
+    public static void writeUInt64(ByteBuffer bb, long u) {
 
         writeUInt32(bb, ((u >> 32) & 0xFFFFFFFFl));
         writeUInt32(bb, u & 0xFFFFFFFFl);
 
     }
-    public static void writeUInt32(ByteBuffer bb, long u)  {
+
+    public static void writeUInt32(ByteBuffer bb, long u) {
 
         writeUInt16(bb, (int) ((u >> 16) & 0xFFFF));
         writeUInt16(bb, (int) u & 0xFFFF);
@@ -19,15 +20,15 @@ public final class IsoTypeWriter {
     }
 
 
-    public static void writeUInt24(ByteBuffer bb, int i)  {
+    public static void writeUInt24(ByteBuffer bb, int i) {
         i = i & 0xFFFFFF;
-        writeUInt16(bb, i) ;
+        writeUInt16(bb, i);
         writeUInt8(bb, i);
 
     }
 
 
-    public static void writeUInt16(ByteBuffer bb, int i)  {
+    public static void writeUInt16(ByteBuffer bb, int i) {
         i = i & 0xFFFF;
         writeUInt8(bb, i >> 8);
         writeUInt8(bb, i & 0xFF);
@@ -55,5 +56,13 @@ public final class IsoTypeWriter {
     private static byte int2byte(int i) {
         i = i & 0xFF;
         return (byte) (i > 127 ? i - 256 : i);
+    }
+
+    public static void writeIso639(ByteBuffer bb, String language) {
+        int bits = 0;
+        for (int i = 0; i < 3; i++) {
+            bits += (language.getBytes()[i] - 0x60) << (2 - i) * 5;
+        }
+        writeUInt16(bb, bits);
     }
 }

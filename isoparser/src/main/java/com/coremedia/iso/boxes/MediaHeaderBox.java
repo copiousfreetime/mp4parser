@@ -16,12 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * This box defines overall information which is media-independent, and relevant to the entire presentation
@@ -62,7 +62,7 @@ public class MediaHeaderBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        long contentSize = 0;
+        long contentSize = 4;
         if (getVersion() == 1) {
             contentSize += 8 + 8 + 4 + 8;
         } else {
@@ -94,25 +94,27 @@ public class MediaHeaderBox extends AbstractFullBox {
         this.language = language;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
         if (getVersion() == 1) {
-            creationTime = in.readUInt64();
-            modificationTime = in.readUInt64();
-            timescale = in.readUInt32();
-            duration = in.readUInt64();
+            creationTime = IsoTypeReader.readUInt64(content);
+            modificationTime = IsoTypeReader.readUInt64(content);
+            timescale = IsoTypeReader.readUInt32(content);
+            duration = IsoTypeReader.readUInt64(content);
         } else {
-            creationTime = in.readUInt32();
-            modificationTime = in.readUInt32();
-            timescale = in.readUInt32();
-            duration = in.readUInt32();
+            creationTime = IsoTypeReader.readUInt32(content);
+            modificationTime = IsoTypeReader.readUInt32(content);
+            timescale = IsoTypeReader.readUInt32(content);
+            duration = IsoTypeReader.readUInt32(content);
         }
-        language = in.readIso639();
-        in.readUInt16();
+        language = IsoTypeReader.readIso639(content);
+        IsoTypeReader.readUInt16(content);
     }
 
+
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("MovieHeaderBox[");
         result.append("creationTime=").append(getCreationTime());
         result.append(";");
@@ -127,19 +129,19 @@ public class MediaHeaderBox extends AbstractFullBox {
         return result.toString();
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
+    protected void getContent(ByteBuffer bb) throws IOException {
         if (getVersion() == 1) {
-            isos.writeUInt64(creationTime);
-            isos.writeUInt64(modificationTime);
-            isos.writeUInt32(timescale);
-            isos.writeUInt64(duration);
+            IsoTypeWriter.writeUInt64(bb, creationTime);
+            IsoTypeWriter.writeUInt64(bb, modificationTime);
+            IsoTypeWriter.writeUInt32(bb, timescale);
+            IsoTypeWriter.writeUInt64(bb, duration);
         } else {
-            isos.writeUInt32((int) creationTime);
-            isos.writeUInt32((int) modificationTime);
-            isos.writeUInt32((int) timescale);
-            isos.writeUInt32((int) duration);
+            IsoTypeWriter.writeUInt32(bb, l2i(creationTime));
+            IsoTypeWriter.writeUInt32(bb, l2i(modificationTime));
+            IsoTypeWriter.writeUInt32(bb, l2i(timescale));
+            IsoTypeWriter.writeUInt32(bb, l2i(duration));
         }
-        isos.writeIso639(language);
-        isos.writeUInt16(0);
+        IsoTypeWriter.writeIso639(bb, language);
+        IsoTypeWriter.writeUInt16(bb, 0);
     }
 }

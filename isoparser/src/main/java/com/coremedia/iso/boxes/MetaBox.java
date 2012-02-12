@@ -16,12 +16,16 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 
 /**
@@ -32,6 +36,7 @@ public class MetaBox extends AbstractContainerBox {
     private int flags = 0;
 
     public static final String TYPE = "meta";
+    private BoxParser boxParser;
 
     public MetaBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
@@ -59,31 +64,50 @@ public class MetaBox extends AbstractContainerBox {
         }
     }
 
-    @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        if (isMp4Box()) {
-            os.writeUInt8(version);
-            os.writeUInt24(flags);
-        }
-        super.getContent(os);    //To change body of overridden methods use File | Settings | File Templates.
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
+        content = ChannelHelper.readFully(in, size);
+        this.boxParser = boxParser;
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        long pos = in.position();
-        in.skip(4);
-        if ("hdlr".equals(IsoFile.bytesToFourCC(in.read(4)))) {
+    public void _parseDetails() {
+        int pos = content.position();
+        content.get(new byte[4]);
+        String isHdlr = IsoTypeReader.read4cc(content);
+        if ("hdlr".equals(isHdlr)) {
             //  this is apple bullshit - it's NO FULLBOX
-            in.position(pos);
+            content.position(pos);
             version = -1;
             flags = -1;
         } else {
-            in.position(pos);
-            version = in.readUInt8();
-            flags = in.readUInt24();
+            content.position(pos);
+            version = IsoTypeReader.readUInt8(content);
+            flags = IsoTypeReader.readUInt24(content);
         }
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+        while (content.remaining() >= 8) {
+            try {
+                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
+            } catch (IOException e) {
+                throw new RuntimeException("Sebastian needs to fix 7518765283");
+            }
+        }
+        if (content.remaining() > 0) {
+            throw new RuntimeException("Sebastian needs to fix it 90732r26537");
+        }
     }
+
+    @Override
+    protected void getContent(WritableByteChannel wbc) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+        if (isMp4Box()) {
+            IsoTypeWriter.writeUInt8(bb, version);
+            IsoTypeWriter.writeUInt24(bb, flags);
+        }
+        for (Box boxe : boxes) {
+            boxe.getBox(wbc);
+        }
+    }
+
 
     public boolean isMp4Box() {
         return version != -1 && flags != -1;

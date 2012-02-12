@@ -21,6 +21,7 @@ import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * A vodafone specific box.
@@ -43,16 +44,20 @@ public class CoverUriBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return Utf8.utf8StringLengthInBytes(coverUri) + 1;
+        return Utf8.utf8StringLengthInBytes(coverUri) + 5;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);   // 4 bytes are parsed in here
-        coverUri = in.readString((int) (size - 4));
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        coverUri = IsoTypeReader.readString(content);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeStringZeroTerm(coverUri);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(Utf8.convert(coverUri));
+        bb.put((byte) 0);
     }
 
 

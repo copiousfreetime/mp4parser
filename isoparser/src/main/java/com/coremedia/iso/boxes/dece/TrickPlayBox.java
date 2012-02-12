@@ -1,13 +1,11 @@
 package com.coremedia.iso.boxes.dece;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +25,7 @@ public class TrickPlayBox extends AbstractFullBox {
     private List<Entry> entries = new ArrayList<Entry>();
 
     public TrickPlayBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public static class Entry {
@@ -57,7 +55,7 @@ public class TrickPlayBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return entries.size();
+        return 4 + entries.size();
     }
 
     @Override
@@ -68,14 +66,18 @@ public class TrickPlayBox extends AbstractFullBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long remainingBytes = size - 4;
-
-        while (remainingBytes > 0) {
-            entries.add(new Entry(in.readUInt8()));
-            remainingBytes--;
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        while (content.remaining() > 0) {
+            entries.add(new Entry(IsoTypeReader.readUInt8(content)));
         }
     }
 
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+       writeVersionAndFlags(bb);
+        for (Entry entry : entries) {
+            IsoTypeWriter.writeUInt8(bb, entry.value);
+        }
+    }
 }

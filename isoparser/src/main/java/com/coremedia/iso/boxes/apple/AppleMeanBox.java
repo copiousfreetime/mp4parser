@@ -1,14 +1,11 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.Utf8;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Apple Meaning box. Allowed as subbox of "----" box.
@@ -24,11 +21,23 @@ public final class AppleMeanBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return Utf8.convert(meaning).length;
+        return 4 + Utf8.utf8StringLengthInBytes(meaning);
     }
 
     protected void getContent(IsoOutputStream os) throws IOException {
         os.writeStringNoTerm(meaning);
+    }
+
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        meaning =  IsoTypeReader.readString(content, content.remaining());
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(Utf8.convert(meaning));
     }
 
     public String getMeaning() {
@@ -39,9 +48,6 @@ public final class AppleMeanBox extends AbstractFullBox {
         this.meaning = meaning;
     }
 
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        setMeaning(in.readString((int) (size - 4)));
-    }
+
+    
 }

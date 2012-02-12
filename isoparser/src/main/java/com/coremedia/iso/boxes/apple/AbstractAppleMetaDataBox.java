@@ -4,11 +4,13 @@ import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -48,16 +50,18 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
         super(IsoFile.fourCCtoBytes(type));
     }
 
-
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        long sp = this.offset + getHeaderSize();
-        long dataBoxSize = in.readUInt32();
-        String thisShouldBeData = in.readString(4);
+    @Override
+    public void _parseDetails() {
+        long dataBoxSize = IsoTypeReader.readUInt32(content);
+        String thisShouldBeData = IsoTypeReader.read4cc(content);
         assert "data".equals(thisShouldBeData);
         appleDataBox = new AppleDataBox();
-        appleDataBox.parse(in, dataBoxSize - 8, boxParser, lastMovieFragmentBox);
+        try {
+            appleDataBox.parse(new ByteBufferByteChannel(content), null, 0, null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         appleDataBox.setParent(this);
-        appleDataBox.offset = sp;
     }
 
 
@@ -65,8 +69,8 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
         return appleDataBox.getSize();
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        appleDataBox.getBox(os);
+    protected void getContent(ByteBuffer os) throws IOException {
+        appleDataBox.getBox(new ByteBufferByteChannel(os));
     }
 
     public long getNumOfBytesToFirstChild() {
@@ -90,9 +94,9 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
             appleDataBox.setVersion(0);
             appleDataBox.setFlags(1);
             appleDataBox.setFourBytes(new byte[4]);
-            appleDataBox.setContent(Utf8.convert(value));
+            appleDataBox.setData(Utf8.convert(value));
         } else if (appleDataBox.getFlags() == 21) {
-            byte[] content = appleDataBox.getContent();
+            byte[] content = appleDataBox.getData();
             appleDataBox = new AppleDataBox();
             appleDataBox.setVersion(0);
             appleDataBox.setFlags(21);
@@ -114,13 +118,13 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
             } catch (IOException e) {
                 throw new Error(e);
             }
-            appleDataBox.setContent(baos.toByteArray());
+            appleDataBox.setData(baos.toByteArray());
         } else if (appleDataBox.getFlags() == 0) {
             appleDataBox = new AppleDataBox();
             appleDataBox.setVersion(0);
             appleDataBox.setFlags(0);
             appleDataBox.setFourBytes(new byte[4]);
-            appleDataBox.setContent(hexStringToByteArray(value));
+            appleDataBox.setData(hexStringToByteArray(value));
 
         } else {
             LOG.warning("Don't know how to handle appleDataBox with flag=" + appleDataBox.getFlags());
@@ -129,9 +133,9 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
 
     public String getValue() {
         if (appleDataBox.getFlags() == 1) {
-            return Utf8.convert(appleDataBox.getContent());
+            return Utf8.convert(appleDataBox.getData());
         } else if (appleDataBox.getFlags() == 21) {
-            byte[] content = appleDataBox.getContent();
+            byte[] content = appleDataBox.getData();
             long l = 0;
             int current = 1;
             int length = content.length;
@@ -140,7 +144,7 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
             }
             return "" + l;
         } else if (appleDataBox.getFlags() == 0) {
-            return String.format("%x", new BigInteger(appleDataBox.getContent()));
+            return String.format("%x", new BigInteger(appleDataBox.getData()));
         } else {
             return "unknown";
         }

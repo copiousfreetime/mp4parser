@@ -24,6 +24,7 @@ import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The rights object box MAY be used to insert a Protected Rights Object, defined in [DRM-v2] section 5.3.7, i
@@ -51,13 +52,17 @@ public class OmaDrmRightsObjectBox extends AbstractFullBox {
         this.rightsObject = rightsObject;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        rightsObject = in.read((int) size - 4);
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        rightsObject = new byte[content.remaining()];
+        content.get(rightsObject);
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(rightsObject);
+
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(rightsObject);
     }
 
     public String toString() {

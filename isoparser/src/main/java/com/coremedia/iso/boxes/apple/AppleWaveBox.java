@@ -15,13 +15,10 @@ public final class AppleWaveBox extends AbstractContainerBox {
     public static final String TYPE = "wave";
 
     public AppleWaveBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-    }
+
 
 
 }

@@ -22,6 +22,7 @@ import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Special box used by Vodafone in their DCF containing information about the artist. Mainly used for OMA DCF files
@@ -54,18 +55,21 @@ public class AlbumArtistBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 2 + Utf8.utf8StringLengthInBytes(albumArtist) + 1;
+        return 6 + Utf8.utf8StringLengthInBytes(albumArtist) + 1;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        albumArtist = in.readString();
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        language = IsoTypeReader.readIso639(content);
+        albumArtist = IsoTypeReader.readString(content);
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeIso639(language);
-        isos.writeStringZeroTerm(albumArtist);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(albumArtist));
+        bb.put((byte) 0);
     }
 
     public String toString() {

@@ -16,18 +16,18 @@
 
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 public class AppleDataReferenceBox extends AbstractFullBox {
     public static final String TYPE = "rdrf";
-    private long dataReferenceSize;
+    private int dataReferenceSize;
     private String dataReferenceType;
     private String dataReference;
 
@@ -37,23 +37,23 @@ public class AppleDataReferenceBox extends AbstractFullBox {
 
 
     protected long getContentSize() {
-        return 4 //data ref type
-                + 4 //dataReferenceSize field
-                + dataReferenceSize;
+        return 12 + dataReferenceSize;
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        dataReferenceType = in.readString(4);
-        dataReferenceSize = in.readUInt32();
-        dataReference = in.readString((int) dataReferenceSize);
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        dataReferenceType = IsoTypeReader.read4cc(content);
+        dataReferenceSize = l2i(IsoTypeReader.readUInt32(content));
+        dataReference = IsoTypeReader.readString(content, dataReferenceSize);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeStringNoTerm(dataReferenceType);
-        os.writeUInt32(dataReferenceSize);
-        os.writeStringNoTerm(dataReference);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(IsoFile.fourCCtoBytes(dataReferenceType));
+        IsoTypeWriter.writeUInt32(bb, dataReferenceSize);
+        bb.put(Utf8.convert(dataReference));
     }
 
     public long getDataReferenceSize() {

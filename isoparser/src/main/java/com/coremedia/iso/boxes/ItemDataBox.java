@@ -14,6 +14,7 @@ public class ItemDataBox extends AbstractFullBox {
     ByteBuffer data;
     public static final String TYPE = "idat";
 
+
     public ItemDataBox() {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
@@ -31,14 +32,17 @@ public class ItemDataBox extends AbstractFullBox {
         return data.capacity();
     }
 
+
+
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        os.write(data);
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        data = content.slice();
     }
 
     @Override
-    public void parse(ReadableByteChannel in, long size, BoxParser boxParser) throws IOException {
-        parseVersionAndFlags(in, size);
-        data = ChannelHelper.readFully(in, size - 4);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(data);
     }
 }

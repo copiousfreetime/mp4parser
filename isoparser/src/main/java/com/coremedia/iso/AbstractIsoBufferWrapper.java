@@ -200,10 +200,5 @@ public abstract class AbstractIsoBufferWrapper implements IsoBufferWrapper {
     }
 
 
-    public long skip(long n) throws IOException {
-        this.position(this.position() + n);
-        return n;
-    }
-
 
 }

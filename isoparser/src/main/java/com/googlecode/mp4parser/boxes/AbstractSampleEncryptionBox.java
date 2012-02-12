@@ -1,21 +1,20 @@
 package com.googlecode.mp4parser.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 
-public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
+public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     int algorithmId = -1;
     int ivSize = -1;
     byte[] kid = null;
@@ -25,44 +24,24 @@ public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
         super(type);
     }
 
-
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        if (isOverrideTrackEncryptionBoxParameters()) {
-            os.writeUInt24(algorithmId);
-            os.writeUInt8(ivSize);
-            os.write(kid);
-        }
-        os.writeUInt32(entries.size());
-        for (Entry entry : entries) {
-            os.write(entry.iv);
-            if (isSubSampleEncryption()) {
-                os.writeUInt16(entry.pairs.size());
-                for (Entry.Pair pair : entry.pairs) {
-                    os.writeUInt16(pair.clear);
-                    os.writeUInt32(pair.encrypted);
-                }
-            }
-        }
-    }
-
-
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
+    public void _parseDetails() {
+        parseVersionAndFlags();
         if ((getFlags() & 0x1) > 0) {
-            algorithmId = in.readUInt24();
-            ivSize = in.readUInt8();
-            kid = in.read(16);
+            algorithmId = IsoTypeReader.readUInt24(content);
+            ivSize = IsoTypeReader.readUInt8(content);
+            kid = new byte[16];
+            content.get(kid);
         }
-        long numOfEntries = in.readUInt32();
+        long numOfEntries = IsoTypeReader.readUInt32(content);
         while (numOfEntries-- > 0) {
             Entry e = new Entry();
-            e.iv = in.read(((getFlags() & 0x1) > 0) ? ivSize : 8);
+            e.iv = new byte[((getFlags() & 0x1) > 0) ? ivSize : 8];
+            content.get(e.iv);
             if ((getFlags() & 0x2) > 0) {
-                int numOfPairs = in.readUInt16();
+                int numOfPairs = IsoTypeReader.readUInt16(content);
                 while (numOfPairs-- > 0) {
-                    e.pairs.add(new Entry.Pair(in.readUInt16(), in.readUInt32()));
+                    e.pairs.add(new Entry.Pair(IsoTypeReader.readUInt16(content), IsoTypeReader.readUInt32(content)));
                 }
             }
             entries.add(e);
@@ -70,6 +49,26 @@ public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
         }
     }
 
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        if (isOverrideTrackEncryptionBoxParameters()) {
+            IsoTypeWriter.writeUInt24(bb, algorithmId);
+            IsoTypeWriter.writeUInt8(bb, ivSize);
+            bb.put(kid);
+        }
+        IsoTypeWriter.writeUInt32(bb, entries.size());
+        for (Entry entry : entries) {
+            bb.put(entry.iv);
+            if (isSubSampleEncryption()) {
+                IsoTypeWriter.writeUInt16(bb, entry.pairs.size());
+                for (Entry.Pair pair : entry.pairs) {
+                    IsoTypeWriter.writeUInt16(bb, pair.clear);
+                    IsoTypeWriter.writeUInt32(bb, pair.encrypted);
+                }
+            }
+        }
+    }
 
 
     public List<Entry> getEntries() {
@@ -125,7 +124,7 @@ public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
     }
 
     @Override
-    public void getBox(IsoOutputStream os) throws IOException {
+    public void getBox(WritableByteChannel os) throws IOException {
         setFlags(0x0);
         if (isOverrideTrackEncryptionBoxParameters()) {
             setFlags(getFlags() | 0x1);
@@ -134,7 +133,7 @@ public abstract class AbstractSampleEncryptionBox  extends AbstractFullBox {
             setFlags(getFlags() | 0x2);
         }
 
-        super.getBox(os);    //To change body of overridden methods use File | Settings | File Templates.
+        super.getBox(os);
     }
 
     public static class Entry {

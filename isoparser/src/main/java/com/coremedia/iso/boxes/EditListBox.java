@@ -17,14 +17,14 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * <code>
@@ -69,7 +69,7 @@ public class EditListBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        long contentSize = 4;
+        long contentSize = 8;
         if (getVersion() == 1) {
             contentSize += entries.size() * 20;
         } else {
@@ -79,23 +79,23 @@ public class EditListBox extends AbstractFullBox {
         return contentSize;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long entryCount = in.readUInt32();
-        if (entryCount > Integer.MAX_VALUE) {
-            throw new IOException("The parser cannot deal with more than Integer.MAX_VALUE entries!");
-        }
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        int entryCount = l2i(IsoTypeReader.readUInt32(content));
         entries = new LinkedList<Entry>();
         for (int i = 0; i < entryCount; i++) {
-            entries.add(new Entry(this, in));
+            entries.add(new Entry(this, content));
 
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt32(entries.size());
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, entries.size());
         for (Entry entry : entries) {
-            entry.getContent(isos);
+            entry.getContent(bb);
         }
     }
 
@@ -126,15 +126,15 @@ public class EditListBox extends AbstractFullBox {
             this.editListBox = editListBox;
         }
 
-        public Entry(EditListBox editListBox, IsoBufferWrapper in) throws IOException {
+        public Entry(EditListBox editListBox, ByteBuffer bb)  {
             if (editListBox.getVersion() == 1) {
-                segmentDuration = in.readUInt64();
-                mediaTime = in.readUInt64();
-                mediaRate = in.readFixedPoint1616();
+                segmentDuration = IsoTypeReader.readUInt64(bb);
+                mediaTime = IsoTypeReader.readUInt64(bb);
+                mediaRate = IsoTypeReader.readFixedPoint1616(bb);
             } else {
-                segmentDuration = in.readUInt32();
-                mediaTime = in.readUInt32();
-                mediaRate = in.readFixedPoint1616();
+                segmentDuration = IsoTypeReader.readUInt32(bb);
+                mediaTime = IsoTypeReader.readUInt32(bb);
+                mediaRate = IsoTypeReader.readFixedPoint1616(bb);
             }
             this.editListBox = editListBox;
         }
@@ -223,15 +223,15 @@ public class EditListBox extends AbstractFullBox {
             return result;
         }
 
-        public void getContent(IsoOutputStream isos) throws IOException {
+        public void getContent(ByteBuffer bb) throws IOException {
             if (editListBox.getVersion() == 1) {
-                isos.writeUInt64(segmentDuration);
-                isos.writeUInt64(mediaTime);
+                IsoTypeWriter.writeUInt64(bb, segmentDuration);
+                IsoTypeWriter.writeUInt64(bb, mediaTime);
             } else {
-                isos.writeUInt32((int) segmentDuration);
-                isos.writeUInt32((int) mediaTime);
+                IsoTypeWriter.writeUInt32(bb, l2i(segmentDuration));
+                IsoTypeWriter.writeUInt32(bb, l2i(mediaTime));
             }
-            isos.writeFixedPont1616(mediaRate);
+            IsoTypeWriter.writeFixedPont1616(bb, mediaRate);
         }
 
         @Override

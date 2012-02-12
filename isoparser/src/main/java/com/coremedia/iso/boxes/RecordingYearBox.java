@@ -16,12 +16,10 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  *
@@ -37,7 +35,7 @@ public class RecordingYearBox extends AbstractFullBox {
 
 
     protected long getContentSize() {
-        return 2;
+        return 6;
     }
 
     public int getRecordingYear() {
@@ -48,12 +46,17 @@ public class RecordingYearBox extends AbstractFullBox {
         this.recordingYear = recordingYear;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        recordingYear = in.readUInt16();
+
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        recordingYear = IsoTypeReader.readUInt16(content);
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt16(recordingYear);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt16(bb, recordingYear);
     }
+
 }

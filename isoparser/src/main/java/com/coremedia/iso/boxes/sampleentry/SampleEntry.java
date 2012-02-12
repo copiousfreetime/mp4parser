@@ -37,8 +37,7 @@ import java.util.List;
  *
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry
- * @see com.coremedia.iso.boxes.rtp.RtpHintSampleEntry
- * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
+  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  */
 public abstract class SampleEntry extends AbstractBox implements ContainerBox {
 

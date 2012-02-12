@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Gives a language dependent description of the media contained in the ISO file.
@@ -30,7 +31,7 @@ public class DescriptionBox extends AbstractFullBox {
     private String description;
 
     public DescriptionBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {
@@ -42,20 +43,23 @@ public class DescriptionBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 2 + Utf8.utf8StringLengthInBytes(description) + 1;
+        return 7 + Utf8.utf8StringLengthInBytes(description);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        description = in.readString();
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        language = IsoTypeReader.readIso639(content);
+        description = IsoTypeReader.readString(content);
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeIso639(language);
-        isos.writeStringZeroTerm(description);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(description));
+        bb.put((byte) 0);
     }
-
 
     public String toString() {
         return "DescriptionBox[language=" + getLanguage() + ";description=" + getDescription() + "]";

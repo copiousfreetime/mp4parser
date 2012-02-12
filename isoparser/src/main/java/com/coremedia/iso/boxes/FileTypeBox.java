@@ -16,12 +16,10 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,20 +52,26 @@ public class FileTypeBox extends AbstractBox {
     }
 
     public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        majorBrand = IsoFile.bytesToFourCC(in.read(4));
-        minorVersion = in.readUInt32();
-        int compatibleBrandsCount = (int) ((size - 8) / 4);
+
+    }
+
+    @Override
+    public void _parseDetails() {
+        majorBrand = IsoTypeReader.read4cc(content);
+        minorVersion = IsoTypeReader.readUInt32(content);
+        int compatibleBrandsCount = (content.remaining() - 8) / 4;
         compatibleBrands = new LinkedList<String>();
         for (int i = 0; i < compatibleBrandsCount; i++) {
-            compatibleBrands.add(IsoFile.bytesToFourCC(in.read(4)));
+            compatibleBrands.add(IsoTypeReader.read4cc(content));
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.write(IsoFile.fourCCtoBytes(majorBrand));
-        isos.writeUInt32(minorVersion);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        bb.put(IsoFile.fourCCtoBytes(majorBrand));
+        IsoTypeWriter.writeUInt32(bb, minorVersion);
         for (String compatibleBrand : compatibleBrands) {
-            isos.write(IsoFile.fourCCtoBytes(compatibleBrand));
+            bb.put(IsoFile.fourCCtoBytes(compatibleBrand));
         }
 
     }

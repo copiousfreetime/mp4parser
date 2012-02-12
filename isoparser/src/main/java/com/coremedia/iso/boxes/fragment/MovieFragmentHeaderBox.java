@@ -44,22 +44,18 @@ public class MovieFragmentHeaderBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(8);
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, sequenceNumber);
-        os.write(bb);
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(sequenceNumber);
-    }
+
 
     @Override
     public void _parseDetails() {
         parseVersionAndFlags();
         sequenceNumber = IsoTypeReader.readUInt32(content);
-        content = null;
+
     }
 
     public long getSequenceNumber() {

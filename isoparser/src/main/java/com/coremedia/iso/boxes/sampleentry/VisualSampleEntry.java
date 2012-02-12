@@ -139,7 +139,7 @@ public class VisualSampleEntry extends SampleEntry implements ContainerBox {
         assert 0xFFFF == tmp;
 
         _parseChildBoxes();
-        content = null;
+
     }
 
 

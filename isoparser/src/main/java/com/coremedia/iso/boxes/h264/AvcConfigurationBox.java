@@ -130,7 +130,7 @@ public final class AvcConfigurationBox extends AbstractBox {
             pictureParameterSets.add(pictureParameterSetNALUnit);
         }
 
-        content = null;
+
     }
 
 

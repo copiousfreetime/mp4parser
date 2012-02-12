@@ -77,7 +77,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
             }
             sampleEntries.add(sampleEntry);
         }
-        content = null;
+
     }
 
     @Override

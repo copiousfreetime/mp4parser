@@ -47,8 +47,15 @@ public abstract class AbstractBox implements Box {
     }
 
     /**
-     * Gets the box's content size without header size. Flags and version do not belong to the
-     * header - they belong to the content and add 4 bytes to the content size
+     * Gets the box's content size. This excludes all header fields:
+     * <ul>
+     *     <li>4 byte size</li>
+     *     <li>4 byte type</li>
+     *     <li>(large length - 8 bytes)</li>
+     *     <li>(user type - 16 bytes)</li>
+     * </ul>
+     *
+     * Flags and version of a full box need to be taken into account.
      *
      * @return Gets the box's content size in bytes
      */
@@ -117,12 +124,11 @@ public abstract class AbstractBox implements Box {
      */
     public final void parseDetails() {
         if (content != null) {
-            ByteBuffer content = this.content;
             _parseDetails();
-            assert this.content == null;
             if (content.remaining() > 0) {
                 deadBytes = content.slice();
             }
+            content = null;
         }
     }
 

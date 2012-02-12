@@ -148,9 +148,7 @@ public class MovieHeaderBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
-
+    protected void getContent(ByteBuffer bb) throws IOException {
         if (getVersion() == 1) {
             IsoTypeWriter.writeUInt64(bb, creationTime);
             IsoTypeWriter.writeUInt64(bb, modificationTime);

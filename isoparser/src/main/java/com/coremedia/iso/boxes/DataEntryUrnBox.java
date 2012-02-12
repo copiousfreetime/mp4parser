@@ -54,7 +54,7 @@ public class DataEntryUrnBox extends AbstractFullBox {
     public void _parseDetails() {
         name = IsoTypeReader.readString(content);
         location = IsoTypeReader.readString(content);
-        content = null;
+
     }
 
     @Override

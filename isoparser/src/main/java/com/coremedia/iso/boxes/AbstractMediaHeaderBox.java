@@ -24,6 +24,6 @@ import com.coremedia.iso.IsoFile;
  */
 public abstract class AbstractMediaHeaderBox extends AbstractFullBox {
     protected AbstractMediaHeaderBox(String type) {
-        super(IsoFile.fourCCtoBytes(type));
+        super(type);
     }
 }

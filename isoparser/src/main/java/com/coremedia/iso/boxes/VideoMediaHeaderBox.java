@@ -16,11 +16,10 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The video media header contains general presentation information, independent of the coding, for video
@@ -45,23 +44,26 @@ public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     protected long getContentSize() {
-        return opcolor.length * 2 + 2;
+        return opcolor.length * 2 + 4;
     }
 
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        graphicsmode = in.readUInt16();
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        graphicsmode = IsoTypeReader.readUInt16(content);
         opcolor = new int[3];
         for (int i = 0; i < 3; i++) {
-            opcolor[i] = in.readUInt16();
+            opcolor[i] = IsoTypeReader.readUInt16(content);
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt16(graphicsmode);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+
+        IsoTypeWriter.writeUInt16(bb, graphicsmode);
         for (int anOpcolor : opcolor) {
-            isos.writeUInt16(anOpcolor);
+            IsoTypeWriter.writeUInt16(bb, anOpcolor);
         }
     }
 

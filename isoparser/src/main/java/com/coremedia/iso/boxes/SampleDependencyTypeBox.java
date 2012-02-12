@@ -104,14 +104,11 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         for (Entry entry : entries) {
             IsoTypeWriter.writeUInt8(bb, entry.value);
         }
-        os.write(bb);
     }
 
     @Override

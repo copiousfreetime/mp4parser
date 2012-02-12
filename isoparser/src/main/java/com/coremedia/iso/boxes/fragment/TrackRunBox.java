@@ -16,16 +16,16 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * aligned(8) class TrackRunBox
@@ -197,60 +197,62 @@ public class TrackRunBox extends AbstractFullBox {
         return size;
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(entries.size());
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt32(bb, entries.size());
 
         if ((getFlags() & 0x1) == 1) { //dataOffsetPresent
-            os.writeUInt32(dataOffset);
+            IsoTypeWriter.writeUInt32(bb, dataOffset);
         }
         if ((getFlags() & 0x4) == 0x4) { //firstSampleFlagsPresent
-            firstSampleFlags.getContent(os);
+            firstSampleFlags.getContent(bb);
         }
 
         for (Entry entry : entries) {
             if ((getFlags() & 0x100) == 0x100) { //sampleDurationPresent
-                os.writeUInt32(entry.sampleDuration);
+                IsoTypeWriter.writeUInt32(bb, entry.sampleDuration);
             }
             if ((getFlags() & 0x200) == 0x200) { //sampleSizePresent
-                os.writeUInt32(entry.sampleSize);
+                IsoTypeWriter.writeUInt32(bb, entry.sampleSize);
             }
             if ((getFlags() & 0x400) == 0x400) { //sampleFlagsPresent
-                entry.sampleFlags.getContent(os);
+                entry.sampleFlags.getContent(bb);
             }
             if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
-                os.writeUInt32(entry.sampleCompositionTimeOffset);
+                IsoTypeWriter.writeUInt32(bb, entry.sampleCompositionTimeOffset);
             }
         }
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        long sampleCount = in.readUInt32();
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        long sampleCount = IsoTypeReader.readUInt32(content);
 
         if ((getFlags() & 0x1) == 1) { //dataOffsetPresent
-            dataOffset = (int) in.readUInt32();
+            dataOffset = l2i(IsoTypeReader.readUInt32(content));
         }
         if ((getFlags() & 0x4) == 0x4) { //firstSampleFlagsPresent
-            firstSampleFlags = new SampleFlags(in.readUInt32());
+            firstSampleFlags = new SampleFlags(IsoTypeReader.readUInt32(content));
         }
 
         for (int i = 0; i < sampleCount; i++) {
             Entry entry = new Entry();
             if ((getFlags() & 0x100) == 0x100) { //sampleDurationPresent
-                entry.sampleDuration = in.readUInt32();
+                entry.sampleDuration = IsoTypeReader.readUInt32(content);
             }
             if ((getFlags() & 0x200) == 0x200) { //sampleSizePresent
-                entry.sampleSize = in.readUInt32();
+                entry.sampleSize = IsoTypeReader.readUInt32(content);
             }
             if ((getFlags() & 0x400) == 0x400) { //sampleFlagsPresent
-                entry.sampleFlags = new SampleFlags(in.readUInt32());
+                entry.sampleFlags = new SampleFlags(IsoTypeReader.readUInt32(content));
             }
             if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
-                entry.sampleCompositionTimeOffset = in.readUInt32();
+                entry.sampleCompositionTimeOffset = IsoTypeReader.readUInt32(content);
             }
             entries.add(entry);
         }
+
     }
 
     public long getSampleCount() {

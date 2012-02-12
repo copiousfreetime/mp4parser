@@ -20,16 +20,15 @@ import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -118,7 +117,7 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     public void _parseChildBoxes() {
         while (content.remaining() > 8) {
             try {
-                boxes.add(boxParser.parseBox(new ByteBufferReadableByteChannel(content), this));
+                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -151,25 +150,4 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
         return getSize() - sizeOfChildren;
     }
 
-    class ByteBufferReadableByteChannel implements ReadableByteChannel {
-        ByteBuffer src;
-
-        ByteBufferReadableByteChannel(ByteBuffer src) {
-            this.src = src;
-        }
-
-        public int read(ByteBuffer dst) {
-            byte[] b = dst.array();
-            int r = dst.remaining();
-            src.get(b, dst.position(), r);
-            return r;
-        }
-
-        public boolean isOpen() {
-            return true;
-        }
-
-        public void close() throws IOException {
-        }
-    }
 }

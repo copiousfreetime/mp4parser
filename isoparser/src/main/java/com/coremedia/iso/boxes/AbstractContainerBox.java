@@ -118,7 +118,6 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
 
     @Override
     public void _parseDetails() {
-        content = null;
     }
 
     @Override

@@ -77,7 +77,7 @@ public class AmrSpecificBox extends AbstractBox {
         modeSet = IsoTypeReader.readUInt16(content);
         modeChangePeriod = IsoTypeReader.readUInt8(content);
         framesPerSample = IsoTypeReader.readUInt8(content);
-        content = null;
+
     }
 
 

@@ -80,4 +80,12 @@ public final class MediaDataBox implements Box {
         content = ChannelHelper.readFully(byteChannel, l2i(contentSize));
 
     }
+
+    public ByteBuffer getContent() {
+        return content;
+    }
+
+    public ByteBuffer getHeader() {
+        return header;
+    }
 }

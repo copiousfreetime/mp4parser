@@ -58,7 +58,7 @@ public class DataReferenceBox extends FullContainerBox {
     @Override
     public void _parseDetails() {
         parseVersionAndFlags();
-        content = null;
+
     }
 
 

@@ -144,7 +144,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
             content.get(20);
         }
         _parseChildBoxes();
-        content = null;
+
     }
 
 

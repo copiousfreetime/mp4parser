@@ -24,7 +24,7 @@ public class MpegSampleEntry extends SampleEntry implements ContainerBox {
     public void _parseDetails() {
         _parseReservedAndDataReferenceIndex();
         _parseChildBoxes();
-        content = null;
+
     }
 
     @Override

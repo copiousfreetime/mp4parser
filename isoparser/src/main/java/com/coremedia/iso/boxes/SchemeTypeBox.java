@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The Scheme Type Box identifies the protection scheme. Resides in  a Protection Scheme Information Box or
@@ -28,7 +29,7 @@ import java.io.IOException;
  */
 public class SchemeTypeBox extends AbstractFullBox {
     public static final String TYPE = "schm";
-    byte[] schemeType = new byte[4];
+    String schemeType = "    ";
     long schemeVersion;
     String schemeUri = null;
 
@@ -36,12 +37,8 @@ public class SchemeTypeBox extends AbstractFullBox {
         super(IsoFile.fourCCtoBytes(TYPE));
     }
 
-    public byte[] getSchemeType() {
+    public String getSchemeType() {
         return schemeType;
-    }
-
-    public String getFourCC() {
-        return IsoFile.bytesToFourCC(schemeType);
     }
 
     public long getSchemeVersion() {
@@ -52,8 +49,8 @@ public class SchemeTypeBox extends AbstractFullBox {
         return schemeUri;
     }
 
-    public void setSchemeType(byte[] schemeType) {
-        assert schemeType != null && schemeType.length == 4 : "SchemeType may not be null or not 4 bytes long";
+    public void setSchemeType(String schemeType) {
+        assert schemeType != null && schemeType.length() == 4 : "SchemeType may not be null or not 4 bytes long";
         this.schemeType = schemeType;
     }
 
@@ -69,34 +66,31 @@ public class SchemeTypeBox extends AbstractFullBox {
         return 8 + (((getFlags() & 1) == 1) ? Utf8.utf8StringLengthInBytes(schemeUri) + 1 : 0);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        schemeType[0] = (byte) in.readUInt8();
-        schemeType[1] = (byte) in.readUInt8();
-        schemeType[2] = (byte) in.readUInt8();
-        schemeType[3] = (byte) in.readUInt8();
-        schemeVersion = in.readUInt32();
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        schemeType = IsoTypeReader.read4cc(content);
+        schemeVersion = IsoTypeReader.readUInt32(content);
         if ((getFlags() & 1) == 1) {
-            schemeUri = in.readString();
+            schemeUri = IsoTypeReader.readString(content);
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt8(schemeType[0]);
-        isos.writeUInt8(schemeType[1]);
-        isos.writeUInt8(schemeType[2]);
-        isos.writeUInt8(schemeType[3]);
-        isos.writeUInt32(schemeVersion);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(IsoFile.fourCCtoBytes(schemeType));
+        IsoTypeWriter.writeUInt32(bb, schemeVersion);
         if ((getFlags() & 1) == 1) {
-            isos.writeStringZeroTerm(schemeUri);
+            bb.put(Utf8.convert(schemeUri));
         }
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("Schema Type Box[");
         buffer.append("schemeUri=").append(schemeUri).append("; ");
-        buffer.append("schemeType=").append(IsoFile.bytesToFourCC(schemeType)).append("; ");
+        buffer.append("schemeType=").append(schemeType).append("; ");
         buffer.append("schemeVersion=").append(schemeUri).append("; ");
         buffer.append("]");
         return buffer.toString();

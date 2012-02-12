@@ -68,16 +68,13 @@ public class TimeToSampleBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, entries.size());
         for (Entry entry : entries) {
             IsoTypeWriter.writeUInt32(bb, entry.getCount());
             IsoTypeWriter.writeUInt32(bb, entry.getDelta());
         }
-        os.write(bb);
-
     }
 
     protected void getContent(IsoOutputStream isos) throws IOException {

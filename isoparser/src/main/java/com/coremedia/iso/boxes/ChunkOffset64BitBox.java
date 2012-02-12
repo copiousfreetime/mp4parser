@@ -37,7 +37,6 @@ public class ChunkOffset64BitBox extends ChunkOffsetBox {
         for (int i = 0; i < entryCount; i++) {
             chunkOffsets[i] = IsoTypeReader.readUInt64(content);
         }
-        content = null;
     }
 
     @Override

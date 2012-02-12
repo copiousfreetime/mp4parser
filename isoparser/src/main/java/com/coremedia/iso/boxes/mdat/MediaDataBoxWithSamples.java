@@ -16,14 +16,17 @@
 
 package com.coremedia.iso.boxes.mdat;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.AbstractBox;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.ContainerBox;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -37,43 +40,112 @@ import java.util.List;
  * so Media Data Box headers and free space may easily be skipped, and files without any box structure may
  * also be referenced and used.
  */
-public class MediaDataBoxWithSamples extends AbstractBox {
+public class MediaDataBoxWithSamples implements Box {
+    ContainerBox parent;
+    LinkedList<Sample> samples = new LinkedList<Sample>();
 
-    private List<IsoBufferWrapper> samples;
 
-    public MediaDataBoxWithSamples(List<IsoBufferWrapper> samples) {
-        super(IsoFile.fourCCtoBytes("mdat"));
-        this.samples = samples;
+    public ContainerBox getParent() {
+        return parent;
     }
 
-    @Override
+    public void setParent(ContainerBox parent) {
+        this.parent = parent;
+    }
+
+    public long getSize() {
+        long size = getContentSize();
+        if (isSmall(size)) {
+            return 8 + size;
+        } else {
+            return 16 + size;
+        }
+    }
+
+    public String getType() {
+        return "mdat";
+    }
+
+    public byte[] getUserType() {
+        return new byte[0];
+    }
+
+    public void addSample(FileChannelSampleImpl s) {
+        Sample last = samples.peekLast();
+        if (s.getClass().isInstance(last)) {
+            FileChannelSampleImpl l = (FileChannelSampleImpl) last;
+            if ((l.fileChannel == s.fileChannel) && (l.offset + l.size == s.offset)) {
+                l.size += s.size;
+            } else {
+                samples.add(s);
+            }
+        } else {
+            samples.add(s);
+        }
+    }
+
+    public void addSample(ByteArraySampleImpl s) {
+        Sample last = samples.peekLast();
+        if (s.getClass().isInstance(last)) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                baos.write(((ByteArraySampleImpl) last).data);
+                baos.write(s.data);
+                ((ByteArraySampleImpl) last).data = baos.toByteArray();
+            } catch (IOException e) {
+                throw new RuntimeException("Should not happen. Even though ...", e);
+            }
+        }
+    }
+
+    public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        long size = getContentSize();
+        if (isSmall(size)) {
+            ByteBuffer bb = ByteBuffer.allocate(8);
+            IsoTypeWriter.writeUInt32(bb, size);
+            bb.put(IsoFile.fourCCtoBytes("mdat"));
+        } else {
+            ByteBuffer bb = ByteBuffer.allocate(16);
+            IsoTypeWriter.writeUInt32(bb, 1);
+            bb.put(IsoFile.fourCCtoBytes("mdat"));
+            IsoTypeWriter.writeUInt64(bb, size);
+        }
+        for (Sample sample : samples) {
+            if (sample instanceof ByteArraySampleImpl) {
+                writableByteChannel.write (ByteBuffer.wrap(((ByteArraySampleImpl) sample).data));
+            } else if (sample instanceof FileChannelSampleImpl) {
+                ((FileChannelSampleImpl) sample).fileChannel.transferTo(
+                        ((FileChannelSampleImpl) sample).offset,
+                        ((FileChannelSampleImpl) sample).size,
+                        writableByteChannel);
+            }
+        }
+    }
+
+    public void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+
+    }
+
+    private boolean isSmall(long size) {
+        return ((size + 8) < 4294967296L);
+
+
+    }
+
+    public MediaDataBoxWithSamples() {
+
+    }
+
+
     protected long getContentSize() {
         long size = 0;
-        for (IsoBufferWrapper sample : samples) {
-            size += sample.size();
+        for (Sample sample : samples) {
+            if (sample instanceof ByteArraySampleImpl) {
+                size += ((ByteArraySampleImpl) sample).data.length;
+            } else if (sample instanceof FileChannelSampleImpl) {
+                size += ((FileChannelSampleImpl) sample).size;
+            }
         }
         return size;
-    }
-
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-    }
-
-    @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        for (IsoBufferWrapper ibw : samples) {
-
-            while (ibw.remaining() >= 1024) {
-                os.write(ibw.read(1024));
-            }
-            while (ibw.remaining() > 0) {
-                os.write(ibw.readByte());
-            }
-
-        }
-    }
-
-    public List<IsoBufferWrapper> getSamples() {
-        return samples;
     }
 }

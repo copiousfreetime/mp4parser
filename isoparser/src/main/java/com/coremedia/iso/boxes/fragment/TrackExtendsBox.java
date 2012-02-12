@@ -53,15 +53,13 @@ public class TrackExtendsBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, trackId);
         IsoTypeWriter.writeUInt32(bb, defaultSampleDescriptionIndex);
         IsoTypeWriter.writeUInt32(bb, defaultSampleDuration);
         IsoTypeWriter.writeUInt32(bb, defaultSampleSize);
         defaultSampleFlags.getContent(bb);
-        os.write(bb);
     }
 
     @Override

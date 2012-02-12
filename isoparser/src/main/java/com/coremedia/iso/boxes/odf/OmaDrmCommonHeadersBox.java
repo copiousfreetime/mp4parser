@@ -18,13 +18,14 @@ package com.coremedia.iso.boxes.odf;
 
 
 import com.coremedia.iso.*;
-import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +45,7 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
     private String contentId;
     private String rightsIssuerUrl;
     private String textualHeaders;
+    private BoxParser boxParser;
 
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);
@@ -51,11 +53,17 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
 
     @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz, boolean recursive) {
-        //todo recursive?
-        ArrayList<T> boxesToBeReturned = new ArrayList<T>();
+        List<T> boxesToBeReturned = new ArrayList<T>(2);
         for (Box boxe : extendedHeaders) {
+            //clazz.isInstance(boxe) / clazz == boxe.getClass()?
+            // I hereby finally decide to use isInstance
+
             if (clazz.isInstance(boxe)) {
-                boxesToBeReturned.add(clazz.cast(boxe));
+                boxesToBeReturned.add((T) boxe);
+            }
+
+            if (recursive && boxe instanceof ContainerBox) {
+                boxesToBeReturned.addAll(((ContainerBox) boxe).getBoxes(clazz, recursive));
             }
         }
         return boxesToBeReturned;
@@ -132,16 +140,17 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         return textualHeaders;
     }
 
+    @Override
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
+        super.parse(in, header, size, boxParser);
+        this.boxParser = boxParser;
+    }
 
     protected long getContentSize() {
         long contentLength;
-        try {
-            contentLength = 16 +
-                    contentId.getBytes("UTF-8").length + (rightsIssuerUrl != null ? rightsIssuerUrl.getBytes("UTF-8").length : 0) +
-                    (textualHeaders != null ? textualHeaders.getBytes("UTF-8").length : 0);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        contentLength = 20 +
+                Utf8.utf8StringLengthInBytes(contentId) + Utf8.utf8StringLengthInBytes(rightsIssuerUrl) +
+                Utf8.utf8StringLengthInBytes(textualHeaders);
         for (Box boxe : extendedHeaders) {
             contentLength += boxe.getSize();
         }
@@ -149,41 +158,44 @@ public class OmaDrmCommonHeadersBox extends AbstractFullBox implements Container
         return contentLength;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        encryptionMethod = in.readUInt8();
-        paddingScheme = in.readUInt8();
-        plaintextLength = in.readUInt64();
-        int contentIdLength = in.readUInt16();
-        int rightsIssuerUrlLength = in.readUInt16();
-        int textualHeadersLength = in.readUInt16();
-        contentId = new String(in.read(contentIdLength), "UTF-8");
-        rightsIssuerUrl = new String(in.read(rightsIssuerUrlLength), "UTF-8");
-        textualHeaders = new String(in.read(textualHeadersLength), "UTF-8");
-        long remainingContentSize = size;
-        remainingContentSize -= 4 + 1 + 1 + 8 + 2 + 2 + 2;
-        remainingContentSize -= contentIdLength + rightsIssuerUrlLength + textualHeadersLength;
-        while (remainingContentSize > 0) {
-            Box box = boxParser.parseBox(in, this, lastMovieFragmentBox);
-            remainingContentSize -= box.getSize();
-            extendedHeaders.add((AbstractBox) box);
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        encryptionMethod = IsoTypeReader.readUInt8(content);
+        paddingScheme = IsoTypeReader.readUInt8(content);
+        plaintextLength = IsoTypeReader.readUInt64(content);
+        int contentIdLength = IsoTypeReader.readUInt16(content);
+        int rightsIssuerUrlLength = IsoTypeReader.readUInt16(content);
+        int textualHeadersLength = IsoTypeReader.readUInt16(content);
+        contentId = IsoTypeReader.readString(content, contentIdLength);
+        rightsIssuerUrl = IsoTypeReader.readString(content, rightsIssuerUrlLength);
+        textualHeaders = IsoTypeReader.readString(content, textualHeadersLength);
+
+        while (content.remaining() > 8) {
+            try {
+                extendedHeaders.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
         }
-        assert remainingContentSize == 0;
+        deadBytes = content.slice();
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt8(encryptionMethod);
-        isos.writeUInt8(paddingScheme);
-        isos.writeUInt64(plaintextLength);
-        isos.writeUInt16(Utf8.utf8StringLengthInBytes(contentId));
-        isos.writeUInt16(rightsIssuerUrl != null ? Utf8.utf8StringLengthInBytes(rightsIssuerUrl) : 0);
-        isos.writeUInt16(textualHeaders != null ? Utf8.utf8StringLengthInBytes(textualHeaders) : 0);
-        isos.writeStringNoTerm(contentId);
-        isos.writeStringNoTerm(rightsIssuerUrl);
-        isos.writeStringNoTerm(textualHeaders);
+
+    protected void getContent(ByteBuffer bb) throws IOException {
+        IsoTypeWriter.writeUInt8(bb, encryptionMethod);
+        IsoTypeWriter.writeUInt8(bb, paddingScheme);
+        IsoTypeWriter.writeUInt64(bb, plaintextLength);
+        IsoTypeWriter.writeUInt16(bb, Utf8.utf8StringLengthInBytes(contentId));
+        IsoTypeWriter.writeUInt16(bb, Utf8.utf8StringLengthInBytes(rightsIssuerUrl));
+        IsoTypeWriter.writeUInt16(bb, Utf8.utf8StringLengthInBytes(textualHeaders));
+        bb.put(Utf8.convert(contentId));
+        bb.put(Utf8.convert(rightsIssuerUrl));
+        bb.put(Utf8.convert(textualHeaders));
 
         for (Box boxe : extendedHeaders) {
-            boxe.getBox(isos);
+            boxe.getBox(new ByteBufferByteChannel(bb));
         }
 
     }

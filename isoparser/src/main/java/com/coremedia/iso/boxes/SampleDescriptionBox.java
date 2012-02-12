@@ -71,12 +71,13 @@ public class SampleDescriptionBox extends FullContainerBox {
     @Override
     public void _parseDetails() {
         parseVersionAndFlags();
+        content.get(new byte[4]);
         // ignore 4 bytes entry count
-        content = null;
+        
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
+    public void getContentBeforeChildren(WritableByteChannel os) throws IOException {
         ByteBuffer bb = ByteBuffer.allocate(8);
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, boxes.size());

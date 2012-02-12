@@ -17,12 +17,10 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * aligned(8) class ItemLocationBox extends FullBox(‘iloc’, version, 0) {
@@ -65,12 +63,12 @@ public class ItemLocationBox extends AbstractFullBox {
     public static final String TYPE = "iloc";
 
     public ItemLocationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override
     protected long getContentSize() {
-        long size = 2 + (getVersion() != 1 ? 2 : 0);
+        long size = 6 + (getVersion() != 1 ? 2 : 0);
         for (Item item : items) {
             size += item.getContentSize();
         }
@@ -78,40 +76,40 @@ public class ItemLocationBox extends AbstractFullBox {
     }
 
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-
-        int tmp = in.readUInt8();
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        int tmp = IsoTypeReader.readUInt8(content);
         offsetSize = tmp >>> 4;
         lengthSize = tmp & 0xf;
-        tmp = in.readUInt8();
+        tmp = IsoTypeReader.readUInt8(content);
         baseOffsetSize = tmp >>> 4;
 
         if (getVersion() == 1) {
             indexSize = tmp & 0xf;
         } else {
-            itemCount = in.readUInt16();
+            itemCount = IsoTypeReader.readUInt16(content);
         }
 
         items = new Item[itemCount];
         for (int i = 0; i < items.length; i++) {
-            items[i] = new Item(in);
+            items[i] = new Item(content);
         }
     }
 
 
+
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt8(((offsetSize << 4) | lengthSize));
+    protected void getContent(ByteBuffer bb) throws IOException {
+        IsoTypeWriter.writeUInt8(bb, ((offsetSize << 4) | lengthSize));
         if (getVersion() == 1) {
-            os.writeUInt8((baseOffsetSize << 4 | indexSize));
+            IsoTypeWriter.writeUInt8(bb, (baseOffsetSize << 4 | indexSize));
         } else {
-            os.writeUInt8((baseOffsetSize << 4));
-            os.writeUInt16(itemCount);
+            IsoTypeWriter.writeUInt8(bb, (baseOffsetSize << 4));
+            IsoTypeWriter.writeUInt16(bb, itemCount);
         }
 
         for (Item item : items) {
-            item.getContent(os);
+            item.getContent(bb);
         }
     }
 
@@ -123,17 +121,17 @@ public class ItemLocationBox extends AbstractFullBox {
         public int extentCount;
         public Extent[] extents;
 
-        public Item(IsoBufferWrapper in) throws IOException {
-            itemId = in.readUInt16();
+        public Item(ByteBuffer in) {
+            itemId = IsoTypeReader.readUInt16(in);
 
             if (getVersion() == 1) {
-                int tmp = in.readUInt16();
+                int tmp = IsoTypeReader.readUInt16(in);
                 constructionMethod = tmp & 0xf;
             }
 
-            dataReferenceIndex = in.readUInt16();
-            in.read(baseOffset);
-            extentCount = in.readUInt16();
+            dataReferenceIndex = IsoTypeReader.readUInt16(in);
+            in.get(baseOffset);
+            extentCount = IsoTypeReader.readUInt16(in);
             extents = new Extent[extentCount];
 
             for (int i = 0; i < extents.length; i++) {
@@ -153,18 +151,18 @@ public class ItemLocationBox extends AbstractFullBox {
             return size;
         }
 
-        public void getContent(IsoOutputStream os) throws IOException {
-            os.writeUInt16(itemId);
+        public void getContent(ByteBuffer bb) throws IOException {
+            IsoTypeWriter.writeUInt16(bb, itemId);
 
             if (getVersion() == 1) {
-                os.writeUInt16(constructionMethod);
+                IsoTypeWriter.writeUInt16(bb, constructionMethod);
             }
 
-            os.writeUInt16(dataReferenceIndex);
-            os.writeUInt16(extentCount);
+            IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
+            IsoTypeWriter.writeUInt16(bb, extentCount);
 
             for (Extent extent : extents) {
-                extent.getContent(os);
+                extent.getContent(bb);
             }
         }
 
@@ -174,23 +172,23 @@ public class ItemLocationBox extends AbstractFullBox {
             public byte[] extentIndex;
 
 
-            public Extent(IsoBufferWrapper in) throws IOException {
+            public Extent(ByteBuffer in)  {
                 if ((getVersion() == 1) && getIndexSize() > 0) {
                     extentIndex = new byte[getIndexSize()];
-                    in.read(extentIndex);
+                    in.get(extentIndex);
                 }
                 extentOffset = new byte[offsetSize];
                 extentLength = new byte[lengthSize];
-                in.read(extentOffset);
-                in.read(extentLength);
+                in.get(extentOffset);
+                in.get(extentLength);
             }
 
-            public void getContent(IsoOutputStream os) throws IOException {
+            public void getContent(ByteBuffer os) throws IOException {
                 if ((getVersion() == 1) && getIndexSize() > 0) {
-                    os.write(extentIndex);
+                    os.put(extentIndex);
                 }
-                os.write(extentOffset);
-                os.write(extentLength);
+                os.put(extentOffset);
+                os.put(extentLength);
             }
         }
     }

@@ -49,8 +49,7 @@ public class MovieFragmentRandomAccessOffsetBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(8);
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, mfraSize);
     }

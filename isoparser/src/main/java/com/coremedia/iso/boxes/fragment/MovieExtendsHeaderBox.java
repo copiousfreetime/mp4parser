@@ -56,8 +56,7 @@ public class MovieExtendsHeaderBox extends AbstractFullBox {
 
 
     @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         if (getVersion() == 1) {
             IsoTypeWriter.writeUInt64(bb, fragmentDuration);

@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Containing genre information and contained in the <code>UserDataBox</code>.
@@ -52,21 +53,26 @@ public class GenreBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 2 + Utf8.utf8StringLengthInBytes(genre) + 1;
+        return 7 + Utf8.utf8StringLengthInBytes(genre) ;
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        genre = in.readString();
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        language = IsoTypeReader.readIso639(content);
+        genre = IsoTypeReader.readString(content);
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(genre));
+        bb.put((byte) 0);
     }
 
     public String toString() {
         return "GenreBox[language=" + getLanguage() + ";genre=" + getGenre() + "]";
     }
 
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeIso639(language);
-        os.writeStringZeroTerm(genre);
-    }
 }

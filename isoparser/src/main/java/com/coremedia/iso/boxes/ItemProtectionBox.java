@@ -16,11 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * The Item Protection Box provides an array of item protection information, for use by the Item Information Box.
@@ -43,11 +44,23 @@ public class ItemProtectionBox extends FullContainerBox {
             return null;
         }
     }
+    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
+        content = ChannelHelper.readFully(in, 6);
+        parseBoxes(size - 4, in, boxParser);
+    }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        parseVersionAndFlags(in, size);
-        protectionCount = in.readUInt16();
-        parseBoxes(size, in, boxParser, lastMovieFragmentBox);
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        IsoTypeReader.readUInt16(content);
+    }
+
+    @Override
+    public void getContentBeforeChildren(WritableByteChannel os) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(6);
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt16(bb, protectionCount);
+        os.write(bb);
     }
 
     protected void getContent(IsoOutputStream os) throws IOException {

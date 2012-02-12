@@ -1,12 +1,11 @@
 package com.googlecode.mp4parser.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractFullBox;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;import java.lang.Override;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
@@ -46,23 +45,25 @@ public abstract class AbstractTrackEncryptionBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt24(defaultAlgorithmId);
-        os.writeUInt8(defaultIvSize);
-        os.write(default_KID);
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        defaultAlgorithmId = IsoTypeReader.readUInt24(content);
+        defaultIvSize = IsoTypeReader.readUInt8(content);
+        default_KID = new byte[16];
+        content.get(default_KID);
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeUInt24(bb, defaultAlgorithmId);
+        IsoTypeWriter.writeUInt8(bb, defaultIvSize);
+        bb.put(default_KID);
     }
 
     @Override
     protected long getContentSize() {
-        return 20;
-    }
-
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        defaultAlgorithmId = in.readUInt24();
-        defaultIvSize = in.readUInt8();
-        default_KID = in.read(16);
+        return 24;
     }
 
     @Override

@@ -1,8 +1,10 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

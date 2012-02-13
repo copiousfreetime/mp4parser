@@ -36,7 +36,6 @@ public final class Walk {
     private static final Collection<String> skipList = Arrays.asList("class",
             "boxes",
             "type",
-            "userType",
             "size",
             "displayName",
             "contentSize",
@@ -74,11 +73,8 @@ public final class Walk {
                 Walk.through((ContainerBox) b);
             }
             if (b instanceof AbstractBox) {
-                if (((AbstractBox) b).offset != b.calculateOffset()) {
-                    throw new RuntimeException("Real offset " + ((AbstractBox) b).offset + " vs. calculated " + b.calculateOffset() + " Box: " + b);
-                }
+
                 b.toString(); // Just test if some execption is trown
-                b.getUserType();
 
                 BeanInfo beanInfo = Introspector.getBeanInfo(b.getClass());
                 PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();

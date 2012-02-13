@@ -16,13 +16,13 @@
 
 package com.coremedia.iso.boxes.mdat;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 

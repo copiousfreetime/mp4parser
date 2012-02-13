@@ -16,9 +16,9 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -69,7 +69,6 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         }
         return size;
     }
-
 
 
     protected void getContent(ByteBuffer bb) throws IOException {
@@ -154,12 +153,20 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
     }
 
     public void setBaseDataOffset(long baseDataOffset) {
-        setFlags(getFlags() | 0x1); // activate the field
+        if (baseDataOffset == -1) {
+            setFlags(getFlags() & (Integer.MAX_VALUE ^ 0x1));
+        } else {
+            setFlags(getFlags() | 0x1); // activate the field
+        }
         this.baseDataOffset = baseDataOffset;
     }
 
     public void setSampleDescriptionIndex(long sampleDescriptionIndex) {
-        setFlags(getFlags() | 0x2); // activate the field
+        if (sampleDescriptionIndex == -1) {
+            setFlags(getFlags() & (Integer.MAX_VALUE ^ 0x2));
+        } else {
+            setFlags(getFlags() | 0x2); // activate the field
+        }
         this.sampleDescriptionIndex = sampleDescriptionIndex;
     }
 

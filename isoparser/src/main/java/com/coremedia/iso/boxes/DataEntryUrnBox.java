@@ -16,13 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
-
-import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Only used within the DataReferenceBox. Find more information there.

@@ -16,7 +16,9 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;

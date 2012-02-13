@@ -16,16 +16,16 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.ChannelHelper;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeWriter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Arrays;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
 

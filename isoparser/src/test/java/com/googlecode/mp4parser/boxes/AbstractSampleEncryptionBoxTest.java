@@ -1,14 +1,15 @@
 package com.googlecode.mp4parser.boxes;
 
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
         senc.getBox(new IsoOutputStream(baos));
         Assert.assertEquals(baos.size(), senc.getSize());
         Assert.assertEquals(baos.size(), sizeBeforeWrite);
-        IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
+        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
         iso.parse();
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
@@ -69,7 +70,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
         senc.getBox(new IsoOutputStream(baos));
         Assert.assertEquals(baos.size(), senc.getSize());
         Assert.assertEquals(sizeBeforeWrite, senc.getSize());
-        IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
+        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
         iso.parse();
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
@@ -97,7 +98,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         senc.getBox(new IsoOutputStream(baos));
         Assert.assertEquals(baos.size(), senc.getSize());
-        IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
+        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
         iso.parse();
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
@@ -133,7 +134,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
 
         Assert.assertEquals(baos.size(), senc.getSize());
         
-        IsoFile iso = new IsoFile(new IsoBufferWrapperImpl(baos.toByteArray()));
+        IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
         iso.parse();
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);

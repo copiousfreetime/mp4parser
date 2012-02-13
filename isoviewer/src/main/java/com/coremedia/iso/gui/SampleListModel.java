@@ -1,23 +1,18 @@
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.mdat.SampleList;
-import sun.security.util.Resources_zh_CN;
+import com.coremedia.iso.boxes.mdat.Sample;
 
 import javax.swing.*;
-import javax.swing.event.ListDataListener;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
  *
  */
 public class SampleListModel extends AbstractListModel {
-    SampleList list;
+    List<? extends Sample> list;
 
-    public SampleListModel(SampleList list) {
+    public SampleListModel(List<? extends Sample> list) {
         this.list = list;
     }
 
@@ -25,17 +20,9 @@ public class SampleListModel extends AbstractListModel {
         return list.size();
     }
 
-    public Object getElementAt(int index) {
-        return new Entry(list.get(index), list.getOffset(index));
+    public ByteBuffer getElementAt(int index) {
+        return ByteBuffer.wrap(list.get(index).getBytes());
+
     }
 
-    public static class Entry {
-        public Entry(IsoBufferWrapper sample, long offset) {
-            this.sample = sample;
-            this.offset = offset;
-        }
-
-        IsoBufferWrapper sample;
-        long offset;
-    }
 }

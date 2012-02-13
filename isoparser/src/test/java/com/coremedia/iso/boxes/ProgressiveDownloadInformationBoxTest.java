@@ -1,7 +1,5 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.IsoTypeReader;
 import com.googlecode.mp4parser.ByteBufferByteChannel;

@@ -1,15 +1,11 @@
 package com.coremedia.iso.boxes.sampleentry;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.ChannelHelper;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 
 public class MpegSampleEntry extends SampleEntry implements ContainerBox {

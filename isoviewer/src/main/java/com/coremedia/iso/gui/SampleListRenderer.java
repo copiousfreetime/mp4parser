@@ -20,8 +20,8 @@ public class SampleListRenderer extends DefaultListCellRenderer {
                                                   int index,
                                                   boolean isSelected,
                                                   boolean cellHasFocus) {
-        SampleListModel.Entry sampleEntry = (SampleListModel.Entry) value;
-        value = "Sample " + (index + 1) + "@" + sampleEntry.offset  + " - " + sampleEntry.sample.size() + "bytes";
+
+        value = "Sample " + (index + 1) ;
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         return this;
     }

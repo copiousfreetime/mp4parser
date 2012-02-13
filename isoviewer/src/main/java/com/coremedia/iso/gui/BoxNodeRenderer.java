@@ -19,7 +19,7 @@ public class BoxNodeRenderer extends JLabel implements TreeCellRenderer {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean isSelected,
                                                   boolean isExpanded, boolean isLeaf, int row, boolean hasFocus) {
         if (value instanceof Box) {
-            setText(IsoFile.bytesToFourCC(((Box)value).getType()) + "[@" + ((Box)value).getOffset() + "]");
+            setText(((Box)value).getType());
         } else {
            setText(value.toString());
         }

@@ -16,11 +16,11 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /**
  * The Original Format Box contains the four-character-code of the original untransformed sample description.

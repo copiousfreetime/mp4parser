@@ -16,15 +16,13 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
 

@@ -1,39 +1,33 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.mdat.Sample;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.*;
+import java.nio.channels.Channels;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
 
 public class DumpAmf0TrackToPropertyFile {
     public static void main(String[] args) throws IOException {
-        IsoBufferWrapper ibw = new IsoBufferWrapperImpl(readFully(DumpAmf0TrackToPropertyFile.class.getResourceAsStream("/example.f4v")));
-        Movie movie = new MovieCreator().build(ibw);
+        Movie movie = new MovieCreator().build(Channels.newChannel(DumpAmf0TrackToPropertyFile.class.getResourceAsStream("/example.f4v")));
 
 
         for (Track track : movie.getTracks()) {
             if (track.getType() == Track.Type.AMF0) {
                 long time = 0;
-                Iterator<IsoBufferWrapper> samples = track.getSamples().iterator();
+                Iterator<? extends Sample> samples = track.getSamples().iterator();
                 Properties properties = new Properties();
                 File f = File.createTempFile(DumpAmf0TrackToPropertyFile.class.getSimpleName(), "" + track.getTrackMetaData().getTrackId());
                 for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
                     for (int i = 0; i < entry.getCount(); i++) {
-                        IsoBufferWrapper sample = samples.next();
-                        byte[] sampleBytes = sample.read((int) sample.size());
+                        Sample sample = samples.next();
+                        byte[] sampleBytes = sample.getBytes();
                         properties.put("" + time, new String(Base64.encodeBase64(sampleBytes, false, false)));
                         time += entry.getDelta();
                     }

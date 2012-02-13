@@ -1,13 +1,10 @@
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.coremedia.iso.boxes.mdat.Sample;
-import com.coremedia.iso.boxes.mdat.SampleList;
-import com.coremedia.iso.boxes.mdat.Segment;
 
 import java.util.List;
 

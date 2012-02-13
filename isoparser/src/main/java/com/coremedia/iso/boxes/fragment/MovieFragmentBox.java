@@ -16,8 +16,9 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.AbstractContainerBox;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 
 import java.util.ArrayList;
 import java.util.List;

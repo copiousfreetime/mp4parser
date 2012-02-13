@@ -1,8 +1,8 @@
 package com.coremedia.iso.boxes.dece;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

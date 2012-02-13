@@ -60,48 +60,46 @@ public class JHexEditorASCII extends JComponent implements MouseListener, KeyLis
     }
 
     public void paint(Graphics g) {
-        try {
-            debug("paint(" + g + ")");
-            debug("cursor=" + he.cursor + " buff.length=" + he.buff.size());
-            Dimension d = getMinimumSize();
-            g.setColor(Color.white);
-            g.fillRect(0, 0, d.width, d.height);
-            g.setColor(Color.black);
+        debug("paint(" + g + ")");
+        debug("cursor=" + he.cursor + " buff.length=" + he.buff.capacity());
+        Dimension d = getMinimumSize();
+        g.setColor(Color.white);
+        g.fillRect(0, 0, d.width, d.height);
+        g.setColor(Color.black);
 
-            g.setFont(JHexEditor.font);
+        g.setFont(JHexEditor.font);
 
-            //datos ascii
-            int ini = he.getInicio() * 16;
-            long fin = ini + (he.getNumberOfVisibleLines() * 16);
-            if (fin > he.buff.size()) fin = he.buff.size();
+        //datos ascii
+        int ini = he.getInicio() * 16;
+        long fin = ini + (he.getNumberOfVisibleLines() * 16);
+        if (fin > he.buff.capacity()) fin = he.buff.capacity();
 
-            int x = 0;
-            int y = 0;
+        int x = 0;
+        int y = 0;
 
-            he.buff.position(ini);
+        he.buff.position(ini);
 
-            for (int n = ini; n < fin; n++) {
-                if (n == he.cursor) {
-                    g.setColor(Color.blue);
-                    if (hasFocus()) he.filledCursor(g, x, y, 1);
-                    else he.cuadro(g, x, y, 1);
-                    if (hasFocus()) g.setColor(Color.white);
-                    else g.setColor(Color.black);
-                } else {
-                    g.setColor(Color.black);
-                }
-
-                String s = Iso8859_1.convert(new byte[]{he.buff.readByte()});
-//      if ((he.buff[n] < 20) || (he.buff[n] > 126)) s = "" + (char) 16;
-                he.printString(g, s, (x++), y);
-                if (x == 16) {
-                    x = 0;
-                    y++;
-                }
+        for (int n = ini; n < fin; n++) {
+            if (n == he.cursor) {
+                g.setColor(Color.blue);
+                if (hasFocus()) he.filledCursor(g, x, y, 1);
+                else he.cuadro(g, x, y, 1);
+                if (hasFocus()) g.setColor(Color.white);
+                else g.setColor(Color.black);
+            } else {
+                g.setColor(Color.black);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            String s = Iso8859_1.convert(new byte[]{he.buff.get()});
+//      if ((he.buff[n] < 20) || (he.buff[n] > 126)) s = "" + (char) 16;
+            he.printString(g, s, (x++), y);
+            if (x == 16) {
+                x = 0;
+                y++;
+            }
         }
+
+
     }
 
     private void debug(String s) {

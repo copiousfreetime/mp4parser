@@ -1,21 +1,10 @@
 package com.coremedia.iso.boxes.mdat;
 
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFileConvenienceHelper;
 import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackRunBox;
+import com.coremedia.iso.boxes.fragment.*;
 
-import java.io.IOException;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  *
@@ -38,10 +27,6 @@ public abstract class SampleList<E>  extends AbstractList<E> {
         return offsetKeys;
     }
 
-    public SampleList(MovieFragmentBox moof) {
-        assert 1 == moof.getTrackCount();
-        offsets2Sizes = getOffsets(moof, moof.getTrackNumbers()[0]);
-    }
 
     SortedMap<Long, Long> getOffsets(MovieFragmentBox moof, long trackId) {
         SortedMap<Long, Long> offsets2Sizes = new TreeMap<Long, Long>();

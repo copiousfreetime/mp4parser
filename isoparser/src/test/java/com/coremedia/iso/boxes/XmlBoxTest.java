@@ -1,6 +1,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.*;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class XmlBoxTest {
         Properties props = new Properties();
         props.put("xml ", XmlBox.class.getName() + "()");
         PropertyBoxParserImpl parser = new PropertyBoxParserImpl(props);
-        IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(ByteBuffer.wrap(baos.toByteArray())), parser);
+        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())), parser);
         isoFile.parse();
 
         Assert.assertTrue(!isoFile.getBoxes().isEmpty());

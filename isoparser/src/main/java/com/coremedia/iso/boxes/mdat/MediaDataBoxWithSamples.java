@@ -16,18 +16,18 @@
 
 package com.coremedia.iso.boxes.mdat;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * This box contains the media data. In video tracks, this box would contain video frames. A presentation may
@@ -136,9 +136,23 @@ public class MediaDataBoxWithSamples implements Box {
 
     private boolean isSmall(long size) {
         return ((size + 8) < 4294967296L);
-
-
     }
+
+    public long getOffset() {
+        Box b = this;
+        long offset = 0;
+        while (b.getParent() != null) {
+            for (Box box : b.getParent().getBoxes()) {
+                if (b == box) {
+                    break;
+                }
+                offset += box.getSize();
+            }
+            b = b.getParent();
+        }
+        return offset;
+    }
+
 
     public MediaDataBoxWithSamples() {
 

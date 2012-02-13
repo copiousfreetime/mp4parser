@@ -1,10 +1,5 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-
-import java.io.IOException;
-
 /**
  * Abstract Chunk Offset Box
  */

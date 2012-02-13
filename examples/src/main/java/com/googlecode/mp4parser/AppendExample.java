@@ -1,6 +1,5 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.Movie;
@@ -9,12 +8,8 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.channels.Channels;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,8 +20,8 @@ public class AppendExample {
     public static void main(String[] args) throws IOException {
 
 
-        Movie video = new MovieCreator().build(new IsoBufferWrapperImpl(readFully(AppendExample.class.getResourceAsStream("/count-video.mp4"))));
-        Movie audio = new MovieCreator().build(new IsoBufferWrapperImpl(readFully(AppendExample.class.getResourceAsStream("/count-english-audio.mp4"))));
+        Movie video = new MovieCreator().build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-video.mp4")));
+        Movie audio = new MovieCreator().build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-english-audio.mp4")));
 
         List<Track> videoTracks = video.getTracks();
         video.setTracks(new LinkedList<Track>());

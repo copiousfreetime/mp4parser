@@ -2,7 +2,6 @@ package com.coremedia.iso;
 
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -12,7 +11,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

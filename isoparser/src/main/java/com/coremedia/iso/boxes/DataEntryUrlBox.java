@@ -20,7 +20,6 @@ import com.coremedia.iso.IsoFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
 
 /**
  * Only used within the DataReferenceBox. Find more information there.

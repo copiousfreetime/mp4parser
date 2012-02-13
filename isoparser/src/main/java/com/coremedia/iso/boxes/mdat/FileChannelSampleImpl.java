@@ -1,5 +1,7 @@
 package com.coremedia.iso.boxes.mdat;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
@@ -17,5 +19,16 @@ public class FileChannelSampleImpl implements Sample {
 
     public int getSize() {
         return l2i(size);
+    }
+
+    public byte[] getBytes() {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(size));
+        try {
+            fileChannel.position(offset);
+            fileChannel.read(bb);
+            return bb.array();
+        } catch (IOException e) {
+            throw new RuntimeException("WTF? ask Sebastian. 98628743295", e);
+        }
     }
 }

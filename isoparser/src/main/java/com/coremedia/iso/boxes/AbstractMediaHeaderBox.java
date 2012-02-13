@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * A common superclass for all MediaInformationHeaderBoxes. E.g.
  * VideoMediaHeaderBox, SoundMediaHeaderBox & HintMediaHeaderBox

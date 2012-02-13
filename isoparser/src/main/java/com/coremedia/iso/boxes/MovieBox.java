@@ -17,12 +17,8 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.AbstractBoxParser;
 import com.coremedia.iso.IsoFile;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
 /**

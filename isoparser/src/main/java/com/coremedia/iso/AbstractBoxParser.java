@@ -8,7 +8,6 @@ import com.coremedia.iso.boxes.UserBox;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
@@ -31,7 +30,6 @@ public abstract class AbstractBoxParser implements BoxParser {
      * @throws java.io.IOException if reading from <code>in</code> fails
      */
     public Box parseBox(ReadableByteChannel byteChannel, ContainerBox parent) throws IOException {
-        FileChannelIsoBufferWrapperImpl in = new FileChannelIsoBufferWrapperImpl(byteChannel);
 
 
         ByteBuffer header = ChannelHelper.readFully(byteChannel, 8);
@@ -58,7 +56,10 @@ public abstract class AbstractBoxParser implements BoxParser {
         long contentSize;
 
         if (size == 1) {
-            size = in.readUInt64();
+            ByteBuffer bb = ByteBuffer.allocate(8);
+            byteChannel.read(bb);
+            bb.rewind();
+            size = IsoTypeReader.readUInt64(bb);
             contentSize = size - 16;
         } else if (size == 0) {
             //throw new RuntimeException("Not supported!");
@@ -68,7 +69,10 @@ public abstract class AbstractBoxParser implements BoxParser {
             contentSize = size - 8;
         }
         if (UserBox.TYPE.equals(type)) {
-            usertype = in.read(16);
+            ByteBuffer bb = ByteBuffer.allocate(16);
+            byteChannel.read(bb);
+            bb.rewind();
+            usertype = bb.array();
             contentSize -= 16;
         }
         Box box = createBox(type, usertype, parent.getType());

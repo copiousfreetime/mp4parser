@@ -16,14 +16,14 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 
 /**
  * Contains information common to all visual tracks.

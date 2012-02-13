@@ -18,11 +18,6 @@ public class FontTableBox extends AbstractBox {
         super(IsoFile.fourCCtoBytes("ftab"));
     }
 
-    public void parse(IsoBufferWrapper in) {
-
-    }
-
-
     @Override
     protected long getContentSize() {
         int size = 2;

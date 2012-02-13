@@ -51,10 +51,6 @@ public class FileTypeBox extends AbstractBox {
 
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-
-    }
-
     @Override
     public void _parseDetails() {
         majorBrand = IsoTypeReader.read4cc(content);

@@ -1,12 +1,6 @@
 package com.coremedia.iso.boxes.mdat;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * A SortedSet that contains just one value.

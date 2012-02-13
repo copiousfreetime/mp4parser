@@ -16,9 +16,10 @@
 
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -75,9 +76,9 @@ public class BaseLocationBox extends AbstractFullBox {
     protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         bb.put(Utf8.convert(baseLocation));
-        bb.put(new byte[256 - Utf8.utf8StringLengthInBytes(baseLocation) ]); // string plus term zero
+        bb.put(new byte[256 - Utf8.utf8StringLengthInBytes(baseLocation)]); // string plus term zero
         bb.put(Utf8.convert(purchaseLocation));
-        bb.put(new byte[256 - Utf8.utf8StringLengthInBytes(purchaseLocation) ]); // string plus term zero
+        bb.put(new byte[256 - Utf8.utf8StringLengthInBytes(purchaseLocation)]); // string plus term zero
         bb.put(new byte[512]);
     }
 

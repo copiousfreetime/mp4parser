@@ -16,16 +16,13 @@
 
 package com.googlecode.mp4parser.boxes.basemediaformat;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;import java.lang.Override;import java.lang.RuntimeException;import java.lang.System;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 

@@ -1,6 +1,5 @@
 package com.googlecode.mp4parser.boxes.adobe;
 
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 

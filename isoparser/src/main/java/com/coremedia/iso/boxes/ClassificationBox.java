@@ -16,13 +16,13 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.Utf8;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
-
-import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Classification of the media according to 3GPP 26.244.
@@ -89,7 +89,7 @@ public class ClassificationBox extends AbstractFullBox {
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
-        bb.put (IsoFile.fourCCtoBytes(classificationEntity));
+        bb.put(IsoFile.fourCCtoBytes(classificationEntity));
         IsoTypeWriter.writeUInt16(bb, classificationTableIndex);
         IsoTypeWriter.writeIso639(bb, language);
         bb.put(Utf8.convert(classificationInfo));

@@ -17,14 +17,10 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.util.Arrays;
 
 /**
  * Base class for all ISO Full boxes.

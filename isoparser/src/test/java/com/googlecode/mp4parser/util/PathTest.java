@@ -1,12 +1,10 @@
 package com.googlecode.mp4parser.util;
 
 
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.TrackBox;
 import junit.framework.Assert;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 

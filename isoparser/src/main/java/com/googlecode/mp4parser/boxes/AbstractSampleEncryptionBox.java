@@ -1,9 +1,10 @@
 package com.googlecode.mp4parser.boxes;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.Hex;
+import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.coremedia.iso.boxes.Box;
-
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

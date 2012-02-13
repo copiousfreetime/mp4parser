@@ -3,7 +3,10 @@ package com.coremedia.iso;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.WritableByteChannel;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
 

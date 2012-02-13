@@ -16,13 +16,12 @@
 
 package com.coremedia.iso.boxes.sampleentry;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 
 /**
  * Entry type for timed text samples defined in the timed text specification (ISO/IEC 14496-17).

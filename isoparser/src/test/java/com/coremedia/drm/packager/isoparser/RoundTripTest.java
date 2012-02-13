@@ -22,12 +22,8 @@ import junit.framework.TestCase;
 import junitx.framework.ArrayAssert;
 import org.apache.commons.io.IOUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.channels.Channels;
 
 /**
  * Tests ISO Roundtrip.
@@ -79,30 +75,22 @@ public class RoundTripTest extends TestCase {
 
     public void testRoundTrip_1(String resource) throws Exception {
 
-        File originalFile = File.createTempFile("pdcf", "original");
+        File originalFile = File.createTempFile("RoundTripTest", "testRoundTrip_1");
         FileOutputStream fos = new FileOutputStream(originalFile);
-        byte[] content = IOUtils.toByteArray(getClass().getResourceAsStream(resource));
-        fos.write(content);
+        IOUtils.copy(getClass().getResourceAsStream(resource), fos);
         fos.close();
 
-        IsoFile isoFile = new IsoFile(InputStreamIsoBufferHelper.get(getClass().getResourceAsStream(resource), 20000));
+
+        IsoFile isoFile = new IsoFile(new FileInputStream(originalFile).getChannel());
         isoFile.parse();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        isoFile.getBox(new IsoOutputStream(baos));
-
-
-        /*  File f = File.createTempFile("RoundTripTest", "debug");
-        System.err.println(f.getAbsolutePath());
-        FileOutputStream fos2 = new FileOutputStream(f);
-        fos2.write(baos.toByteArray());
-        fos2.close();*/
+        isoFile.getBox(Channels.newChannel(baos));
 
 
         Walk.through(isoFile);
 
-
-        ArrayAssert.assertEquals(content, baos.toByteArray());
+        ArrayAssert.assertEquals(IOUtils.toByteArray(getClass().getResourceAsStream(resource)), baos.toByteArray());
 
     }
 

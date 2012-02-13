@@ -1,14 +1,12 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoOutputStream;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -33,7 +31,7 @@ public class ComponsitionShiftLeastGreatestAtomTest extends TestCase {
         byte[] content = baos.toByteArray();
 
         CompositionShiftLeastGreatestAtom clsg2 = new CompositionShiftLeastGreatestAtom();
-        clsg2.parse(new IsoBufferWrapperImpl(ByteBuffer.wrap(content, 8, content.length - 8)), content.length + 8, null, null);
+        clsg2.parse(new ByteBufferByteChannel(ByteBuffer.wrap(content, 8, content.length - 8)), null, content.length + 8, null);
         Assert.assertEquals(content.length, clsg2.getSize());
         Assert.assertEquals(clsg.getCompositionOffsetToDisplayOffsetShift(), clsg2.getCompositionOffsetToDisplayOffsetShift());
         Assert.assertEquals(clsg.getGreatestDisplayOffset(), clsg2.getGreatestDisplayOffset());

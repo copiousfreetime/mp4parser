@@ -34,8 +34,8 @@ public class SampleListTest {
         byte[] contentOfMdat = new byte[mdat.getContent().remaining()];
         mdat.getContent().get(contentOfMdat);
         long currentOffset = 0;
-        for (byte[] s : sl) {
-            ByteBuffer sample = ByteBuffer.wrap(s);
+        for (ByteArraySampleImpl s : sl) {
+            ByteBuffer sample = ByteBuffer.wrap(s.data);
             while (sample.remaining() > 0) {
                 byte ist = sample.get();
                 byte soll = contentOfMdat[((int) currentOffset)];

@@ -1,13 +1,12 @@
 package com.googlecode.mp4parser.authoring.container.mp4;
 
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.TrackBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Mp4TrackImpl;
 
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 
 /**
@@ -18,14 +17,14 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class MovieCreator {
-    public Movie build(FileChannel fileChannel) throws IOException {
-        IsoFile isoFile = new IsoFile(fileChannel);
+    public Movie build(ReadableByteChannel channel) throws IOException {
+        IsoFile isoFile = new IsoFile(channel);
         isoFile.parse();
         Movie m = new Movie();
 
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
         for (TrackBox trackBox : trackBoxes) {
-            m.addTrack(new Mp4TrackImpl(trackBox));
+            m.addTrack(new Mp4TrackImpl(trackBox, channel));
         }
         return m;
     }

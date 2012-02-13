@@ -3,7 +3,6 @@ package com.googlecode.mp4parser;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.ReadableByteChannel;
 
 /**
  * Creates a <code>ReadableByteChannel</code> that is backed by a <code>ByteBuffer</code>.

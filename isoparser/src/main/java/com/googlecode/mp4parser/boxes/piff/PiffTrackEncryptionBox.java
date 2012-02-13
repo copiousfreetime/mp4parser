@@ -2,8 +2,6 @@ package com.googlecode.mp4parser.boxes.piff;
 
 import com.googlecode.mp4parser.boxes.AbstractTrackEncryptionBox;
 
-import java.lang.Override;
-
 /**
  * aligned(8) class TrackEncryptionBox extends FullBox(‘uuid’,
 extended_type=0x8974dbce-7be7-4c51-84f9-7148f9882554, version=0,

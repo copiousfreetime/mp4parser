@@ -16,11 +16,7 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoFile;
-
-import java.io.IOException;
 
 /**
  * Tracks are used for two purposes: (a) to contain media data (media tracks) and (b) to contain packetization

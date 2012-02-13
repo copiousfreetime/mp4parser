@@ -1,6 +1,5 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.Movie;
@@ -9,18 +8,15 @@ import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.TextTrackImpl;
 import com.googlecode.mp4parser.srt.SrtParser;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.channels.Channels;
 
 /**
  * Adds subtitles.
  */
 public class SubTitleExample {
     public static void main(String[] args) throws IOException {
-        Movie countVideo = new MovieCreator().build(new IsoBufferWrapperImpl(readFully(SubTitleExample.class.getResourceAsStream("/count-video.mp4"))));
+        Movie countVideo = new MovieCreator().build(Channels.newChannel(SubTitleExample.class.getResourceAsStream("/count-video.mp4")));
 
         TextTrackImpl subTitleEng = new TextTrackImpl();
         subTitleEng.getTrackMetaData().setLanguage("eng");

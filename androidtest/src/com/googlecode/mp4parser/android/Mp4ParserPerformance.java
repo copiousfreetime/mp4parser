@@ -15,10 +15,7 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +35,7 @@ public class Mp4ParserPerformance extends Activity {
             long a = System.currentTimeMillis();
             tv.append("1");
 //            Movie movie = new MovieCreator().build(new RandomAccessFileIsoBufferWrapperImpl(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov")));
-            Movie movie = new MovieCreator().build(new RandomAccessFileIsoBufferWrapperImpl(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov")));
+            Movie movie = new MovieCreator().build(new RandomAccessFile(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov").getAbsolutePath(), "r").getChannel());
             tv.append("2");
             Log.v("PERF", "Parsing took " + (System.currentTimeMillis() - a));
             text += "Parsing took " + Long.toString(System.currentTimeMillis() - a) + "\n";

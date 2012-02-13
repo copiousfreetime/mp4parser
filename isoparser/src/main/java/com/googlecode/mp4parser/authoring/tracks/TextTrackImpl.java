@@ -1,12 +1,10 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.mdat.ByteArraySampleImpl;
 import com.coremedia.iso.boxes.sampleentry.TextSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
@@ -34,7 +32,7 @@ public class TextTrackImpl extends AbstractTrack {
 
     public TextTrackImpl() {
         sampleDescriptionBox = new SampleDescriptionBox();
-        TextSampleEntry tx3g = new TextSampleEntry(IsoFile.fourCCtoBytes("tx3g"));
+        TextSampleEntry tx3g = new TextSampleEntry("tx3g");
         tx3g.setStyleRecord(new TextSampleEntry.StyleRecord());
         tx3g.setBoxRecord(new TextSampleEntry.BoxRecord());
         sampleDescriptionBox.addBox(tx3g);
@@ -53,13 +51,13 @@ public class TextTrackImpl extends AbstractTrack {
     }
 
 
-    public List<IsoBufferWrapper> getSamples() {
-        List<IsoBufferWrapper> samples = new LinkedList<IsoBufferWrapper>();
+    public List<ByteArraySampleImpl> getSamples() {
+        List<ByteArraySampleImpl> samples = new LinkedList<ByteArraySampleImpl>();
         long lastEnd = 0;
         for (Line sub : subs) {
             long silentTime = sub.from - lastEnd;
             if (silentTime > 0) {
-                samples.add(new IsoBufferWrapperImpl(new byte[]{0, 0}));
+                samples.add(new ByteArraySampleImpl(new byte[]{0, 0}));
             } else if (silentTime < 0) {
                 throw new Error("Subtitle display times may not intersect");
             }
@@ -72,7 +70,7 @@ public class TextTrackImpl extends AbstractTrack {
             } catch (IOException e) {
                 throw new Error("VM is broken. Does not support UTF-8");
             }
-            samples.add(new IsoBufferWrapperImpl(baos.toByteArray()));
+            samples.add(new ByteArraySampleImpl(baos.toByteArray()));
             lastEnd = sub.to;
         }
         return samples;

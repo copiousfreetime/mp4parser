@@ -1,6 +1,8 @@
 package com.googlecode.mp4parser.authoring.builder;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.mdat.ByteArraySampleImpl;
 import com.coremedia.iso.boxes.mdat.FileChannelSampleImpl;
@@ -38,13 +40,13 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         isoFile.addBox(new FileTypeBox("isom", 0, minorBrands));
         isoFile.addBox(createMovieBox(movie));
-        Box mdat = new InterleaveChunkMdat(movie);
+        InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie);
         isoFile.addBox(mdat);
         /*
-        dataOffset is where the first sample starts. Since we created the chunk offset boxes
-        without knowing this offset and temporarely
+        dataOffset is where the first sample starts. In this special mdat the samples always start
+        at offset 16 so that we can use the same offset for large boxes and small boxes
          */
-        long dataOffset = mdat.calculateOffset() + 8;
+        long dataOffset = mdat.getDataOffset();
         for (StaticChunkOffsetBox chunkOffsetBox : chunkOffsetBoxes) {
             long[] offsets = chunkOffsetBox.getChunkOffsets();
             for (int i = 0; i < offsets.length; i++) {
@@ -336,7 +338,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                                 baos.write(((ByteArraySampleImpl) s).data);
                                 ((ByteArraySampleImpl) last).data = baos.toByteArray();
                             } catch (IOException e) {
-                                throw new RuntimeException("Should not happen. Even though ...", e);
+                                throw new RuntimeException("Should not happen. Even though ... ask sebastian 2534587736", e);
                             }
                         } else if (s instanceof FileChannelSampleImpl && last instanceof FileChannelSampleImpl) {
                             FileChannelSampleImpl l = (FileChannelSampleImpl) last;
@@ -356,12 +358,28 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         }
 
+        public long getDataOffset() {
+            Box b = this;
+            long offset = 16;
+            while (b.getParent() != null) {
+                for (Box box : b.getParent().getBoxes()) {
+                    if (b == box) {
+                        break;
+                    }
+                    offset += box.getSize();
+                }
+                b = b.getParent();
+            }
+            return offset;
+        }
+
+
         public String getType() {
             return "mdat";
         }
 
         public long getSize() {
-            long size = 8;
+            long size = 16;
             for (Sample sample : samples) {
                 size += sample.getSize();
             }
@@ -369,10 +387,26 @@ public class DefaultMp4Builder implements Mp4Builder {
             
         }
 
+        private boolean isSmallBox(long contentSize) {
+            return (contentSize + 8) < 4294967296L;
+        }
+
+
         public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-            ByteBuffer bb = ByteBuffer.allocate(8);
-            IsoTypeWriter.writeUInt32(bb, getSize());
+            ByteBuffer bb = ByteBuffer.allocate(16);
+            long size = getSize();
+            if (isSmallBox(size)) {
+                IsoTypeWriter.writeUInt32(bb, size);
+            } else {
+                IsoTypeWriter.writeUInt32(bb, 1);
+            }
             bb.put(IsoFile.fourCCtoBytes("mdat"));
+            if (isSmallBox(size)) {
+                bb.put(new byte[8]);
+            } else {
+                IsoTypeWriter.writeUInt64(bb, size);
+            }
+            
             for (Sample sample : samples) {
                 if (sample instanceof ByteArraySampleImpl) {
                     writableByteChannel.write(ByteBuffer.wrap(((ByteArraySampleImpl) sample).data));

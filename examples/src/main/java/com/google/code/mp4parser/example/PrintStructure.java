@@ -1,12 +1,11 @@
 package com.google.code.mp4parser.example;
 
-import com.coremedia.iso.FileChannelIsoBufferWrapperImpl;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
+import com.coremedia.iso.IsoTypeReader;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.List;
@@ -28,11 +27,12 @@ public class PrintStructure {
 
 
     private void print(FileChannel fc, int level, long baseoffset) throws IOException {
-        IsoBufferWrapper ibw = new FileChannelIsoBufferWrapperImpl(fc);
+
         while (fc.size() - fc.position() > 8) {
             long start = fc.position();
-            long size = ibw.readUInt32();
-            String type = ibw.readString(4);
+            ByteBuffer bb = ByteBuffer.allocate(8);
+            long size = IsoTypeReader.readUInt32(bb);
+            String type = IsoTypeReader.read4cc(bb);
             long end = start + size;
             for (int i = 0; i < level; i++) {
                 System.out.print(" ");
@@ -42,10 +42,7 @@ public class PrintStructure {
             if (containers.contains(type)) {
                 print(fc, level + 1, baseoffset + start + 8);
             }
-            if (type.equals("meta")) {
-                fc.position(start);
-                byte[] metaContent = ibw.read((int) size);
-            }
+
             fc.position(end);
 
         }

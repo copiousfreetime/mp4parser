@@ -1,12 +1,9 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
-
-import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * The optional composition shift least greatest atom summarizes the calculated

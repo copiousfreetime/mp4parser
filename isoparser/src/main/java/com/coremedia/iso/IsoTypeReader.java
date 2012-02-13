@@ -1,10 +1,7 @@
 package com.coremedia.iso;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
 
 public final class IsoTypeReader {
 

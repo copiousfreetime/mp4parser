@@ -16,20 +16,19 @@
 
 package com.coremedia.iso.boxes.h264;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.h264.model.PictureParameterSet;
 import com.googlecode.mp4parser.h264.model.SeqParameterSet;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Defined in ISO/IEC 14496-15:2004.
@@ -178,9 +177,9 @@ public final class AvcConfigurationBox extends AbstractBox {
         for (byte[] pictureParameterSet : pictureParameterSets) {
             String details = "not parsable";
             try {
-                details = PictureParameterSet.read(new IsoBufferWrapperImpl(pictureParameterSet)).toString();
+                details = PictureParameterSet.read(pictureParameterSet).toString();
             } catch (IOException e) {
-
+                throw new RuntimeException(e);
             }
 
             l.add(details);
@@ -194,7 +193,7 @@ public final class AvcConfigurationBox extends AbstractBox {
         for (byte[] sequenceParameterSet : sequenceParameterSets) {
             String detail = "not parsable";
             try {
-                detail = SeqParameterSet.read(new IsoBufferWrapperImpl(sequenceParameterSet)).toString();
+                detail = SeqParameterSet.read(new ByteArrayInputStream(sequenceParameterSet)).toString();
             } catch (IOException e) {
 
             }

@@ -13,4 +13,8 @@ public class ByteArraySampleImpl implements Sample {
     public int getSize() {
         return data.length;
     }
+
+    public byte[] getBytes() {
+        return data;
+    }
 }

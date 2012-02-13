@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;

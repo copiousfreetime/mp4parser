@@ -1,12 +1,11 @@
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
-import com.coremedia.iso.boxes.mdat.SampleList;
+import com.coremedia.iso.boxes.mdat.Sample;
 import com.coremedia.iso.boxes.mdat.SegmentSampleList;
 import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
@@ -14,12 +13,12 @@ import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.coremedia.iso.boxes.CastUtils.l2i;
+
 /**
  * Represents a single track of an MP4 file.
  */
-public class Mp4TrackImpl extends AbstractTrack implements FileChannelSegmentTrack{
-    FileChannel source;
-
+public class Mp4TrackImpl extends AbstractTrack {
     private SegmentSampleList samples;
     private SampleDescriptionBox sampleDescriptionBox;
     private List<TimeToSampleBox.Entry> decodingTimeEntries;
@@ -30,9 +29,8 @@ public class Mp4TrackImpl extends AbstractTrack implements FileChannelSegmentTra
     private Type type;
 
 
-    public Mp4TrackImpl(TrackBox trackBox) {
-        source = trackBox.getIsoFile().getOriginalIso();
-        samples = new SegmentSampleList(trackBox);
+    public Mp4TrackImpl(TrackBox trackBox, FileChannel source) {
+        samples = new SegmentSampleList(trackBox, source);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
         AbstractMediaHeaderBox mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
         if (mihd instanceof VideoMediaHeaderBox) {
@@ -77,7 +75,7 @@ public class Mp4TrackImpl extends AbstractTrack implements FileChannelSegmentTra
                                 if (trun.isSampleCompositionTimeOffsetPresent()) {
                                     if (compositionTimeEntries.size() == 0 ||
                                             compositionTimeEntries.get(compositionTimeEntries.size() - 1).getOffset() != entry.getSampleCompositionTimeOffset()) {
-                                        compositionTimeEntries.add(new CompositionTimeToSample.Entry(1, CompositionTimeToSample.toint(entry.getSampleCompositionTimeOffset())));
+                                        compositionTimeEntries.add(new CompositionTimeToSample.Entry(1, l2i(entry.getSampleCompositionTimeOffset())));
                                     } else {
                                         CompositionTimeToSample.Entry e = compositionTimeEntries.get(compositionTimeEntries.size() - 1);
                                         e.setCount(e.getCount() + 1);
@@ -128,14 +126,11 @@ public class Mp4TrackImpl extends AbstractTrack implements FileChannelSegmentTra
         trackMetaData.setLayer(tkhd.getLayer());
     }
 
-    public SegmentSampleList getSamples() {
+    public List<? extends Sample> getSamples() {
         return samples;
     }
 
-    public FileChannel getFileChannel() {
-        return source;
-    }
-
+ 
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;
     }

@@ -59,13 +59,6 @@ public class TrickPlayBox extends AbstractFullBox {
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        for (Entry entry : entries) {
-            os.write(entry.value);
-        }
-    }
-
-    @Override
     public void _parseDetails() {
         parseVersionAndFlags();
         while (content.remaining() > 0) {

@@ -1,11 +1,9 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,31 +32,33 @@ public class SampleToGroupBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 4 + 4 + entryCount * 8;
+        return 12 + entryCount * 8;
     }
 
-    @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
 
-        groupingType = in.readUInt32();
-        entryCount = in.readUInt32();
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        groupingType = IsoTypeReader.readUInt32(content);
+        entryCount = IsoTypeReader.readUInt32(content);
 
         for (int i = 0; i < entryCount; i++) {
             Entry entry = new Entry();
-            entry.setSampleCount(in.readUInt32());
-            entry.setGroupDescriptionIndex(in.readUInt32());
+            entry.setSampleCount(IsoTypeReader.readUInt32(content));
+            entry.setGroupDescriptionIndex(IsoTypeReader.readUInt32(content));
             entries.add(entry);
         }
     }
 
     @Override
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt32(groupingType);
-        os.writeUInt32(entryCount);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+
+        IsoTypeWriter.writeUInt32(bb, groupingType);
+        IsoTypeWriter.writeUInt32(bb, entryCount);
         for (Entry entry : entries) {
-            os.writeUInt32(entry.getSampleCount());
-            os.writeUInt32(entry.getGroupDescriptionIndex());
+            IsoTypeWriter.writeUInt32(bb, entry.getSampleCount());
+            IsoTypeWriter.writeUInt32(bb, entry.getGroupDescriptionIndex());
         }
     }
 

@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.channels.Channels;
 
 public class PathTest {
     IsoFile isoFile;
@@ -18,7 +19,7 @@ public class PathTest {
 
     @Before
     public void setup() throws IOException {
-        isoFile = new IsoFile(new IsoBufferWrapperImpl(IOUtils.toByteArray(PathTest.class.getResourceAsStream("/multiTrack.3gp"))));
+        isoFile = new IsoFile(Channels.newChannel(PathTest.class.getResourceAsStream("/multiTrack.3gp")));
         isoFile.parse();
         path = new Path(isoFile);
     }

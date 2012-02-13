@@ -17,13 +17,11 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
+import com.coremedia.iso.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 
 /**
  * The copyright box contains a copyright declaration which applies to the entire presentation, when contained
@@ -60,17 +58,22 @@ public class CopyrightBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        try {
-            return 2 + copyright.getBytes("UTF-8").length + 1;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException();
-        }
+        return 7 + Utf8.utf8StringLengthInBytes(copyright);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        copyright = in.readString();
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        language = IsoTypeReader.readIso639(content);
+        copyright = IsoTypeReader.readString(content);
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(copyright));
+        bb.put((byte) 0);
     }
 
     public String toString() {

@@ -5,6 +5,7 @@ import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.mdat.Sample;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.coremedia.iso.boxes.mdat.Segment;
 
@@ -40,6 +41,8 @@ public interface Track {
     boolean isInPreview();
 
     boolean isInPoster();
+    
+    List<? extends Sample> getSamples();
 
     public enum Type {
         VIDEO(),

@@ -38,8 +38,6 @@ public interface Box {
 
     String getType();
 
-    byte[] getUserType();
-
     void getBox(WritableByteChannel writableByteChannel) throws IOException;
 
     void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException;

@@ -35,6 +35,7 @@ import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.coremedia.iso.boxes.mdat.MediaDataBoxWithSamples;
+import com.coremedia.iso.boxes.mdat.Sample;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
@@ -57,9 +58,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     public IsoFile build(Movie movie) throws IOException {
         LOG.info("Creating movie " + movie);
-        IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(new byte[]{}));
-        isoFile.parse();
-        // ouch that is ugly but I don't know how to do it else
+        IsoFile isoFile = new IsoFile(null);
         List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
         minorBrands.add("iso2");
@@ -88,7 +87,11 @@ public class FragmentedMp4Builder implements Mp4Builder {
                         // just don't add any boxes.
                     } else {
                         isoFile.addBox(createMoof(startSample, endSample, track, i));
-                        isoFile.addBox(new MediaDataBoxWithSamples(track.getSamples().subList(startSample, endSample)));
+                        MediaDataBoxWithSamples mdat = new MediaDataBoxWithSamples();
+                        for (Sample sample : track.getSamples().subList(startSample, endSample)) {
+                            mdat.addSample(sample);
+                        }
+                        isoFile.addBox(mdat);
                     }
 
                 } else {
@@ -102,11 +105,11 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     private MovieFragmentBox createMoof(int startSample, int endSample, Track track, int sequenceNumber) {
-        List<IsoBufferWrapper> samples = track.getSamples().subList(startSample, endSample);
+        List<? extends Sample> samples = track.getSamples().subList(startSample, endSample);
 
         long[] sampleSizes = new long[samples.size()];
         for (int i = 0; i < sampleSizes.length; i++) {
-            sampleSizes[i] = samples.get(i).size();
+            sampleSizes[i] = samples.get(i).getSize();
 
         }
 

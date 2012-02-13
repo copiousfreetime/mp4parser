@@ -1,14 +1,12 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.boxes.CompositionTimeToSample;
 import com.coremedia.iso.boxes.SampleDependencyTypeBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.mdat.ByteArraySampleList;
+import com.coremedia.iso.boxes.mdat.ByteArraySampleImpl;
+import com.coremedia.iso.boxes.mdat.Sample;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
-import com.googlecode.mp4parser.authoring.ByteArrayTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
@@ -21,7 +19,7 @@ import java.util.*;
  * Time: 5:51 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Amf0Track extends AbstractTrack implements ByteArrayTrack {
+public class Amf0Track extends AbstractTrack  {
     SortedMap<Long, byte[]> rawSamples = new TreeMap<Long, byte[]>() {
     };
     private TrackMetaData trackMetaData = new TrackMetaData();
@@ -39,8 +37,12 @@ public class Amf0Track extends AbstractTrack implements ByteArrayTrack {
         trackMetaData.setLanguage("eng");
     }
 
-    public List<byte[]> getSamples() {
-        return new ArrayList<byte[]>(rawSamples.values());
+    public List<ByteArraySampleImpl> getSamples() {
+        LinkedList<ByteArraySampleImpl> samples = new LinkedList<ByteArraySampleImpl>();
+        for (byte[] bytes : rawSamples.values()) {
+            samples.add(new ByteArraySampleImpl(bytes));
+        }
+        return samples;
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {

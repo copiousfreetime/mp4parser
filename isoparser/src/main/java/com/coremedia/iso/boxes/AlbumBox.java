@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Meta information in a 'udta' box about a track.
@@ -69,33 +70,35 @@ public class AlbumBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 2 + Utf8.utf8StringLengthInBytes(albumTitle) + 1 + (trackNumber == -1 ? 0 : 1);
+        return 6 + Utf8.utf8StringLengthInBytes(albumTitle) + 1 + (trackNumber == -1 ? 0 : 1);
     }
 
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        super.parse(in, size, boxParser, lastMovieFragmentBox);
-        language = in.readIso639();
-        albumTitle = in.readString();
-        size -= (Utf8.utf8StringLengthInBytes(albumTitle) + 1 + 6);
+    @Override
+    public void _parseDetails() {
+        parseVersionAndFlags();
+        language = IsoTypeReader.readIso639(content);
+        albumTitle = IsoTypeReader.readString(content);
 
-        if (size > 0) {
-            trackNumber = in.readUInt8();
+        if (content.remaining() > 0) {
+            trackNumber = IsoTypeReader.readUInt8(content);
         } else {
             trackNumber = -1;
         }
     }
 
-    protected void getContent(IsoOutputStream isos) throws IOException {
-
-        isos.writeIso639(language);
-        isos.writeStringZeroTerm(albumTitle);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        IsoTypeWriter.writeIso639(bb, language);
+        bb.put(Utf8.convert(albumTitle));
+        bb.put((byte) 0);
         if (trackNumber != -1) {
-            isos.writeUInt8(trackNumber);
+            IsoTypeWriter.writeUInt8(bb, trackNumber);
         }
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("AlbumBox[language=").append(getLanguage()).append(";");
         buffer.append("albumTitle=").append(getAlbumTitle());
         if (trackNumber >= 0) {

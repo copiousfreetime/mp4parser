@@ -1,52 +1,23 @@
 package com.googlecode.mp4parser.authoring.builder;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.DataEntryUrlBox;
-import com.coremedia.iso.boxes.DataInformationBox;
-import com.coremedia.iso.boxes.DataReferenceBox;
-import com.coremedia.iso.boxes.EditBox;
-import com.coremedia.iso.boxes.EditListBox;
-import com.coremedia.iso.boxes.FileTypeBox;
-import com.coremedia.iso.boxes.HandlerBox;
-import com.coremedia.iso.boxes.HintMediaHeaderBox;
-import com.coremedia.iso.boxes.MediaBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.NullMediaHeaderBox;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.SoundMediaHeaderBox;
-import com.coremedia.iso.boxes.StaticChunkOffsetBox;
-import com.coremedia.iso.boxes.SyncSampleBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.coremedia.iso.boxes.VideoMediaHeaderBox;
+import com.coremedia.iso.*;
+import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.mdat.ByteArraySampleImpl;
+import com.coremedia.iso.boxes.mdat.FileChannelSampleImpl;
+import com.coremedia.iso.boxes.mdat.Sample;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.*;
 import java.util.logging.Logger;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Creates a plain MP4 file from a video. Plain as plain can be.
@@ -57,7 +28,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     public IsoFile build(Movie movie) throws IOException {
         LOG.info("Creating movie " + movie);
-        IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(new byte[]{}));
+        IsoFile isoFile = new IsoFile(null);
         isoFile.parse();
         // ouch that is ugly but I don't know how to do it else
         List<String> minorBrands = new LinkedList<String>();
@@ -273,7 +244,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         SampleSizeBox stsz = new SampleSizeBox();
         long[] sizes = new long[track.getSamples().size()];
         for (int i = 0; i < sizes.length; i++) {
-            sizes[i] = track.getSamples().get(i).size();
+            sizes[i] = track.getSamples().get(i).getSize();
         }
         stsz.setSampleSizes(sizes);
 
@@ -309,7 +280,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                         throw new InternalError("I cannot deal with a number of samples > Integer.MAX_VALUE");
                     }
 
-                    offset += current.getSamples().get((int) j).size();
+                    offset += current.getSamples().get((int) j).getSize();
                 }
             }
         }
@@ -321,38 +292,30 @@ public class DefaultMp4Builder implements Mp4Builder {
         return trackBox;
     }
 
-    private static class InterleaveChunkMdat extends AbstractBox {
+    private static class InterleaveChunkMdat implements Box {
         List<Track> tracks;
-        Map<Track, long[]> chunks = new HashMap<Track, long[]>();
+        LinkedList<Sample> samples = new LinkedList<Sample>();
+        ContainerBox parent;
+        
+        public ContainerBox getParent() {
+            return parent;
+        }
+
+        public void setParent(ContainerBox parent) {
+            this.parent = parent;
+        }
+
+        public void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        }
 
         private InterleaveChunkMdat(Movie movie) {
-            super("mdat");
+            
             tracks = movie.getTracks();
+            Map<Track, long[]> chunks = new HashMap<Track, long[]>();
             for (Track track : movie.getTracks()) {
                 chunks.put(track, getChunkSizes(track, movie));
             }
-        }
 
-        @Override
-        protected long getContentSize() {
-            long size = 0;
-            for (Track track : tracks) {
-                for (IsoBufferWrapper sample : track.getSamples()) {
-                    size += sample.size();
-                }
-            }
-            return size;
-        }
-
-        @Override
-        public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-            throw new InternalError("This box cannot be created by parsing");
-        }
-
-        @Override
-        protected void getContent(IsoOutputStream os) throws IOException {
-            long aaa = 0;
-            // all tracks have the same number of chunks
             for (int i = 0; i < chunks.values().iterator().next().length; i++) {
                 for (Track track : tracks) {
 
@@ -362,26 +325,69 @@ public class DefaultMp4Builder implements Mp4Builder {
                         firstSampleOfChunk += chunkSizes[j];
                     }
 
-                    for (long j = firstSampleOfChunk; j < firstSampleOfChunk + chunkSizes[i]; j++) {
-                        if (j > Integer.MAX_VALUE) {
-                            throw new InternalError("I cannot deal with a number of samples > Integer.MAX_VALUE");
-                        }
+                    for (int j = l2i(firstSampleOfChunk); j < firstSampleOfChunk + chunkSizes[i]; j++) {
 
-                        IsoBufferWrapper ibw = track.getSamples().get((int) j);
-                        while (ibw.remaining() >= 1024*1024) {
-                            os.write(ibw.read(1024*1024));
+                        Sample s = track.getSamples().get(j);
+                        Sample last = samples.peekLast();
+                        if (s instanceof ByteArraySampleImpl && last instanceof ByteArraySampleImpl) {
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            try {
+                                baos.write(((ByteArraySampleImpl) last).data);
+                                baos.write(((ByteArraySampleImpl) s).data);
+                                ((ByteArraySampleImpl) last).data = baos.toByteArray();
+                            } catch (IOException e) {
+                                throw new RuntimeException("Should not happen. Even though ...", e);
+                            }
+                        } else if (s instanceof FileChannelSampleImpl && last instanceof FileChannelSampleImpl) {
+                            FileChannelSampleImpl l = (FileChannelSampleImpl) last;
+                            if ((l.fileChannel == ((FileChannelSampleImpl) s).fileChannel) && (l.offset + l.size == ((FileChannelSampleImpl) s).offset)) {
+                                l.size += s.getSize();
+                            } else {
+                                samples.add(s);
+                            }
+                        } else {
+                            samples.add(s);
                         }
-                        // it's safe to cast since there are less than 1024*1024 byte remaining
-                        os.write(ibw.read((int) ibw.remaining()));
-
                     }
 
                 }
 
             }
-            System.err.println(aaa);
 
         }
+
+        public String getType() {
+            return "mdat";
+        }
+
+        public long getSize() {
+            long size = 8;
+            for (Sample sample : samples) {
+                size += sample.getSize();
+            }
+            return size;
+            
+        }
+
+        public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+            ByteBuffer bb = ByteBuffer.allocate(8);
+            IsoTypeWriter.writeUInt32(bb, getSize());
+            bb.put(IsoFile.fourCCtoBytes("mdat"));
+            for (Sample sample : samples) {
+                if (sample instanceof ByteArraySampleImpl) {
+                    writableByteChannel.write(ByteBuffer.wrap(((ByteArraySampleImpl) sample).data));
+                } else if (sample instanceof FileChannelSampleImpl ) {
+                    ((FileChannelSampleImpl) sample).fileChannel.transferTo(
+                            ((FileChannelSampleImpl) sample).offset, 
+                            ((FileChannelSampleImpl) sample).size,
+                            writableByteChannel);
+                    
+                } else {
+                    throw new RuntimeException("Don't know that kind of sample: " + sample.getClass().getSimpleName());
+                }
+            }
+        }
+
     }
 
     /**

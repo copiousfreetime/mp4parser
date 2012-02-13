@@ -2,9 +2,9 @@ package com.googlecode.mp4parser.boxes.threegpp26245;
 
 import com.coremedia.iso.*;
 import com.coremedia.iso.boxes.AbstractBox;
-import com.coremedia.iso.boxes.Box;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,12 +22,6 @@ public class FontTableBox extends AbstractBox {
 
     }
 
-    public void getContent(IsoOutputStream isos) throws IOException {
-        isos.writeUInt16(entries.size());
-        for (FontRecord record : entries) {
-            record.getContent(isos);
-        }
-    }
 
     @Override
     protected long getContentSize() {
@@ -38,13 +32,22 @@ public class FontTableBox extends AbstractBox {
         return size;
     }
 
+
     @Override
-    public void parse(IsoBufferWrapper in, long size, BoxParser boxParser, Box lastMovieFragmentBox) throws IOException {
-        int numberOfRecords = in.readUInt16();
+    public void _parseDetails() {
+        int numberOfRecords = IsoTypeReader.readUInt16(content);
         for (int i = 0; i < numberOfRecords; i++) {
             FontRecord fr = new FontRecord();
-            fr.parse(in);
+            fr.parse(content);
             entries.add(fr);
+        }
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        IsoTypeWriter.writeUInt16(bb, entries.size());
+        for (FontRecord record : entries) {
+            record.getContent(bb);
         }
     }
 
@@ -68,16 +71,16 @@ public class FontTableBox extends AbstractBox {
             this.fontname = fontname;
         }
 
-        public void parse(IsoBufferWrapper in) throws IOException {
-            fontId = in.readUInt16();
-            int length = in.readUInt8();
-            fontname = in.readString(length);
+        public void parse(ByteBuffer bb) {
+            fontId = IsoTypeReader.readUInt16(bb);
+            int length = IsoTypeReader.readUInt8(bb);
+            fontname = IsoTypeReader.readString(bb, length);
         }
 
-        public void getContent(IsoOutputStream isos) throws IOException {
-            isos.writeUInt16(fontId);
-            isos.writeUInt8(fontname.length());
-            isos.writeStringNoTerm(fontname);
+        public void getContent(ByteBuffer bb) throws IOException {
+            IsoTypeWriter.writeUInt16(bb, fontId);
+            IsoTypeWriter.writeUInt8(bb, fontname.length());
+            bb.put(Utf8.convert(fontname));
         }
 
         public int getSize() {

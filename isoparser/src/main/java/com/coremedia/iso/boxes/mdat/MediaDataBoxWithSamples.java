@@ -69,8 +69,16 @@ public class MediaDataBoxWithSamples implements Box {
     public byte[] getUserType() {
         return new byte[0];
     }
+    
+    public void addSample(Sample s) {
+        if (s instanceof FileChannelSampleImpl )  {
+            addSample((FileChannelSampleImpl)s);
+        } else if (s instanceof ByteArraySampleImpl) {
+            addSample((ByteArraySampleImpl)s);
+        }
+    }
 
-    public void addSample(FileChannelSampleImpl s) {
+    private void addSample(FileChannelSampleImpl s) {
         Sample last = samples.peekLast();
         if (s.getClass().isInstance(last)) {
             FileChannelSampleImpl l = (FileChannelSampleImpl) last;
@@ -84,7 +92,7 @@ public class MediaDataBoxWithSamples implements Box {
         }
     }
 
-    public void addSample(ByteArraySampleImpl s) {
+    private void addSample(ByteArraySampleImpl s) {
         Sample last = samples.peekLast();
         if (s.getClass().isInstance(last)) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

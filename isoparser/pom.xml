@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.googlecode.mp4parser</groupId>
-    <artifactId>isoparser</artifactId>
+    <artifactId>isoparser-nio</artifactId>
     <packaging>jar</packaging>
     <name>ISO Parser</name>
     <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)

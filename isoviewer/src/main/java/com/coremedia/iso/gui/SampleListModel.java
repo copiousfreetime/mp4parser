@@ -16,9 +16,15 @@ import java.util.List;
  */
 public class SampleListModel extends AbstractListModel {
     SampleList list;
+    long trackId;
+    String handlerType;
+    int nalLengthSize;
 
-    public SampleListModel(SampleList list) {
+    public SampleListModel(SampleList list, long trackId, String handlerType, int nalLengthSize) {
         this.list = list;
+        this.trackId = trackId;
+        this.handlerType = handlerType;
+        this.nalLengthSize = nalLengthSize;
     }
 
     public int getSize() {
@@ -26,16 +32,24 @@ public class SampleListModel extends AbstractListModel {
     }
 
     public Object getElementAt(int index) {
-        return new Entry(list.get(index), list.getOffset(index));
+        IsoBufferWrapper sample = list.get(index);
+        long offset = list.getOffset(index);
+        return new Entry(sample, offset, trackId, handlerType, nalLengthSize);
     }
 
     public static class Entry {
-        public Entry(IsoBufferWrapper sample, long offset) {
+        public Entry(IsoBufferWrapper sample, long offset, long trackId, String handlerType, int nalLengthSize) {
             this.sample = sample;
             this.offset = offset;
+            this.trackId = trackId;
+            this.handlerType = handlerType;
+            this.nalLengthSize = nalLengthSize;
         }
 
         IsoBufferWrapper sample;
         long offset;
+        long trackId;
+        String handlerType;
+        int nalLengthSize;
     }
 }

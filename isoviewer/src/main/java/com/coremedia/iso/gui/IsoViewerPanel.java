@@ -19,31 +19,23 @@ package com.coremedia.iso.gui;
 import com.coremedia.iso.IsoBufferWrapper;
 import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.coremedia.iso.gui.hex.JHexEditor;
 import com.googlecode.mp4parser.util.Path;
 import org.jdesktop.application.Action;
-import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.Resource;
 import org.jdesktop.application.session.PropertySupport;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
+import javax.swing.event.*;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -161,10 +153,17 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
 
         JList jlist = new JList();
         jlist.setCellRenderer(new SampleListRenderer());
-        jlist.setModel(new SampleListModel(new SampleList(tb)));
+        String handlerType = tb.getMediaBox().getHandlerReferenceBox().getHandlerType();
+        SampleDescriptionBox sampleDescriptionBox = tb.getMediaBox().getMediaInformationBox().getSampleTableBox().getSampleDescriptionBox();
+        List<AvcConfigurationBox> avcC = sampleDescriptionBox.getBoxes(AvcConfigurationBox.class, true);
+        int nalLengthSize = 0;
+        if (avcC != null && avcC.size() > 0) {
+            nalLengthSize = avcC.get(0).getLengthSizeMinusOne() + 1;
+        }
+        jlist.setModel(new SampleListModel(new SampleList(tb), tb.getTrackHeaderBox().getTrackId(), handlerType, nalLengthSize));
         jlist.setLayoutOrientation(JList.VERTICAL);
         jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        jlist.setPrototypeCellValue(new SampleListModel.Entry(new IsoBufferWrapperImpl(new byte[1000]), 1000000000));
+        jlist.setPrototypeCellValue(new SampleListModel.Entry(new IsoBufferWrapperImpl(new byte[1000]), 1000000000, 0, handlerType, nalLengthSize));
         JScrollPane jScrollPane = new JScrollPane();
         jScrollPane.getViewport().add(jlist);
         detailPane.add(new JLabel(String.format(trackViewDetailPaneHeader, tb.getTrackHeaderBox().getTrackId())), BorderLayout.PAGE_START);
@@ -229,8 +228,8 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
 
         }
         if (details instanceof Box && oldMp4Path != null) {
-            String path = oldMp4Path.createPath((Box) details);
-            Box nuDetail = nuMp4Path.getPath(path);
+            String path = oldMp4Path.createPath((com.coremedia.iso.boxes.Box) details);
+            com.coremedia.iso.boxes.Box nuDetail = nuMp4Path.getPath(path);
             if (nuDetail != null) {
                 showDetails(nuDetail);
             } else {
@@ -280,7 +279,9 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
             detailPanel.revalidate();
             IsoBufferWrapper displayMe;
             if (object instanceof com.coremedia.iso.boxes.Box) {
-                displayMe = ((Box) object).getIsoFile().getOriginalIso().getSegment(((Box) object).getOffset(), ((Box) object).getSize());
+                displayMe = ((com.coremedia.iso.boxes.Box) object).getIsoFile().getOriginalIso().
+                        getSegment(((com.coremedia.iso.boxes.Box) object).getOffset(),
+                                ((com.coremedia.iso.boxes.Box) object).getSize());
             } else {
                 displayMe = new IsoBufferWrapperImpl(new byte[]{});
             }

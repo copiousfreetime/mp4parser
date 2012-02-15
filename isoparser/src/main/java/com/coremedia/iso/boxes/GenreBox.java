@@ -36,7 +36,7 @@ public class GenreBox extends AbstractFullBox {
     private String genre;
 
     public GenreBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {

@@ -15,7 +15,7 @@ public class FontTableBox extends AbstractBox {
     List<FontRecord> entries = new LinkedList<FontRecord>();
 
     public FontTableBox() {
-        super(IsoFile.fourCCtoBytes("ftab"));
+        super("ftab");
     }
 
     @Override

@@ -34,7 +34,7 @@ public class DataEntryUrnBox extends AbstractFullBox {
     public static final String TYPE = "urn ";
 
     public DataEntryUrnBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getName() {

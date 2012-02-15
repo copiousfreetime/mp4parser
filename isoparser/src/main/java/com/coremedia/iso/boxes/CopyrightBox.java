@@ -37,7 +37,7 @@ public class CopyrightBox extends AbstractFullBox {
     private String copyright;
 
     public CopyrightBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {

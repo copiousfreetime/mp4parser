@@ -35,7 +35,7 @@ public class SyncSampleBox extends AbstractFullBox {
     private long[] sampleNumber;
 
     public SyncSampleBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     /**

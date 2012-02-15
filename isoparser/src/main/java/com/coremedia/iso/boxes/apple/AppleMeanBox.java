@@ -19,7 +19,7 @@ public final class AppleMeanBox extends AbstractFullBox {
     private String meaning;
 
     public AppleMeanBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {

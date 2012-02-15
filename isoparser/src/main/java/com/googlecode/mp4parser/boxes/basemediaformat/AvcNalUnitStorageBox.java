@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 
+import static com.coremedia.iso.boxes.CastUtils.l2i;
+
 /**
  * The AVC NAL Unit Storage Box SHALL contain an AVCDecoderConfigurationRecord,
  * as defined in section 5.2.4.1 of the ISO 14496-12.
@@ -34,25 +36,21 @@ public class AvcNalUnitStorageBox extends AbstractBox {
     byte[] data;
 
     public AvcNalUnitStorageBox() {
-        super(IsoFile.fourCCtoBytes("avcn"));
+        super("avcn");
     }
 
 
     public AvcNalUnitStorageBox(AvcConfigurationBox avcConfigurationBox) {
-        super(IsoFile.fourCCtoBytes("avcn"));
+        super("avcn");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
+        ByteBuffer content = ByteBuffer.allocate(l2i(avcConfigurationBox.getContentSize()));
         try {
-            avcConfigurationBox.getBox(new IsoOutputStream(baos));
+            avcConfigurationBox.getContent(content);
         } catch (IOException e) {
-            // cannot happen ?! haha!
             throw new RuntimeException(e);
         }
-        ByteArrayOutputStream headerBaos = new ByteArrayOutputStream();
-        avcConfigurationBox.getHeader(Channels.newChannel(headerBaos));
-        byte[] header = headerBaos.toByteArray();
-        data = new byte[baos.size() - header.length];
-        System.arraycopy(baos.toByteArray(), header.length, data, 0, data.length);
+        data = content.array();
     }
 
     @Override

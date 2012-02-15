@@ -168,7 +168,7 @@ public class TrackRunBox extends AbstractFullBox {
     }
 
     public TrackRunBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {

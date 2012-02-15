@@ -36,6 +36,6 @@ public class TrackReferenceBox extends AbstractContainerBox {
     public static final String TYPE = "tref";
 
     public TrackReferenceBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 }

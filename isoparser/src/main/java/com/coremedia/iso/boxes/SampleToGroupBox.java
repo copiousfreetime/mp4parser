@@ -29,7 +29,7 @@ public class SampleToGroupBox extends AbstractFullBox {
     private List<Entry> entries = new ArrayList<Entry>();
 
     public SampleToGroupBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override

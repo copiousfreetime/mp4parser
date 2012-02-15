@@ -46,7 +46,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
 
     public AvcConfigurationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public int getConfigurationVersion() {
@@ -134,7 +134,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
 
 
-    protected long getContentSize() {
+    public long getContentSize() {
         long size = 5;
         size += 1; // sequenceParamsetLength
         for (byte[] sequenceParameterSetNALUnit : sequenceParameterSets) {
@@ -152,7 +152,7 @@ public final class AvcConfigurationBox extends AbstractBox {
 
 
     @Override
-    protected void getContent(ByteBuffer bb) throws IOException {
+    public void getContent(ByteBuffer bb) throws IOException {
         IsoTypeWriter.writeUInt8(bb, configurationVersion);
         IsoTypeWriter.writeUInt8(bb, avcProfileIndicaation);
         IsoTypeWriter.writeUInt8(bb, profileCompatibility);

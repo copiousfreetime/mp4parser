@@ -18,7 +18,7 @@ public final class AppleNameBox extends AbstractFullBox {
     private String name;
 
     public AppleNameBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {

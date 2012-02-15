@@ -37,7 +37,7 @@ public class SampleTableBox extends AbstractContainerBox {
     public static final String TYPE = "stbl";
 
     public SampleTableBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public SampleDescriptionBox getSampleDescriptionBox() {

@@ -38,7 +38,7 @@ public class MovieExtendsHeaderBox extends AbstractFullBox {
     private long fragmentDuration;
 
     public MovieExtendsHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override

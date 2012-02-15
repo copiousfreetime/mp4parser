@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
@@ -35,7 +38,7 @@ public class IsoFile extends AbstractContainerBox {
     ReadableByteChannel byteChannel;
 
     public IsoFile(ReadableByteChannel byteChannel) {
-        super(new byte[]{});
+        super("");
         this.byteChannel = byteChannel;
         boxParser = createBoxParser();
 
@@ -156,5 +159,11 @@ public class IsoFile extends AbstractContainerBox {
             }
         }
         return null;
+    }
+
+    public void getBox(WritableByteChannel os) throws IOException {
+        for (Box box : boxes) {
+            box.getBox(os);
+        }
     }
 }

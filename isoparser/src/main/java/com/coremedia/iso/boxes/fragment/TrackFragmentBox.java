@@ -28,7 +28,7 @@ public class TrackFragmentBox extends AbstractContainerBox {
     public static final String TYPE = "traf";
 
     public TrackFragmentBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 

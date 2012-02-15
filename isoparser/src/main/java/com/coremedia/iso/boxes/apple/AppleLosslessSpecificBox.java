@@ -155,7 +155,7 @@ public final class AppleLosslessSpecificBox extends AbstractFullBox {
     }
 
     public AppleLosslessSpecificBox() {
-        super(IsoFile.fourCCtoBytes("alac"));
+        super("alac");
     }
 
     protected long getContentSize() {

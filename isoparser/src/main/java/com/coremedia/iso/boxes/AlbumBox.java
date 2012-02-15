@@ -38,7 +38,7 @@ public class AlbumBox extends AbstractFullBox {
     private int trackNumber;
 
     public AlbumBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     /**

@@ -15,7 +15,7 @@ public class XmlBox extends AbstractFullBox {
     public static final String TYPE = "xml ";
 
     public XmlBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getXml() {

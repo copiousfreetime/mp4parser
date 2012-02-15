@@ -29,7 +29,7 @@ public class MovieBox extends AbstractContainerBox  {
     public static final String TYPE = "moov";
 
     public MovieBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public int getTrackCount() {

@@ -18,6 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.ChannelHelper;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,7 +33,7 @@ import java.util.List;
  */
 public abstract class FullContainerBox extends AbstractFullBox implements ContainerBox {
     protected List<Box> boxes = new LinkedList<Box>();
-
+    BoxParser boxParser;
 
     public void setBoxes(List<Box> boxes) {
         this.boxes = new LinkedList<Box>(boxes);
@@ -85,27 +86,29 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     }
 
     @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        content = ChannelHelper.readFully(in, 4);
-        parseBoxes(size - 4, in, boxParser);
+    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        content = ChannelHelper.readFully(in, contentSize);
+        this.boxParser = boxParser;
     }
 
     @Override
     public void _parseDetails() {
         parseVersionAndFlags();
+        parseChildBoxes();
     }
 
-    protected void parseBoxes(long size, ReadableByteChannel in, BoxParser boxParser) throws IOException {
-        long remainingContentSize = size;
-        while (remainingContentSize > 0) {
-            Box box = boxParser.parseBox(in, this);
-            remainingContentSize -= box.getSize();
-            boxes.add(box);
-        }
-        
-        if (remainingContentSize != 0) {
-            deadBytes = ChannelHelper.readFully(in, remainingContentSize);
-            System.err.println("WARNING: Some sizes are wrong");
+    protected final void parseChildBoxes() {
+        try {
+            while (content.remaining() >= 8) { //  8 is the minimal size for a sane box
+                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
+            }
+
+            if (content.remaining() != 0) {
+                deadBytes = content.slice();
+                System.err.println("WARNING: Some sizes are wrong");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -123,27 +126,16 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     }
 
 
-    /**
-     * Write all child boxes into the <code>WritableByteChannel</code>.
-     * @param os the box's content-sink.
-     * @throws IOException
-     */
-    @Override
-    protected final void getContent(WritableByteChannel os) throws IOException {
-        getContentBeforeChildren(os);
-        for (Box boxe : boxes) {
-            boxe.getBox(os);
-        }
-    }
-    
-    public void getContentBeforeChildren(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(4);
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
-        os.write(bb);
+        writeChildBoxes(bb);
     }
 
-    protected final void getContent(ByteBuffer bb) throws IOException {
-
+    protected final void writeChildBoxes(ByteBuffer bb) throws IOException {
+        WritableByteChannel wbc = new ByteBufferByteChannel(bb);
+        for (Box box : boxes) {
+            box.getBox(wbc);
+        }
     }
 
     public long getNumOfBytesToFirstChild() {

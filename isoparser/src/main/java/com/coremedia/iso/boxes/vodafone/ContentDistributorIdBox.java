@@ -35,7 +35,7 @@ public class ContentDistributorIdBox extends AbstractFullBox {
     private String contentDistributorId;
 
     public ContentDistributorIdBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {

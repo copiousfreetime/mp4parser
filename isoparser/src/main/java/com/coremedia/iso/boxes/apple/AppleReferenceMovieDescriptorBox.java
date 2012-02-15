@@ -23,6 +23,6 @@ public class AppleReferenceMovieDescriptorBox extends AbstractContainerBox {
     public static final String TYPE = "rmda";
 
     public AppleReferenceMovieDescriptorBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 }

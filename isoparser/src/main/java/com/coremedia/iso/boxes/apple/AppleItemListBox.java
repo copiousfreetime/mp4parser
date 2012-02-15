@@ -10,7 +10,7 @@ public class AppleItemListBox extends AbstractContainerBox {
     public static final String TYPE = "ilst";
 
     public AppleItemListBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

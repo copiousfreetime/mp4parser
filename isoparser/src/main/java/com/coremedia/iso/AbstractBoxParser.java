@@ -7,6 +7,7 @@ import com.coremedia.iso.boxes.UserBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Logger;
 
@@ -19,7 +20,7 @@ public abstract class AbstractBoxParser implements BoxParser {
 
     private static Logger LOG = Logger.getLogger(AbstractBoxParser.class.getName());
 
-    public abstract AbstractBox createBox(String type, byte[] userType, String parent);
+    public abstract Box createBox(String type, byte[] userType, String parent);
 
     /**
      * Parses the next size and type, creates a box instance and parses the box's content.
@@ -62,9 +63,12 @@ public abstract class AbstractBoxParser implements BoxParser {
             size = IsoTypeReader.readUInt64(bb);
             contentSize = size - 16;
         } else if (size == 0) {
-            //throw new RuntimeException("Not supported!");
-            contentSize = -1;
-            size = 1;
+            if (byteChannel instanceof FileChannel) {
+                size = ((FileChannel)byteChannel).size() - ((FileChannel)byteChannel).position() -8;
+            }  else {
+                throw new RuntimeException("Only FileChannel inputs may use size == 0 (box reaches to the end of file)");
+            }
+            contentSize = size - 8;
         } else {
             contentSize = size - 8;
         }
@@ -112,7 +116,7 @@ public abstract class AbstractBoxParser implements BoxParser {
 
 
         assert size == box.getSize() :
-                "Reconstructed Size is not equal to the number of parsed bytes! (" +
+                "Reconstructed Size is not x to the number of parsed bytes! (" +
                         box.getType() + ")"
                         + " Actual Box size: " + size + " Calculated size: " + box.getSize();
         return box;

@@ -40,7 +40,7 @@ public class MediaHeaderBox extends AbstractFullBox {
     private String language;
 
     public MediaHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public long getCreationTime() {

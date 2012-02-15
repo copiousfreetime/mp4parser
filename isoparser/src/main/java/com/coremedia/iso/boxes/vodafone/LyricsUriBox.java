@@ -34,7 +34,7 @@ public class LyricsUriBox extends AbstractFullBox {
     private String lyricsUri;
 
     public LyricsUriBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLyricsUri() {

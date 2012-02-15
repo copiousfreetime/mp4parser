@@ -37,7 +37,7 @@ public class ClassificationBox extends AbstractFullBox {
     private String classificationInfo;
 
     public ClassificationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {

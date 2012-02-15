@@ -44,7 +44,7 @@ public class SubSampleInformationBox extends AbstractFullBox {
     private List<SampleEntry> sampleEntries = new ArrayList<SampleEntry>();
 
     public SubSampleInformationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override

@@ -10,7 +10,7 @@ public final class AppleGenericBox extends AbstractContainerBox {
     public static final String TYPE = "----";
 
     public AppleGenericBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

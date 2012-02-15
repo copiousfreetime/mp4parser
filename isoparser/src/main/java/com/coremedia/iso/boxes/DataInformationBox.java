@@ -30,7 +30,7 @@ public class DataInformationBox extends AbstractContainerBox {
     public static final String TYPE = "dinf";
 
     public DataInformationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

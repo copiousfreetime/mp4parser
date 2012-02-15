@@ -24,7 +24,7 @@ import java.nio.ByteBuffer;
  */
 public abstract class LiteralBox extends AbstractBox {
 
-    public LiteralBox(byte[] type) {
+    public LiteralBox(String type) {
         super(type);
     }
 

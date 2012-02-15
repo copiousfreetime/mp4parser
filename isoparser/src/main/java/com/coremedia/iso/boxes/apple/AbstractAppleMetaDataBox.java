@@ -49,7 +49,7 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     }
 
     public AbstractAppleMetaDataBox(String type) {
-        super(IsoFile.fourCCtoBytes(type));
+        super(type);
     }
 
     @Override

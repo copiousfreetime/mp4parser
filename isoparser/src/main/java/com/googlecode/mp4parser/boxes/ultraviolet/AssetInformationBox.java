@@ -31,7 +31,7 @@ public class AssetInformationBox extends AbstractFullBox {
     String profileVersion;
 
     public AssetInformationBox() {
-        super(IsoFile.fourCCtoBytes("ainf"));
+        super("ainf");
     }
 
     @Override

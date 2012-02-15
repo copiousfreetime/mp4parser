@@ -69,7 +69,7 @@ public class HandlerBox extends AbstractFullBox {
     private boolean zeroTerm = true;
 
     public HandlerBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getHandlerType() {

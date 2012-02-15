@@ -47,7 +47,7 @@ public class MovieHeaderBox extends AbstractFullBox {
     public static final String TYPE = "mvhd";
 
     public MovieHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public long getCreationTime() {

@@ -38,7 +38,7 @@ public class RatingBox extends AbstractFullBox {
     private String ratingInfo;
 
     public RatingBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 

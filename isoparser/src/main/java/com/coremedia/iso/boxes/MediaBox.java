@@ -27,7 +27,7 @@ public class MediaBox extends AbstractContainerBox {
     public static final String TYPE = "mdia";
 
     public MediaBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public MediaInformationBox getMediaInformationBox() {

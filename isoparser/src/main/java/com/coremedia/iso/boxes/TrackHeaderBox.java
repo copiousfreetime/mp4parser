@@ -52,7 +52,7 @@ public class TrackHeaderBox extends AbstractFullBox {
 
 
     public TrackHeaderBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
         // 7 seems to be the only meaningful value
         setFlags(7);
     }

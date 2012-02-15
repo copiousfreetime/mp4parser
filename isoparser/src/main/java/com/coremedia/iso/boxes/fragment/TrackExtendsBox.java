@@ -42,7 +42,7 @@ public class TrackExtendsBox extends AbstractFullBox {
     private SampleFlags defaultSampleFlags;
 
     public TrackExtendsBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override

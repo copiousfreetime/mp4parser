@@ -35,7 +35,7 @@ public class OriginalFormatBox extends AbstractBox {
     private String dataFormat = "    ";
 
     public OriginalFormatBox() {
-        super(IsoFile.fourCCtoBytes("frma"));
+        super("frma");
     }
 
     public String getDataFormat() {

@@ -40,7 +40,7 @@ public final class OmaDrmAccessUnitFormatBox extends AbstractFullBox {
     }
 
     public OmaDrmAccessUnitFormatBox() {
-        super(IsoFile.fourCCtoBytes("odaf"));
+        super("odaf");
     }
 
     public boolean isSelectiveEncryption() {

@@ -33,7 +33,7 @@ public class CoverUriBox extends AbstractFullBox {
     private String coverUri;
 
     public CoverUriBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getCoverUri() {

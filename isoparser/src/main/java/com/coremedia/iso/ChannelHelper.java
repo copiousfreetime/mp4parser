@@ -10,24 +10,22 @@ import java.nio.channels.WritableByteChannel;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
 
-/**
- * Created by IntelliJ IDEA.
- * User: sannies
- * Date: 2/9/12
- * Time: 9:29 AM
- * To change this template use File | Settings | File Templates.
- */
-public class ChannelHelper {
-    public static ByteBuffer readFully(final ReadableByteChannel channel, long size)
-            throws IOException {
 
-        if (channel instanceof FileChannel) {
+public class ChannelHelper {
+    public static ByteBuffer readFully(final ReadableByteChannel channel, long size) throws IOException {
+
+        if (channel instanceof FileChannel && size > 1024 * 1024) {
+            ((FileChannel) channel).position(((FileChannel) channel).position() + size);
             return ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), size);
         } else {
             ByteBuffer buf = ByteBuffer.allocate(l2i(size));
             readFully(channel, buf, buf.remaining());
+            buf.rewind();
+            assert buf.capacity() == size;
+
             return buf;
         }
+
     }
 
 
@@ -44,6 +42,9 @@ public class ChannelHelper {
             if (count == length) {
                 break;
             }
+        }
+        if (n == -1) {
+            throw new EOFException("End of file. No more boxes.");
         }
         return count;
     }

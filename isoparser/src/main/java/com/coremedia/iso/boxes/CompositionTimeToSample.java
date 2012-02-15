@@ -26,7 +26,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
     List<Entry> entries = Collections.emptyList();
 
     public CompositionTimeToSample() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {

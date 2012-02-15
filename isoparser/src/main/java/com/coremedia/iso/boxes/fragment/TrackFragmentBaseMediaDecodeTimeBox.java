@@ -30,7 +30,7 @@ public class TrackFragmentBaseMediaDecodeTimeBox extends AbstractFullBox {
     private long baseMediaDecodeTime;
 
     public TrackFragmentBaseMediaDecodeTimeBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override

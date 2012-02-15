@@ -25,7 +25,7 @@ public class LocationInformationBox extends AbstractFullBox {
     private String additionalNotes = "";
 
     public LocationInformationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {

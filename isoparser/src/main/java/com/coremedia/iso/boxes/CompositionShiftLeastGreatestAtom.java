@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
  */
 public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
     public CompositionShiftLeastGreatestAtom() {
-        super(IsoFile.fourCCtoBytes("cslg"));
+        super("cslg");
     }
 
     // A 32-bit unsigned integer that specifies the calculated value.

@@ -29,7 +29,7 @@ public class AppleDataRateBox extends AbstractFullBox {
     private long dataRate;
 
     public AppleDataRateBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {

@@ -29,7 +29,7 @@ public class UserBox extends AbstractBox {
     public static final String TYPE = "uuid";
 
     public UserBox(byte[] userType) {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
         setUserType(userType);
     }
 

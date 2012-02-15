@@ -36,11 +36,11 @@ public class FileTypeBox extends AbstractBox {
     private List<String> compatibleBrands;
 
     public FileTypeBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public FileTypeBox(String majorBrand, long minorVersion, List<String> compatibleBrands) {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
         this.majorBrand = majorBrand;
         this.minorVersion = minorVersion;
         this.compatibleBrands = compatibleBrands;

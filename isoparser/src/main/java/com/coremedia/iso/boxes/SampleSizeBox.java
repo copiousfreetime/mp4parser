@@ -37,7 +37,7 @@ public class SampleSizeBox extends AbstractFullBox {
     int sampleCount;
 
     public SampleSizeBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     /**

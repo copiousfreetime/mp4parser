@@ -16,7 +16,7 @@ public class ProgressiveDownloadInformationBox extends AbstractFullBox {
     List<Entry> entries = Collections.emptyList();
 
     public ProgressiveDownloadInformationBox() {
-        super(IsoFile.fourCCtoBytes("pdin"));
+        super("pdin");
     }
 
     @Override

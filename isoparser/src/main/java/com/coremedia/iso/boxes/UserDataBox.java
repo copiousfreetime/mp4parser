@@ -28,7 +28,7 @@ public class UserDataBox extends AbstractContainerBox {
     public static final String TYPE = "udta";
 
     public UserDataBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

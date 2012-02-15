@@ -30,7 +30,7 @@ public class DataEntryUrlBox extends AbstractFullBox {
     public static final String TYPE = "url ";
 
     public DataEntryUrlBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override

@@ -29,7 +29,7 @@ public class TrackBox extends AbstractContainerBox {
     public static final String TYPE = "trak";
 
     public TrackBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public TrackHeaderBox getTrackHeaderBox() {

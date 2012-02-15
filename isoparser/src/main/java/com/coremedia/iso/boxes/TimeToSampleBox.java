@@ -50,7 +50,7 @@ public class TimeToSampleBox extends AbstractFullBox {
 
 
     public TimeToSampleBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {

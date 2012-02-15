@@ -52,24 +52,18 @@ public class DataReferenceBox extends FullContainerBox {
     }
 
     @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        content = ChannelHelper.readFully(in, 8);
-        parseBoxes(size - 8, in, boxParser);
-    }
-
-    @Override
     public void _parseDetails() {
         parseVersionAndFlags();
-
+        content.get(new byte[4]); // basically a skip of 4 bytes signaling the number of child boxes
+        parseChildBoxes();
     }
 
 
     @Override
-    public void getContentBeforeChildren(WritableByteChannel os) throws IOException {
-        ByteBuffer bb =  ByteBuffer.allocate(8);
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, getBoxes().size());
-        os.write(bb);
+        writeChildBoxes(bb);
     }
 
 }

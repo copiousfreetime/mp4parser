@@ -29,7 +29,6 @@ import java.nio.channels.WritableByteChannel;
  * @see com.coremedia.iso.boxes.ItemProtectionBox
  */
 public class ItemProtectionBox extends FullContainerBox {
-    int protectionCount;
 
     public static final String TYPE = "ipro";
 
@@ -44,30 +43,19 @@ public class ItemProtectionBox extends FullContainerBox {
             return null;
         }
     }
-    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        content = ChannelHelper.readFully(in, 6);
-        parseBoxes(size - 4, in, boxParser);
-    }
-
     @Override
     public void _parseDetails() {
         parseVersionAndFlags();
         IsoTypeReader.readUInt16(content);
+        parseChildBoxes();
     }
+
 
     @Override
-    public void getContentBeforeChildren(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(6);
+    protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt16(bb, protectionCount);
-        os.write(bb);
-    }
-
-    protected void getContent(IsoOutputStream os) throws IOException {
-        os.writeUInt16(protectionCount);
-        for (Box boxe : boxes) {
-            boxe.getBox(os);
-        }
+        IsoTypeWriter.writeUInt16(bb, getBoxes().size());
+        writeChildBoxes(bb);
     }
 
 }

@@ -14,7 +14,7 @@ public class ItemDataBox extends AbstractFullBox {
 
 
     public ItemDataBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public ByteBuffer getData() {

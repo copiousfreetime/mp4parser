@@ -34,7 +34,7 @@ public class KeywordsBox extends AbstractFullBox {
     private String[] keywords;
 
     public KeywordsBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {

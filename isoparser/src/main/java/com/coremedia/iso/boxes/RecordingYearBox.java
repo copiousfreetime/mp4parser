@@ -32,7 +32,7 @@ public class RecordingYearBox extends AbstractFullBox {
     int recordingYear;
 
     public RecordingYearBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 

@@ -29,7 +29,7 @@ public class FreeBox extends AbstractBox {
     public static final String TYPE = "free";
 
     public FreeBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override

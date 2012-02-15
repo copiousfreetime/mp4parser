@@ -35,7 +35,7 @@ public class PerformerBox extends AbstractFullBox {
     private String performer;
 
     public PerformerBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {

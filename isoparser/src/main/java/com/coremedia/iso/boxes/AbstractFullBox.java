@@ -34,10 +34,6 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
         super(type);
     }
 
-    protected AbstractFullBox(byte[] type) {
-        super(type);
-    }
-
     public int getVersion() {
         return version;
     }
@@ -59,13 +55,13 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
      * Parses the version/flags header and returns the remaining box size.
      * @return number of bytes read
      */
-    protected long parseVersionAndFlags() {
+    protected final long parseVersionAndFlags() {
         version = IsoTypeReader.readUInt8(content);
         flags = IsoTypeReader.readUInt24(content);
         return 4;
     }
     
-    protected void writeVersionAndFlags(ByteBuffer bb) {
+    protected final void writeVersionAndFlags(ByteBuffer bb) {
         IsoTypeWriter.writeUInt8(bb, version);
         IsoTypeWriter.writeUInt24(bb, flags);
     }

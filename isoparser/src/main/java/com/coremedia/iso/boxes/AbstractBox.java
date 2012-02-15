@@ -42,19 +42,20 @@ public abstract class AbstractBox implements Box {
     protected long getHeaderSize() {
         return 4 + // size
                 4 + // type
-                (getContentSize() >= 4294967296L ? 8 : 0) +
+                ((content != null ? content.capacity() :
+                        getContentSize()) >= ((1L << 32) - 8) ? 8 : 0) + // 32bit - 8 byte size and type
                 (UserBox.TYPE.equals(getType()) ? 16 : 0);
     }
 
     /**
      * Gets the box's content size. This excludes all header fields:
      * <ul>
-     *     <li>4 byte size</li>
-     *     <li>4 byte type</li>
-     *     <li>(large length - 8 bytes)</li>
-     *     <li>(user type - 16 bytes)</li>
+     * <li>4 byte size</li>
+     * <li>4 byte type</li>
+     * <li>(large length - 8 bytes)</li>
+     * <li>(user type - 16 bytes)</li>
      * </ul>
-     *
+     * <p/>
      * Flags and version of a full box need to be taken into account.
      *
      * @return Gets the box's content size in bytes
@@ -69,11 +70,6 @@ public abstract class AbstractBox implements Box {
     protected AbstractBox(String type) {
         this.type = type;
     }
-
-    protected AbstractBox(byte[] type) {
-        this.type = IsoFile.bytesToFourCC(type);
-    }
-
 
     public String getType() {
         return type;
@@ -104,18 +100,18 @@ public abstract class AbstractBox implements Box {
     /**
      * Pareses the given IsoBufferWrapper and returns the remaining bytes.
      *
-     * @param in        the (part of the) iso file to parse
-     * @param size      expected size of the box
-     * @param boxParser creates inner boxes
+     * @param in          the (part of the) iso file to parse
+     * @param contentSize expected contentSize of the box
+     * @param boxParser   creates inner boxes
      * @throws IOException in case of an I/O error.
      */
-    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        if (in instanceof FileChannel && size > 1024 * 1024) {
+    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        if (in instanceof FileChannel && contentSize > 1024 * 1024) {
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
-            content = ((FileChannel) in).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) in).position(), size);
+            content = ((FileChannel) in).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) in).position(), contentSize);
         } else {
-            assert size > Integer.MAX_VALUE;
-            content = ChannelHelper.readFully(in, size);
+            assert contentSize < Integer.MAX_VALUE;
+            content = ChannelHelper.readFully(in, contentSize);
         }
     }
 
@@ -148,76 +144,42 @@ public abstract class AbstractBox implements Box {
         deadBytes = newDeadBytes;
     }
 
-    public void getHeader(WritableByteChannel byteChannel) {
-        try {
-
-            ByteBuffer ios = ByteBuffer.allocate((isSmallBox() ? 8 : 16) + (UserBox.TYPE.equals(getType()) ? 16 : 0));
-            if (isSmallBox()) {
-                IsoTypeWriter.writeUInt32(ios, this.getContentSize() + 8);
-                ios.put(IsoFile.fourCCtoBytes(getType()));
-            } else {
-                IsoTypeWriter.writeUInt32(ios, 1);
-                ios.put(IsoFile.fourCCtoBytes(getType()));
-                IsoTypeWriter.writeUInt64(ios, getContentSize() + 16);
-            }
-            if (UserBox.TYPE.equals(getType())) {
-                ios.put(userType);
-            }
-            byteChannel.write(ios);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void getHeader(ByteBuffer byteBuffer) {
+        if (isSmallBox()) {
+            IsoTypeWriter.writeUInt32(byteBuffer, this.getSize());
+            byteBuffer.put(IsoFile.fourCCtoBytes(getType()));
+        } else {
+            IsoTypeWriter.writeUInt32(byteBuffer, 1);
+            byteBuffer.put(IsoFile.fourCCtoBytes(getType()));
+            IsoTypeWriter.writeUInt64(byteBuffer, getSize());
         }
+        if (UserBox.TYPE.equals(getType())) {
+            byteBuffer.put(userType);
+        }
+
 
     }
 
     private boolean isSmallBox() {
-        return (getContentSize() + 8) < 4294967296L;
+        return (content == null ? (getContentSize() + (deadBytes != null ? deadBytes.capacity() : 0) + 8) : content.capacity()) < 1L<<32;
     }
 
 
     public void getBox(WritableByteChannel os) throws IOException {
-        getHeader(os);
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getSize()));
+        getHeader(bb);
         if (content == null) {
-            class VerifyWriteWritableByteChannel implements WritableByteChannel {
-                WritableByteChannel writableByteChannel;
-                boolean hasWritten = false;
-
-                VerifyWriteWritableByteChannel(WritableByteChannel writableByteChannel) {
-                    this.writableByteChannel = writableByteChannel;
-                }
-
-                public int write(ByteBuffer src) throws IOException {
-                    hasWritten = true;
-                    return writableByteChannel.write(src);
-                }
-
-                public boolean isOpen() {
-                    return writableByteChannel.isOpen();
-                }
-
-                public void close() throws IOException {
-                    writableByteChannel.close();
-                }
-            }
-            VerifyWriteWritableByteChannel vwbc = new VerifyWriteWritableByteChannel(os);
-            getContent(vwbc);
-            assert vwbc.hasWritten;
+            getContent(bb);
             if (deadBytes != null) {
-                deadBytes.position(0);
+                deadBytes.rewind();
                 while (deadBytes.remaining() > 0) {
-                    os.write(deadBytes);
+                    bb.put(deadBytes);
                 }
             }
         } else {
-            os.write(content);
+            content.rewind();
+            bb.put(content);
         }
-    }
-
-
-    protected void getContent(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
-        getContent(bb);
-        os.write(bb);
     }
 
     /**

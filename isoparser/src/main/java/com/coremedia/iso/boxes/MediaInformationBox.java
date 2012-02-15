@@ -25,7 +25,7 @@ public class MediaInformationBox extends AbstractContainerBox {
     public static final String TYPE = "minf";
 
     public MediaInformationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public SampleTableBox getSampleTableBox() {

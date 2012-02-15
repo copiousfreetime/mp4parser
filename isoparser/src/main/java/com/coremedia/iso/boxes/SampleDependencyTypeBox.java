@@ -94,7 +94,7 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
     }
 
     public SampleDependencyTypeBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override

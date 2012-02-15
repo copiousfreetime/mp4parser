@@ -17,6 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,6 +34,7 @@ import java.util.List;
  */
 public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
     protected List<Box> boxes = new LinkedList<Box>();
+    private BoxParser boxParser;
 
     @Override
     protected long getContentSize() {
@@ -41,10 +43,6 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
             contentSize += boxe.getSize();
         }
         return contentSize;
-    }
-
-    public AbstractContainerBox(byte[] type) {
-        super(type);
     }
 
     public AbstractContainerBox(String type) {
@@ -97,31 +95,14 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header,  long size, BoxParser boxParser) throws IOException {
-
-
-        while (size >= 8) {
-            Box box = boxParser.parseBox(in, this);
-            size -= box.getSize();
-
-            boxes.add(box);
-            //update field after each box
-        }
-        if (size != 0) {
-            throw new IOException("Sebastian needs to fix it");
-        }
-
+    public void parse(ReadableByteChannel in, ByteBuffer header,  long contentSize, BoxParser boxParser) throws IOException {
+        super.parse(in, header, contentSize, boxParser);
+        this.boxParser = boxParser;
     }
 
     @Override
     public void _parseDetails() {
-    }
-
-    @Override
-    protected void getContent(WritableByteChannel os) throws IOException {
-        for (Box boxe : boxes) {
-            boxe.getBox(os);
-        }
+        parseChildBoxes();
     }
 
 
@@ -150,6 +131,30 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    protected final void getContent(ByteBuffer bb) throws IOException {
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeChildBoxes(bb);
     }
+
+    protected final void parseChildBoxes() {
+        try {
+            while (content.remaining() >= 8) { //  8 is the minimal size for a sane box
+                boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));
+            }
+
+            if (content.remaining() != 0) {
+                deadBytes = content.slice();
+                System.err.println("WARNING: Some sizes are wrong");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected final void writeChildBoxes(ByteBuffer bb) throws IOException {
+        WritableByteChannel wbc = new ByteBufferByteChannel(bb);
+        for (Box box : boxes) {
+            box.getBox(wbc);
+        }
+    }
+
 }

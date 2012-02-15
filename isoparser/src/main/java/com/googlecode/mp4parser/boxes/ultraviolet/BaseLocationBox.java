@@ -32,11 +32,11 @@ public class BaseLocationBox extends AbstractFullBox {
     String purchaseLocation;
 
     public BaseLocationBox() {
-        super(IsoFile.fourCCtoBytes("bloc"));
+        super("bloc");
     }
 
     public BaseLocationBox(String baseLocation, String purchaseLocation) {
-        super(IsoFile.fourCCtoBytes("bloc"));
+        super("bloc");
         this.baseLocation = baseLocation;
         this.purchaseLocation = purchaseLocation;
     }

@@ -27,6 +27,6 @@ public class MovieExtendsBox extends AbstractContainerBox {
     public static final String TYPE = "mvex";
 
     public MovieExtendsBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 }

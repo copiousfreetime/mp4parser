@@ -37,7 +37,7 @@ public class SchemeTypeBox extends AbstractFullBox {
     String schemeUri = null;
 
     public SchemeTypeBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getSchemeType() {

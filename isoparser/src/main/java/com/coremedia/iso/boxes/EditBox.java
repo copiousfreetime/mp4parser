@@ -28,7 +28,7 @@ public class EditBox extends AbstractContainerBox {
     public static final String TYPE = "edts";
 
     public EditBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

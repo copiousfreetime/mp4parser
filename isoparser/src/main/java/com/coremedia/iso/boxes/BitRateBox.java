@@ -45,7 +45,7 @@ public final class BitRateBox extends AbstractBox {
     private long avgBitrate;
 
     public BitRateBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {

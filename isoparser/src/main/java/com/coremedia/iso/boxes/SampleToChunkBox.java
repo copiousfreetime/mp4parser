@@ -37,7 +37,7 @@ public class SampleToChunkBox extends AbstractFullBox {
     public static final String TYPE = "stsc";
 
     public SampleToChunkBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public List<Entry> getEntries() {

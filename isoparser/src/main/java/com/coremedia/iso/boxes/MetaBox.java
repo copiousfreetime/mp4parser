@@ -38,7 +38,7 @@ public class MetaBox extends AbstractContainerBox {
     private BoxParser boxParser;
 
     public MetaBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     @Override
@@ -63,10 +63,7 @@ public class MetaBox extends AbstractContainerBox {
         }
     }
 
-    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        content = ChannelHelper.readFully(in, size);
-        this.boxParser = boxParser;
-    }
+
 
     @Override
     public void _parseDetails() {
@@ -96,15 +93,12 @@ public class MetaBox extends AbstractContainerBox {
     }
 
     @Override
-    protected void getContent(WritableByteChannel wbc) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+    protected void getContent(ByteBuffer bb) throws IOException {
         if (isMp4Box()) {
             IsoTypeWriter.writeUInt8(bb, version);
             IsoTypeWriter.writeUInt24(bb, flags);
         }
-        for (Box boxe : boxes) {
-            boxe.getBox(wbc);
-        }
+        writeChildBoxes(bb);
     }
 
 

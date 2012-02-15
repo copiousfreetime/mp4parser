@@ -34,7 +34,7 @@ public class AppleDataReferenceBox extends AbstractFullBox {
     private String dataReference;
 
     public AppleDataReferenceBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 

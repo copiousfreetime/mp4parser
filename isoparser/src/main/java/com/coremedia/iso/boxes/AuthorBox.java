@@ -38,7 +38,7 @@ public class AuthorBox extends AbstractFullBox {
     private String author;
 
     public AuthorBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     /**

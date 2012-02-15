@@ -46,7 +46,6 @@ import java.nio.channels.WritableByteChannel;
  * @see com.coremedia.iso.boxes.sampleentry.VisualSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.TextSampleEntry
  * @see com.coremedia.iso.boxes.sampleentry.AudioSampleEntry
- * @see com.coremedia.iso.boxes.rtp.RtpHintSampleEntry
  */
 public class SampleDescriptionBox extends FullContainerBox {
     public static final String TYPE = "stsd";
@@ -57,32 +56,20 @@ public class SampleDescriptionBox extends FullContainerBox {
 
     @Override
     protected long getContentSize() {
-        long size = 8;
-        for (Box box : boxes) {
-            size += box.getSize();
-        }
-        return size;
-    }
-
-    @Override
-    public void parse(ReadableByteChannel in, ByteBuffer header, long size, BoxParser boxParser) throws IOException {
-        content = ChannelHelper.readFully(in, 8);
-        parseBoxes(size - 8, in, boxParser);
+        return super.getContentSize() + 4;
     }
 
     @Override
     public void _parseDetails() {
         parseVersionAndFlags();
         content.get(new byte[4]);
-        // ignore 4 bytes entry count
-        
+        parseChildBoxes();
     }
 
     @Override
-    public void getContentBeforeChildren(WritableByteChannel os) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(8);
-        writeVersionAndFlags(bb);
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeChildBoxes(bb);
         IsoTypeWriter.writeUInt32(bb, boxes.size());
-        super.getContent(os);
+        writeChildBoxes(bb);
     }
 }

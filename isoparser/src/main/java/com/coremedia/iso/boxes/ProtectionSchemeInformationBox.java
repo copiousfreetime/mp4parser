@@ -34,7 +34,7 @@ public class ProtectionSchemeInformationBox extends AbstractContainerBox {
     public static final String TYPE = "sinf";
 
     public ProtectionSchemeInformationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
 
     }
 

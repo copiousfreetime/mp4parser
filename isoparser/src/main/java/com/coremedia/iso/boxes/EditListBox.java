@@ -58,7 +58,7 @@ public class EditListBox extends AbstractFullBox {
     public static final String TYPE = "elst";
 
     public EditListBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 

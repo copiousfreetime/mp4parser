@@ -41,7 +41,7 @@ public class TitleBox extends AbstractFullBox {
     private String title;
 
     public TitleBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {

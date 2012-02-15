@@ -37,7 +37,7 @@ public class FreeSpaceBox extends AbstractBox {
     }
 
     public FreeSpaceBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public void setData(byte[] data) {

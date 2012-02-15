@@ -29,7 +29,7 @@ public class MovieFragmentRandomAccessBox extends AbstractContainerBox {
     public static final String TYPE = "mfra";
 
     public MovieFragmentRandomAccessBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

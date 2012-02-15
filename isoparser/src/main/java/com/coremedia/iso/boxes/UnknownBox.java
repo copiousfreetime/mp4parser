@@ -25,7 +25,7 @@ import java.nio.ByteBuffer;
  * will just hold the box's data.
  */
 public class UnknownBox extends AbstractBox {
-    public UnknownBox(byte[] type) {
+    public UnknownBox(String type) {
         super(type);
     }
 

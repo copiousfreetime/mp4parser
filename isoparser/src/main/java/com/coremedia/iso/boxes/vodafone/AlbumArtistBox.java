@@ -37,7 +37,7 @@ public class AlbumArtistBox extends AbstractFullBox {
     private String albumArtist;
 
     public AlbumArtistBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     public String getLanguage() {

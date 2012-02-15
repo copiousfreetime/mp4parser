@@ -61,7 +61,7 @@ public class TrackFragmentRandomAccessBox extends AbstractFullBox {
     private List<Entry> entries = Collections.emptyList();
 
     public TrackFragmentRandomAccessBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 

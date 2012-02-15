@@ -51,7 +51,7 @@ public final class AppleDataBox extends AbstractFullBox {
     }
 
     public AppleDataBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
     protected long getContentSize() {

@@ -27,7 +27,7 @@ public class SchemeInformationBox extends AbstractContainerBox {
     public static final String TYPE = "schi";
 
     public SchemeInformationBox() {
-        super(IsoFile.fourCCtoBytes(TYPE));
+        super(TYPE);
     }
 
 }

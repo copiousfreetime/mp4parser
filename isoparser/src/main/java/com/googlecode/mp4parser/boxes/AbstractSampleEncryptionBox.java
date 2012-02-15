@@ -115,13 +115,23 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            getContent(new IsoOutputStream(baos));
-        } catch (IOException e) {
-            return -1;
+        long contentSize = 4;
+        if (isOverrideTrackEncryptionBoxParameters()) {
+            contentSize += 4;
+            contentSize += kid.length;
         }
-        return baos.toByteArray().length;
+        contentSize += 4;
+        for (Entry entry : entries) {
+            contentSize += entry.iv.length;
+
+            if (isSubSampleEncryption()) {
+                contentSize += 2;
+                for (Entry.Pair pair : entry.pairs) {
+                    contentSize += 6;
+                }
+            }
+        }
+        return contentSize;
     }
 
     @Override

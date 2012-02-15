@@ -1,6 +1,5 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -58,8 +57,8 @@ public class SubSampleInformationBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
 
         entryCount = IsoTypeReader.readUInt32(content);
 

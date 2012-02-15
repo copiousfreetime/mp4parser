@@ -17,14 +17,10 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 
 /**
  * The data reference object contains a table of data references (normally URLs) that declare the location(s) of
@@ -52,10 +48,10 @@ public class DataReferenceBox extends FullContainerBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         content.get(new byte[4]); // basically a skip of 4 bytes signaling the number of child boxes
-        parseChildBoxes();
+        parseChildBoxes(content);
     }
 
 

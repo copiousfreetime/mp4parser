@@ -22,9 +22,6 @@ import com.googlecode.mp4parser.ByteBufferByteChannel;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-
-import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 
 /**
@@ -35,7 +32,6 @@ public class MetaBox extends AbstractContainerBox {
     private int flags = 0;
 
     public static final String TYPE = "meta";
-    private BoxParser boxParser;
 
     public MetaBox() {
         super(TYPE);
@@ -63,10 +59,8 @@ public class MetaBox extends AbstractContainerBox {
         }
     }
 
-
-
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         int pos = content.position();
         content.get(new byte[4]);
         String isHdlr = IsoTypeReader.read4cc(content);

@@ -19,6 +19,7 @@ package com.coremedia.iso;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.MovieBox;
+import com.googlecode.mp4parser.DoNotParseDetail;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -27,12 +28,11 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
-
 /**
  * The most upper container for ISO Boxes. It is a container box that is a file.
  * Uses IsoBufferWrapper  to access the underlying file.
  */
+@DoNotParseDetail
 public class IsoFile extends AbstractContainerBox {
     protected BoxParser boxParser = new PropertyBoxParserImpl();
     ReadableByteChannel byteChannel;
@@ -55,7 +55,7 @@ public class IsoFile extends AbstractContainerBox {
 
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         // there are no details to parse we should be just file
     }
 
@@ -80,7 +80,7 @@ public class IsoFile extends AbstractContainerBox {
         }
     }
 
-
+    @DoNotParseDetail
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append("IsoFile[");
@@ -98,6 +98,7 @@ public class IsoFile extends AbstractContainerBox {
         return buffer.toString();
     }
 
+    @DoNotParseDetail
     public static byte[] fourCCtoBytes(String fourCC) {
         byte[] result = new byte[4];
         if (fourCC != null) {
@@ -108,6 +109,7 @@ public class IsoFile extends AbstractContainerBox {
         return result;
     }
 
+    @DoNotParseDetail
     public static String bytesToFourCC(byte[] type) {
         byte[] result = new byte[]{0, 0, 0, 0};
         if (type != null) {
@@ -152,6 +154,7 @@ public class IsoFile extends AbstractContainerBox {
      *
      * @return the MovieBox or <code>null</code>
      */
+    @DoNotParseDetail
     public MovieBox getMovieBox() {
         for (Box box : boxes) {
             if (box instanceof MovieBox) {

@@ -42,8 +42,8 @@ public class MovieFragmentRandomAccessOffsetBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         mfraSize = IsoTypeReader.readUInt32(content);
     }
 

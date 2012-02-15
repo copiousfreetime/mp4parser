@@ -70,8 +70,8 @@ public class TfrfBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         int fragmentCount = IsoTypeReader.readUInt8(content);
 
         for (int i = 0; i < fragmentCount; i++) {

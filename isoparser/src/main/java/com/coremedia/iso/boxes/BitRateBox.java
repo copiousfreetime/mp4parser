@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -53,7 +52,7 @@ public final class BitRateBox extends AbstractBox {
     }
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         bufferSizeDb = IsoTypeReader.readUInt32(content);
         maxBitrate = IsoTypeReader.readUInt32(content);
         avgBitrate = IsoTypeReader.readUInt32(content);

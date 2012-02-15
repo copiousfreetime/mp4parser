@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
@@ -37,8 +36,8 @@ public class AppleDataRateBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         dataRate = IsoTypeReader.readUInt32(content);
     }
 

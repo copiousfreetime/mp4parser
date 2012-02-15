@@ -49,8 +49,8 @@ public class DescriptionBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         language = IsoTypeReader.readIso639(content);
         description = IsoTypeReader.readString(content);
     }

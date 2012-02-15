@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;
 
@@ -50,7 +49,7 @@ public class DataEntryUrnBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         name = IsoTypeReader.readString(content);
         location = IsoTypeReader.readString(content);
 

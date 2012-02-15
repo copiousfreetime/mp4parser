@@ -1,7 +1,5 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -33,8 +31,8 @@ public class ItemDataBox extends AbstractFullBox {
 
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         data = content.slice();
     }
 

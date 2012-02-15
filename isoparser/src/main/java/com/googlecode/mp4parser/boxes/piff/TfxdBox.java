@@ -52,8 +52,8 @@ public class TfxdBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
 
         if (getVersion() == 0x01) {
             fragmentAbsoluteTime = IsoTypeReader.readUInt64(content);

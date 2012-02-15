@@ -77,8 +77,8 @@ public class ClassificationBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         byte[] cE = new byte[4];
         content.get(cE);
         classificationEntity = IsoFile.bytesToFourCC(cE);

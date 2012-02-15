@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes.h264;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractBox;
@@ -106,7 +105,7 @@ public final class AvcConfigurationBox extends AbstractBox {
     }
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         configurationVersion = IsoTypeReader.readUInt8(content);
         avcProfileIndicaation = IsoTypeReader.readUInt8(content);
         profileCompatibility = IsoTypeReader.readUInt8(content);

@@ -54,8 +54,9 @@ public abstract class AbstractFullBox extends AbstractBox implements FullBox {
     /**
      * Parses the version/flags header and returns the remaining box size.
      * @return number of bytes read
+     * @param content
      */
-    protected final long parseVersionAndFlags() {
+    protected final long parseVersionAndFlags(ByteBuffer content) {
         version = IsoTypeReader.readUInt8(content);
         flags = IsoTypeReader.readUInt24(content);
         return 4;

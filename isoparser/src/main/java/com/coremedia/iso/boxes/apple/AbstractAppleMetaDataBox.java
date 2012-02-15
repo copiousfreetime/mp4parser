@@ -1,6 +1,5 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;
@@ -53,13 +52,13 @@ public abstract class AbstractAppleMetaDataBox extends AbstractBox implements Co
     }
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         long dataBoxSize = IsoTypeReader.readUInt32(content);
         String thisShouldBeData = IsoTypeReader.read4cc(content);
         assert "data".equals(thisShouldBeData);
         appleDataBox = new AppleDataBox();
         try {
-            appleDataBox.parse(new ByteBufferByteChannel(content), null, 0, null);
+            appleDataBox.parse(new ByteBufferByteChannel(content), null, content.remaining(), null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

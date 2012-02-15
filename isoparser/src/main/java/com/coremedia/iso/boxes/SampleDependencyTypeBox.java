@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -111,8 +110,8 @@ public class SampleDependencyTypeBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         while (content.remaining() > 0) {
             entries.add(new Entry(IsoTypeReader.readUInt8(content)));
         }

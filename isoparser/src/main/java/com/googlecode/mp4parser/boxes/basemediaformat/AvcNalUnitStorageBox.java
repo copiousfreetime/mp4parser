@@ -16,15 +16,12 @@
 
 package com.googlecode.mp4parser.boxes.basemediaformat;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
 
@@ -64,7 +61,7 @@ public class AvcNalUnitStorageBox extends AbstractBox {
     }
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         data = new byte[content.remaining()];
     }
 

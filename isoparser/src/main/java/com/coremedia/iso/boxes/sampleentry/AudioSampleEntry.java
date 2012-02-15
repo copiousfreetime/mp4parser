@@ -108,8 +108,8 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
 
 
     @Override
-    public void _parseDetails() {
-        _parseReservedAndDataReferenceIndex();    //parses the six reserved bytes and dataReferenceIndex
+    public void _parseDetails(ByteBuffer content) {
+        _parseReservedAndDataReferenceIndex(content);    //parses the six reserved bytes and dataReferenceIndex
         // 8 bytes already parsed
         //reserved bits - used by qt
         soundVersion = IsoTypeReader.readUInt16(content);
@@ -139,7 +139,7 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
             soundVersion2Data = new byte[20];
             content.get(20);
         }
-        _parseChildBoxes();
+        _parseChildBoxes(content);
 
     }
 

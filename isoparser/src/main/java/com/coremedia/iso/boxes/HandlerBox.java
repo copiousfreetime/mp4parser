@@ -107,8 +107,8 @@ public class HandlerBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         IsoTypeReader.readUInt32(content);
         handlerType = IsoTypeReader.read4cc(content);
         a = IsoTypeReader.readUInt32(content);

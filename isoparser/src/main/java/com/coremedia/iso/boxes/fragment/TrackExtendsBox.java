@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
@@ -61,8 +60,8 @@ public class TrackExtendsBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         trackId = IsoTypeReader.readUInt32(content);
         defaultSampleDescriptionIndex = IsoTypeReader.readUInt32(content);
         defaultSampleDuration = IsoTypeReader.readUInt32(content);

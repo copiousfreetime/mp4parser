@@ -34,7 +34,7 @@ import java.util.List;
  */
 public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
     protected List<Box> boxes = new LinkedList<Box>();
-    private BoxParser boxParser;
+    protected BoxParser boxParser;
 
     @Override
     protected long getContentSize() {
@@ -101,8 +101,8 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
     }
 
     @Override
-    public void _parseDetails() {
-        parseChildBoxes();
+    public void _parseDetails(ByteBuffer content) {
+        parseChildBoxes(content);
     }
 
 
@@ -135,7 +135,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
         writeChildBoxes(bb);
     }
 
-    protected final void parseChildBoxes() {
+    protected final void parseChildBoxes(ByteBuffer content) {
         try {
             while (content.remaining() >= 8) { //  8 is the minimal size for a sane box
                 boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));

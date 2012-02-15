@@ -55,8 +55,8 @@ public class TextSampleEntry extends SampleEntry {
     }
 
     @Override
-    public void _parseDetails() {
-        _parseReservedAndDataReferenceIndex();
+    public void _parseDetails(ByteBuffer content) {
+        _parseReservedAndDataReferenceIndex(content);
         displayFlags = IsoTypeReader.readUInt32(content);
         horizontalJustification = IsoTypeReader.readUInt8(content);
         verticalJustification = IsoTypeReader.readUInt8(content);
@@ -70,7 +70,7 @@ public class TextSampleEntry extends SampleEntry {
 
         styleRecord = new StyleRecord();
         styleRecord.parse(content);
-        _parseChildBoxes();
+        _parseChildBoxes(content);
     }
 
 

@@ -1,6 +1,5 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
@@ -123,8 +122,8 @@ public final class AppleLosslessSpecificBox extends AbstractFullBox {
 
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         maxSamplePerFrame = IsoTypeReader.readUInt32(content);
         unknown1 = IsoTypeReader.readUInt8(content);
         sampleSize = IsoTypeReader.readUInt8(content);

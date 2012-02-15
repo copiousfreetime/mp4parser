@@ -1,6 +1,5 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -42,8 +41,8 @@ public class CompositionTimeToSample extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         int numberOfEntries = l2i(IsoTypeReader.readUInt32(content));
         entries = new ArrayList<Entry>((int) numberOfEntries);
         for (int i = 0; i < numberOfEntries; i++) {

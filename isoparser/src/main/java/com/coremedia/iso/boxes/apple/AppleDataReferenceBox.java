@@ -43,8 +43,8 @@ public class AppleDataReferenceBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         dataReferenceType = IsoTypeReader.read4cc(content);
         dataReferenceSize = l2i(IsoTypeReader.readUInt32(content));
         dataReference = IsoTypeReader.readString(content, dataReferenceSize);

@@ -92,8 +92,8 @@ public class RatingBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         ratingEntity = IsoTypeReader.read4cc(content);
         ratingCriteria = IsoTypeReader.read4cc(content);
         language = IsoTypeReader.readIso639(content);

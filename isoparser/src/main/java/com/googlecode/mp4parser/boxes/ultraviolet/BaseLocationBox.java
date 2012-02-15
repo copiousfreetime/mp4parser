@@ -16,7 +16,6 @@
 
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
@@ -63,8 +62,8 @@ public class BaseLocationBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();             
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         baseLocation = IsoTypeReader.readString(content);
         content.get(new byte[256 - Utf8.utf8StringLengthInBytes(baseLocation) - 1]);
         purchaseLocation = IsoTypeReader.readString(content);

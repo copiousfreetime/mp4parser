@@ -72,24 +72,22 @@ public final class Walk {
             if (b instanceof ContainerBox) {
                 Walk.through((ContainerBox) b);
             }
-            if (b instanceof AbstractBox) {
 
-                b.toString(); // Just test if some execption is trown
 
-                BeanInfo beanInfo = Introspector.getBeanInfo(b.getClass());
-                PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+            b.toString(); // Just test if some execption is trown
 
-                for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-                    String name = propertyDescriptor.getName();
-                    if (!Walk.skipList.contains(name) &&
-                            propertyDescriptor.getReadMethod() != null &&
-                            !AbstractBox.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
-                        propertyDescriptor.getReadMethod().invoke(b, (Object[]) null);
-                    }
+            BeanInfo beanInfo = Introspector.getBeanInfo(b.getClass());
+            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+
+            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                String name = propertyDescriptor.getName();
+                if (!Walk.skipList.contains(name) &&
+                        propertyDescriptor.getReadMethod() != null &&
+                        !Box.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
+                    propertyDescriptor.getReadMethod().invoke(b, (Object[]) null);
                 }
-            } else {
-                throw new RuntimeException("dunno how top handle that");
             }
+
         }
     }
 }

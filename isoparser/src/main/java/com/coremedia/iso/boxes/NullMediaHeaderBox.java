@@ -33,8 +33,8 @@ public class NullMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
     }
 
     @Override

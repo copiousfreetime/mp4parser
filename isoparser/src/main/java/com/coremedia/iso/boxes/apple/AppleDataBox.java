@@ -1,6 +1,5 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractFullBox;
 
 import java.io.IOException;
@@ -68,8 +67,8 @@ public final class AppleDataBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         fourBytes = new byte[4];
         content.get(fourBytes);
         data = new byte[content.remaining()];
@@ -82,7 +81,7 @@ public final class AppleDataBox extends AbstractFullBox {
      @Override
     protected void getContent(ByteBuffer os) throws IOException {
         os.put(fourBytes, 0, 4);
-        os.put(content);
+        os.put(data);
     }
 
     public byte[] getFourBytes() {

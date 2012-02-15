@@ -49,8 +49,8 @@ public class StaticChunkOffsetBox extends ChunkOffsetBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         int entryCount = l2i(IsoTypeReader.readUInt32(content));
         chunkOffsets = new long[entryCount];
         for (int i = 0; i < entryCount; i++) {

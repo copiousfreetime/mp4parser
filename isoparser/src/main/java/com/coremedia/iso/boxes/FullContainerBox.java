@@ -87,17 +87,17 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
 
     @Override
     public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        content = ChannelHelper.readFully(in, contentSize);
+        super.parse(in, header, contentSize, boxParser);
         this.boxParser = boxParser;
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
-        parseChildBoxes();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
+        parseChildBoxes(content);
     }
 
-    protected final void parseChildBoxes() {
+    protected final void parseChildBoxes(ByteBuffer content) {
         try {
             while (content.remaining() >= 8) { //  8 is the minimal size for a sane box
                 boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));

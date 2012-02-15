@@ -25,23 +25,24 @@ import java.nio.ByteBuffer;
  * will just hold the box's data.
  */
 public class UnknownBox extends AbstractBox {
+    ByteBuffer data;
     public UnknownBox(String type) {
         super(type);
     }
 
     @Override
     protected long getContentSize() {
-        return content.capacity();
+        return data.capacity();
     }
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         // nothing no details
     }
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
-        content.rewind();
-        bb.put(content);
+        data.rewind();
+        bb.put(data);
     }
 }

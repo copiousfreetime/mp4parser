@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes.vodafone;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
@@ -50,8 +49,8 @@ public class LyricsUriBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         lyricsUri = IsoTypeReader.readString(content);
     }
 

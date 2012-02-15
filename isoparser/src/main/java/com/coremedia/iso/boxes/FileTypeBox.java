@@ -17,6 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.*;
+import com.googlecode.mp4parser.DoNotParseDetail;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -52,7 +53,7 @@ public class FileTypeBox extends AbstractBox {
     }
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         majorBrand = IsoTypeReader.read4cc(content);
         minorVersion = IsoTypeReader.readUInt32(content);
         int compatibleBrandsCount = (content.remaining() - 8) / 4;
@@ -122,8 +123,9 @@ public class FileTypeBox extends AbstractBox {
         this.compatibleBrands = compatibleBrands;
     }
 
+    @DoNotParseDetail
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append("FileTypeBox[");
         result.append("majorBrand=").append(getMajorBrand());
         result.append(";");

@@ -79,8 +79,8 @@ public class SampleAuxiliaryInformationOffsetsBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
 
         if ((getFlags() & 1) == 1) {
             auxInfoType = IsoTypeReader.readUInt32(content);

@@ -16,14 +16,10 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 
 /**
  * The sample description table gives detailed information about the coding type used, and any initialization
@@ -60,10 +56,10 @@ public class SampleDescriptionBox extends FullContainerBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         content.get(new byte[4]);
-        parseChildBoxes();
+        parseChildBoxes(content);
     }
 
     @Override

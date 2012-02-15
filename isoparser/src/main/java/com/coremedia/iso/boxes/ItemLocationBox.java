@@ -77,8 +77,8 @@ public class ItemLocationBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         int tmp = IsoTypeReader.readUInt8(content);
         offsetSize = tmp >>> 4;
         lengthSize = tmp & 0xf;

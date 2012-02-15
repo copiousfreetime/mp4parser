@@ -1,12 +1,10 @@
 package com.googlecode.mp4parser.boxes;
 
 import com.coremedia.iso.Hex;
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -26,8 +24,8 @@ public abstract class AbstractSampleEncryptionBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         if ((getFlags() & 0x1) > 0) {
             algorithmId = IsoTypeReader.readUInt24(content);
             ivSize = IsoTypeReader.readUInt8(content);

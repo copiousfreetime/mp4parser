@@ -24,8 +24,8 @@ public class Ovc1VisualSampleEntryImpl extends SampleEntry {
     }
 
     @Override
-    public void _parseDetails() {
-        _parseReservedAndDataReferenceIndex();
+    public void _parseDetails(ByteBuffer content) {
+        _parseReservedAndDataReferenceIndex(content);
         vc1Content = new byte[content.remaining()];
         content.get(vc1Content);
 

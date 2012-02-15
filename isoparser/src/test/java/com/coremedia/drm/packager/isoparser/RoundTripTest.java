@@ -24,6 +24,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Tests ISO Roundtrip.
@@ -85,7 +86,9 @@ public class RoundTripTest extends TestCase {
         isoFile.parse();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        isoFile.getBox(Channels.newChannel(baos));
+        WritableByteChannel wbc = Channels.newChannel(baos);
+        isoFile.getBox(wbc);
+        wbc.close();
 
 
         Walk.through(isoFile);

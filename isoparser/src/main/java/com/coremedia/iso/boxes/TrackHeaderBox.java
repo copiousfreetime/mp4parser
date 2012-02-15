@@ -17,7 +17,6 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -109,8 +108,8 @@ public class TrackHeaderBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         if (getVersion() == 1) {
             creationTime = IsoTypeReader.readUInt64(content);
             modificationTime = IsoTypeReader.readUInt64(content);

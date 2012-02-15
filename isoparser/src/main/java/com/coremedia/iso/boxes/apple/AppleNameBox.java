@@ -1,6 +1,5 @@
 package com.coremedia.iso.boxes.apple;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
@@ -34,8 +33,8 @@ public final class AppleNameBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         name = IsoTypeReader.readString(content, content.remaining());
     }
 

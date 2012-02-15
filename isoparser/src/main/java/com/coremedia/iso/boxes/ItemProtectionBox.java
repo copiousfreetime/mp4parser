@@ -20,8 +20,6 @@ import com.coremedia.iso.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 
 /**
  * The Item Protection Box provides an array of item protection information, for use by the Item Information Box.
@@ -44,10 +42,10 @@ public class ItemProtectionBox extends FullContainerBox {
         }
     }
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         IsoTypeReader.readUInt16(content);
-        parseChildBoxes();
+        parseChildBoxes(content);
     }
 
 

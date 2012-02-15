@@ -20,6 +20,7 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
+import com.googlecode.mp4parser.DoNotParseDetail;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,10 +34,14 @@ import static com.coremedia.iso.boxes.CastUtils.l2i;
  * A basic ISO box. No full box.
  */
 public abstract class AbstractBox implements Box {
-    protected ByteBuffer content;
+    private ByteBuffer content;
 
     public long getSize() {
         return (content == null ? getContentSize() : content.capacity()) + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.capacity());
+    }
+
+    public boolean isParsed() {
+        return content == null;
     }
 
     protected long getHeaderSize() {
@@ -71,28 +76,33 @@ public abstract class AbstractBox implements Box {
         this.type = type;
     }
 
+    @DoNotParseDetail
     public String getType() {
         return type;
     }
 
-
+    @DoNotParseDetail
     public byte[] getUserType() {
         return userType;
     }
 
+    @DoNotParseDetail
     public void setUserType(byte[] userType) {
         this.userType = userType;
     }
 
+    @DoNotParseDetail
     public ContainerBox getParent() {
         return parent;
     }
 
+    @DoNotParseDetail
     public void setParent(ContainerBox parent) {
         this.parent = parent;
     }
 
 
+    @DoNotParseDetail
     public IsoFile getIsoFile() {
         return parent.getIsoFile();
     }
@@ -105,6 +115,7 @@ public abstract class AbstractBox implements Box {
      * @param boxParser   creates inner boxes
      * @throws IOException in case of an I/O error.
      */
+    @DoNotParseDetail
     public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         if (in instanceof FileChannel && contentSize > 1024 * 1024) {
             // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
@@ -118,21 +129,24 @@ public abstract class AbstractBox implements Box {
     /**
      * Parses the boxes fields.
      */
-    public final void parseDetails() {
+    public synchronized final void parseDetails() {
         if (content != null) {
-            _parseDetails();
+            ByteBuffer content = this.content;
+            this.content = null;
+            content.rewind();
+            _parseDetails(content);
             if (content.remaining() > 0) {
                 deadBytes = content.slice();
             }
-            content = null;
         }
     }
 
     /**
      * Implement the actual parsing of the box's fields here. External classes will always call
      * {@link #parseDetails()} which encapsulates the call to this method with some safeguards.
+     * @param content
      */
-    public abstract void _parseDetails();
+    public abstract void _parseDetails(ByteBuffer content);
 
     protected ByteBuffer deadBytes = null;
 
@@ -163,7 +177,6 @@ public abstract class AbstractBox implements Box {
     private boolean isSmallBox() {
         return (content == null ? (getContentSize() + (deadBytes != null ? deadBytes.capacity() : 0) + 8) : content.capacity()) < 1L<<32;
     }
-
 
     public void getBox(WritableByteChannel os) throws IOException {
         ByteBuffer bb = ByteBuffer.allocate(l2i(getSize()));

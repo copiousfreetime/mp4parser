@@ -16,7 +16,6 @@
 
 package com.googlecode.mp4parser.boxes.ultraviolet;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.Utf8;
 import com.coremedia.iso.boxes.AbstractFullBox;
@@ -49,7 +48,7 @@ public class AssetInformationBox extends AbstractFullBox {
 
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         profileVersion = IsoTypeReader.readString(content, 4);
         apid = IsoTypeReader.readString(content);
         content = null;

@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 
@@ -69,8 +68,8 @@ public final class OmaDrmAccessUnitFormatBox extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         allBits = (byte) IsoTypeReader.readUInt8(content);
         selectiveEncryption = (allBits & 0x80) == 0x80;
         keyIndicatorLength = IsoTypeReader.readUInt8(content);

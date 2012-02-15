@@ -110,12 +110,12 @@ public abstract class SampleEntry extends AbstractBox implements ContainerBox {
     }
 
 
-    public void _parseReservedAndDataReferenceIndex() {
+    public void _parseReservedAndDataReferenceIndex(ByteBuffer content) {
         content.get(new byte[6]); // ignore 6 reserved bytes;
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
     }
 
-    public void _parseChildBoxes() {
+    public void _parseChildBoxes(ByteBuffer content) {
         while (content.remaining() > 8) {
             try {
                 boxes.add(boxParser.parseBox(new ByteBufferByteChannel(content), this));

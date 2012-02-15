@@ -15,8 +15,9 @@ public class ChannelHelper {
     public static ByteBuffer readFully(final ReadableByteChannel channel, long size) throws IOException {
 
         if (channel instanceof FileChannel && size > 1024 * 1024) {
+            ByteBuffer bb =  ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), size);
             ((FileChannel) channel).position(((FileChannel) channel).position() + size);
-            return ((FileChannel) channel).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) channel).position(), size);
+            return bb;
         } else {
             ByteBuffer buf = ByteBuffer.allocate(l2i(size));
             readFully(channel, buf, buf.remaining());

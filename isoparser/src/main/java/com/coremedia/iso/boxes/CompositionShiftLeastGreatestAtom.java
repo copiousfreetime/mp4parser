@@ -1,7 +1,5 @@
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -40,8 +38,8 @@ public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
     }
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         compositionOffsetToDisplayOffsetShift = content.getInt();
         leastDisplayOffset = content.getInt();
         greatestDisplayOffset = content.getInt();

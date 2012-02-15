@@ -29,7 +29,7 @@ public class FontTableBox extends AbstractBox {
 
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         int numberOfRecords = IsoTypeReader.readUInt16(content);
         for (int i = 0; i < numberOfRecords; i++) {
             FontRecord fr = new FontRecord();

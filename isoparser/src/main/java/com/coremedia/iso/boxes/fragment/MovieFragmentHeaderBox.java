@@ -51,8 +51,8 @@ public class MovieFragmentHeaderBox extends AbstractFullBox {
 
 
     @Override
-    public void _parseDetails() {
-        parseVersionAndFlags();
+    public void _parseDetails(ByteBuffer content) {
+        parseVersionAndFlags(content);
         sequenceNumber = IsoTypeReader.readUInt32(content);
 
     }

@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -49,7 +47,7 @@ public class FreeSpaceBox extends AbstractBox {
     }
 
     @Override
-    public void _parseDetails() {
+    public void _parseDetails(ByteBuffer content) {
         data = new byte[content.remaining()];
         content.get(data);
     }

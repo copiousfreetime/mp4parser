@@ -116,7 +116,7 @@ public class MediaHeaderBox extends AbstractFullBox {
 
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append("MovieHeaderBox[");
+        result.append("MeditHeaderBox[");
         result.append("creationTime=").append(getCreationTime());
         result.append(";");
         result.append("modificationTime=").append(getModificationTime());
@@ -131,6 +131,7 @@ public class MediaHeaderBox extends AbstractFullBox {
     }
 
     protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         if (getVersion() == 1) {
             IsoTypeWriter.writeUInt64(bb, creationTime);
             IsoTypeWriter.writeUInt64(bb, modificationTime);

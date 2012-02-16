@@ -64,7 +64,7 @@ public class SampleDescriptionBox extends FullContainerBox {
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
-        writeChildBoxes(bb);
+        writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, boxes.size());
         writeChildBoxes(bb);
     }

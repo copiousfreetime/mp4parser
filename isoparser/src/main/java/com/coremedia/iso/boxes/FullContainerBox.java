@@ -134,7 +134,7 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     protected final void writeChildBoxes(ByteBuffer bb) throws IOException {
         WritableByteChannel wbc = new ByteBufferByteChannel(bb);
         for (Box box : boxes) {
-            box.getBox(wbc);
+               box.getBox(wbc);
         }
     }
 

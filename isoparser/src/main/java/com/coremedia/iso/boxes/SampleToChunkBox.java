@@ -67,6 +67,7 @@ public class SampleToChunkBox extends AbstractFullBox {
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, entries.size());
         for (Entry entry : entries) {
             IsoTypeWriter.writeUInt32(bb, entry.getFirstChunk());

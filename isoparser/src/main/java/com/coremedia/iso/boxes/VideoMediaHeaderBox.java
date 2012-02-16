@@ -45,7 +45,7 @@ public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
     }
 
     protected long getContentSize() {
-        return opcolor.length * 2 + 4;
+        return 12;
     }
 
 
@@ -61,7 +61,7 @@ public class VideoMediaHeaderBox extends AbstractMediaHeaderBox {
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
-
+        writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt16(bb, graphicsmode);
         for (int anOpcolor : opcolor) {
             IsoTypeWriter.writeUInt16(bb, anOpcolor);

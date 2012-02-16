@@ -54,7 +54,7 @@ public final class AppleDataBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return data.length + 4;
+        return data.length + 8;
     }
 
     public void setData(byte[] data) {
@@ -76,12 +76,11 @@ public final class AppleDataBox extends AbstractFullBox {
     }
 
 
-
-
-     @Override
-    protected void getContent(ByteBuffer os) throws IOException {
-        os.put(fourBytes, 0, 4);
-        os.put(data);
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
+        bb.put(fourBytes, 0, 4);
+        bb.put(data);
     }
 
     public byte[] getFourBytes() {

@@ -17,10 +17,9 @@
 package com.coremedia.drm.packager.isoparser;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import junit.framework.TestCase;
-import junitx.framework.ArrayAssert;
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 
 import java.io.*;
 import java.nio.channels.Channels;
@@ -93,7 +92,11 @@ public class RoundTripTest extends TestCase {
 
         Walk.through(isoFile);
 
-        ArrayAssert.assertEquals(IOUtils.toByteArray(getClass().getResourceAsStream(resource)), baos.toByteArray());
+        byte[] a = IOUtils.toByteArray(getClass().getResourceAsStream(resource));
+        byte[] b = baos.toByteArray();
+        new FileOutputStream("a.mp4").write(a);
+        new FileOutputStream("b.mp4").write(b);
+        Assert.assertArrayEquals(a, b);
 
     }
 

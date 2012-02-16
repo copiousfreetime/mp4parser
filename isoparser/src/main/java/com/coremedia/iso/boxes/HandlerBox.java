@@ -135,7 +135,9 @@ public class HandlerBox extends AbstractFullBox {
         IsoTypeWriter.writeUInt32(bb, a);
         IsoTypeWriter.writeUInt32(bb, b);
         IsoTypeWriter.writeUInt32(bb, c);
-        bb.put(Utf8.convert(name));
+        if (name != null) {
+            bb.put(Utf8.convert(name));
+        }
         if (zeroTerm) {
             bb.put((byte) 0);
         }

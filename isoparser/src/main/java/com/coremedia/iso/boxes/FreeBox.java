@@ -39,6 +39,7 @@ public class FreeBox extends AbstractBox {
     @Override
     public void _parseDetails(ByteBuffer content) {
         data = content;
+        data.position(data.position() + data.remaining());
     }
 
     @Override

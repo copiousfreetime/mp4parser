@@ -138,10 +138,10 @@ public class MediaHeaderBox extends AbstractFullBox {
             IsoTypeWriter.writeUInt32(bb, timescale);
             IsoTypeWriter.writeUInt64(bb, duration);
         } else {
-            IsoTypeWriter.writeUInt32(bb, l2i(creationTime));
-            IsoTypeWriter.writeUInt32(bb, l2i(modificationTime));
-            IsoTypeWriter.writeUInt32(bb, l2i(timescale));
-            IsoTypeWriter.writeUInt32(bb, l2i(duration));
+            IsoTypeWriter.writeUInt32(bb, creationTime);
+            IsoTypeWriter.writeUInt32(bb, modificationTime);
+            IsoTypeWriter.writeUInt32(bb, timescale);
+            IsoTypeWriter.writeUInt32(bb, duration);
         }
         IsoTypeWriter.writeIso639(bb, language);
         IsoTypeWriter.writeUInt16(bb, 0);

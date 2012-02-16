@@ -22,7 +22,7 @@ public final class IsoTypeWriter {
 
     public static void writeUInt24(ByteBuffer bb, int i) {
         i = i & 0xFFFFFF;
-        writeUInt16(bb, i);
+        writeUInt16(bb, i >> 8);
         writeUInt8(bb, i);
 
     }

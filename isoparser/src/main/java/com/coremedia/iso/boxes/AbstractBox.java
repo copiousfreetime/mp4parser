@@ -138,6 +138,30 @@ public abstract class AbstractBox implements Box {
             if (content.remaining() > 0) {
                 deadBytes = content.slice();
             }
+            assert verify(content);
+        }
+    }
+    
+    private boolean verify(ByteBuffer content) {
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+        try {
+            getContent(bb);
+            if (deadBytes != null) {
+                deadBytes.rewind();
+                while (deadBytes.remaining() > 0) {
+                    bb.put(deadBytes);
+                }
+            }
+        } catch (IOException e) {
+            assert false : e.getMessage();
+        }
+        content.rewind();
+        bb.rewind();
+
+        if (content.equals(bb)) {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -193,6 +217,8 @@ public abstract class AbstractBox implements Box {
             content.rewind();
             bb.put(content);
         }
+        bb.rewind();
+        os.write(bb);
     }
 
     /**

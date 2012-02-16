@@ -8,16 +8,16 @@ import java.nio.channels.ByteChannel;
  * Creates a <code>ReadableByteChannel</code> that is backed by a <code>ByteBuffer</code>.
  */
 public class ByteBufferByteChannel implements ByteChannel {
-    ByteBuffer src;
+    ByteBuffer byteBuffer;
 
-    public ByteBufferByteChannel(ByteBuffer src) {
-        this.src = src;
+    public ByteBufferByteChannel(ByteBuffer byteBuffer) {
+        this.byteBuffer = byteBuffer;
     }
 
     public int read(ByteBuffer dst) {
         byte[] b = dst.array();
         int r = dst.remaining();
-        src.get(b, dst.position(), r);
+        byteBuffer.get(b, dst.position(), r);
         return r;
     }
 
@@ -30,7 +30,7 @@ public class ByteBufferByteChannel implements ByteChannel {
 
     public int write(ByteBuffer src) throws IOException {
         int r = src.remaining();
-        src.put(src);
+        byteBuffer.put(src);
         return r;
     }
 }

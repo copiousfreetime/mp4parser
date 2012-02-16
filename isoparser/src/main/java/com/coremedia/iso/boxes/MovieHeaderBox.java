@@ -149,6 +149,7 @@ public class MovieHeaderBox extends AbstractFullBox {
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         if (getVersion() == 1) {
             IsoTypeWriter.writeUInt64(bb, creationTime);
             IsoTypeWriter.writeUInt64(bb, modificationTime);

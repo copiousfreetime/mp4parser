@@ -52,8 +52,7 @@ public class TrackHeaderBox extends AbstractFullBox {
 
     public TrackHeaderBox() {
         super(TYPE);
-        // 7 seems to be the only meaningful value
-        setFlags(7);
+
     }
 
     public long getCreationTime() {

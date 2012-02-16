@@ -135,14 +135,13 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
             bytesPerSample = IsoTypeReader.readUInt32(content);
         }
         if (soundVersion == 2) {
-            
+
             soundVersion2Data = new byte[20];
             content.get(20);
         }
         _parseChildBoxes(content);
 
     }
-
 
 
     @Override
@@ -164,20 +163,20 @@ public class AudioSampleEntry extends SampleEntry implements ContainerBox {
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
         _writeReservedAndDataReferenceIndex(bb);
-        IsoTypeWriter.writeUInt16(bb,soundVersion);
-        IsoTypeWriter.writeUInt16(bb,reserved1);
-        IsoTypeWriter.writeUInt32(bb,reserved2);
-        IsoTypeWriter.writeUInt16(bb,getChannelCount());
-        IsoTypeWriter.writeUInt16(bb,getSampleSize());
-        IsoTypeWriter.writeUInt16(bb,0);
-        IsoTypeWriter.writeUInt16(bb,0);
+        IsoTypeWriter.writeUInt16(bb, soundVersion);
+        IsoTypeWriter.writeUInt16(bb, reserved1);
+        IsoTypeWriter.writeUInt32(bb, reserved2);
+        IsoTypeWriter.writeUInt16(bb, channelCount);
+        IsoTypeWriter.writeUInt16(bb, sampleSize);
+        IsoTypeWriter.writeUInt16(bb, compressionId);
+        IsoTypeWriter.writeUInt16(bb, packetSize);
         //isos.writeFixedPont1616(getSampleRate());
-        IsoTypeWriter.writeUInt32(bb,getSampleRate() << 16);
+        IsoTypeWriter.writeUInt32(bb, getSampleRate() << 16);
         if (soundVersion > 0) {
-            IsoTypeWriter.writeUInt32(bb,samplesPerPacket);
-            IsoTypeWriter.writeUInt32(bb,bytesPerPacket);
-            IsoTypeWriter.writeUInt32(bb,bytesPerFrame);
-            IsoTypeWriter.writeUInt32(bb,bytesPerSample);
+            IsoTypeWriter.writeUInt32(bb, samplesPerPacket);
+            IsoTypeWriter.writeUInt32(bb, bytesPerPacket);
+            IsoTypeWriter.writeUInt32(bb, bytesPerFrame);
+            IsoTypeWriter.writeUInt32(bb, bytesPerSample);
         }
 
         if (soundVersion == 2) {

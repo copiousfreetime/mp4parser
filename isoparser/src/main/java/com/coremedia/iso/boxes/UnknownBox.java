@@ -37,7 +37,7 @@ public class UnknownBox extends AbstractBox {
 
     @Override
     public void _parseDetails(ByteBuffer content) {
-        // nothing no details
+        data = content;
     }
 
     @Override

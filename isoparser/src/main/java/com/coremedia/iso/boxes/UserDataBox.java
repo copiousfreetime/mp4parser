@@ -16,7 +16,12 @@
 
 package com.coremedia.iso.boxes;
 
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * This box contains objects that declare user information about the containing box and its data (presentation or
@@ -26,6 +31,26 @@ import com.coremedia.iso.IsoFile;
  */
 public class UserDataBox extends AbstractContainerBox {
     public static final String TYPE = "udta";
+
+    @Override
+    protected long getContentSize() {
+        return super.getContentSize();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        super.parse(in, header, contentSize, boxParser);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void _parseDetails(ByteBuffer content) {
+        super._parseDetails(content);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    protected void getContent(ByteBuffer bb) throws IOException {
+        super.getContent(bb);    //To change body of overridden methods use File | Settings | File Templates.
+    }
 
     public UserDataBox() {
         super(TYPE);

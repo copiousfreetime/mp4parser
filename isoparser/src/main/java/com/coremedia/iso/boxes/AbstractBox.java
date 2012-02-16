@@ -141,9 +141,9 @@ public abstract class AbstractBox implements Box {
             assert verify(content);
         }
     }
-    
+
     private boolean verify(ByteBuffer content) {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize()));
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize() + (deadBytes != null ? deadBytes.capacity() : 0)));
         try {
             getContent(bb);
             if (deadBytes != null) {
@@ -158,16 +158,28 @@ public abstract class AbstractBox implements Box {
         content.rewind();
         bb.rewind();
 
-        if (content.equals(bb)) {
-            return true;
-        } else {
+
+        if (content.remaining() != bb.remaining())
             return false;
+        int p = content.position();
+        for (int i = content.limit() - 1, j = bb.limit() - 1; i >= p; i--, j--) {
+            byte v1 = content.get(i);
+            byte v2 = bb.get(j);
+            if (v1 != v2) {
+                if ((v1 != v1) && (v2 != v2))    // For float and double
+                    continue;
+                System.err.println("buffers differ at " + i + "/" + j);
+                return false;
+            }
         }
+        return true;
+
     }
 
     /**
      * Implement the actual parsing of the box's fields here. External classes will always call
      * {@link #parseDetails()} which encapsulates the call to this method with some safeguards.
+     *
      * @param content
      */
     public abstract void _parseDetails(ByteBuffer content);
@@ -199,7 +211,7 @@ public abstract class AbstractBox implements Box {
     }
 
     private boolean isSmallBox() {
-        return (content == null ? (getContentSize() + (deadBytes != null ? deadBytes.capacity() : 0) + 8) : content.capacity()) < 1L<<32;
+        return (content == null ? (getContentSize() + (deadBytes != null ? deadBytes.capacity() : 0) + 8) : content.capacity()) < 1L << 32;
     }
 
     public void getBox(WritableByteChannel os) throws IOException {

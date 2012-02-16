@@ -68,6 +68,8 @@ public class HandlerBox extends AbstractFullBox {
     private long a, b, c;
     private boolean zeroTerm = true;
 
+    private long shouldBeZeroButAppleWritesHereSomeValue;
+
     public HandlerBox() {
         super(TYPE);
     }
@@ -109,7 +111,7 @@ public class HandlerBox extends AbstractFullBox {
     @Override
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
-        IsoTypeReader.readUInt32(content);
+        shouldBeZeroButAppleWritesHereSomeValue = IsoTypeReader.readUInt32(content);
         handlerType = IsoTypeReader.read4cc(content);
         a = IsoTypeReader.readUInt32(content);
         b = IsoTypeReader.readUInt32(content);
@@ -130,7 +132,7 @@ public class HandlerBox extends AbstractFullBox {
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
-        IsoTypeWriter.writeUInt32(bb, 0);
+        IsoTypeWriter.writeUInt32(bb, shouldBeZeroButAppleWritesHereSomeValue);
         bb.put(IsoFile.fourCCtoBytes(handlerType));
         IsoTypeWriter.writeUInt32(bb, a);
         IsoTypeWriter.writeUInt32(bb, b);

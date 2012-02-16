@@ -23,6 +23,7 @@ import com.coremedia.iso.boxes.ContainerBox;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
@@ -64,6 +65,8 @@ public final class MediaDataBox implements Box {
     }
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+        header.rewind();
+        content.rewind();
         writableByteChannel.write(header);
         writableByteChannel.write(content);
     }

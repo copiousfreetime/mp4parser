@@ -19,9 +19,7 @@ import java.util.List;
 public class MovieCreator {
     public Movie build(ReadableByteChannel channel) throws IOException {
         IsoFile isoFile = new IsoFile(channel);
-        isoFile.parse();
         Movie m = new Movie();
-
         List<TrackBox> trackBoxes = isoFile.getMovieBox().getBoxes(TrackBox.class);
         for (TrackBox trackBox : trackBoxes) {
             m.addTrack(new Mp4TrackImpl(trackBox, channel));

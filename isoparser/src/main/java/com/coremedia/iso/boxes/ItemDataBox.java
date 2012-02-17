@@ -25,7 +25,7 @@ public class ItemDataBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return data.capacity();
+        return data.limit();
     }
 
 

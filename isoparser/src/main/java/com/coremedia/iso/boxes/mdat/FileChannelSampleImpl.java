@@ -21,12 +21,12 @@ public class FileChannelSampleImpl implements Sample {
         return l2i(size);
     }
 
-    public byte[] getBytes() {
+    public ByteBuffer getBytes() {
         ByteBuffer bb = ByteBuffer.allocate(l2i(size));
         try {
             fileChannel.position(offset);
             fileChannel.read(bb);
-            return bb.array();
+            return bb;
         } catch (IOException e) {
             throw new RuntimeException("WTF? ask Sebastian. 98628743295", e);
         }

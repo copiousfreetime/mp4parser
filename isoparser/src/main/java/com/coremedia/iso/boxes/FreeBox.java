@@ -33,7 +33,7 @@ public class FreeBox extends AbstractBox {
 
     @Override
     protected long getContentSize() {
-        return data.capacity();
+        return data.limit();
     }
 
     @Override

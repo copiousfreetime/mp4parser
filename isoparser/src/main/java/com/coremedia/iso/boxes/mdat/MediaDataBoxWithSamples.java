@@ -25,9 +25,12 @@ import com.coremedia.iso.boxes.ContainerBox;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This box contains the media data. In video tracks, this box would contain video frames. A presentation may
@@ -69,42 +72,7 @@ public class MediaDataBoxWithSamples implements Box {
     public byte[] getUserType() {
         return new byte[0];
     }
-    
-    public void addSample(Sample s) {
-        if (s instanceof FileChannelSampleImpl )  {
-            addSample((FileChannelSampleImpl)s);
-        } else if (s instanceof ByteArraySampleImpl) {
-            addSample((ByteArraySampleImpl)s);
-        }
-    }
 
-    private void addSample(FileChannelSampleImpl s) {
-        Sample last = samples.peekLast();
-        if (s.getClass().isInstance(last)) {
-            FileChannelSampleImpl l = (FileChannelSampleImpl) last;
-            if ((l.fileChannel == s.fileChannel) && (l.offset + l.size == s.offset)) {
-                l.size += s.size;
-            } else {
-                samples.add(s);
-            }
-        } else {
-            samples.add(s);
-        }
-    }
-
-    private void addSample(ByteArraySampleImpl s) {
-        Sample last = samples.peekLast();
-        if (s.getClass().isInstance(last)) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                baos.write(((ByteArraySampleImpl) last).data);
-                baos.write(s.data);
-                ((ByteArraySampleImpl) last).data = baos.toByteArray();
-            } catch (IOException e) {
-                throw new RuntimeException("Should not happen. Even though ...", e);
-            }
-        }
-    }
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         long size = getContentSize();
@@ -118,14 +86,15 @@ public class MediaDataBoxWithSamples implements Box {
             bb.put(IsoFile.fourCCtoBytes("mdat"));
             IsoTypeWriter.writeUInt64(bb, size);
         }
+        ArrayList<ByteBuffer> bb = new ArrayList<ByteBuffer>(samples.size());
         for (Sample sample : samples) {
-            if (sample instanceof ByteArraySampleImpl) {
-                writableByteChannel.write (ByteBuffer.wrap(((ByteArraySampleImpl) sample).data));
-            } else if (sample instanceof FileChannelSampleImpl) {
-                ((FileChannelSampleImpl) sample).fileChannel.transferTo(
-                        ((FileChannelSampleImpl) sample).offset,
-                        ((FileChannelSampleImpl) sample).size,
-                        writableByteChannel);
+            bb.add(sample.getBytes());
+        }
+        if (writableByteChannel instanceof GatheringByteChannel) {
+            ((GatheringByteChannel) writableByteChannel).write(bb.toArray(new ByteBuffer[bb.size()]));
+        } else {
+            for (ByteBuffer byteBuffer : bb) {
+                writableByteChannel.write(byteBuffer);
             }
         }
     }
@@ -162,12 +131,12 @@ public class MediaDataBoxWithSamples implements Box {
     protected long getContentSize() {
         long size = 0;
         for (Sample sample : samples) {
-            if (sample instanceof ByteArraySampleImpl) {
-                size += ((ByteArraySampleImpl) sample).data.length;
-            } else if (sample instanceof FileChannelSampleImpl) {
-                size += ((FileChannelSampleImpl) sample).size;
-            }
+            size += sample.getBytes().limit();
         }
         return size;
+    }
+
+    public void addSample(Sample sample) {
+        samples.add(sample);
     }
 }

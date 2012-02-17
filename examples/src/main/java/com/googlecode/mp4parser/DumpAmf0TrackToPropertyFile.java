@@ -27,7 +27,9 @@ public class DumpAmf0TrackToPropertyFile {
                 for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
                     for (int i = 0; i < entry.getCount(); i++) {
                         Sample sample = samples.next();
-                        byte[] sampleBytes = sample.getBytes();
+                        byte[] sampleBytes = new byte[sample.getBytes().limit()];
+                        sample.getBytes().rewind();
+                        sample.getBytes().get(sampleBytes);
                         properties.put("" + time, new String(Base64.encodeBase64(sampleBytes, false, false)));
                         time += entry.getDelta();
                     }

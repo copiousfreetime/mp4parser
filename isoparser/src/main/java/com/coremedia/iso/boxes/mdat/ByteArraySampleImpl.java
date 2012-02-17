@@ -1,20 +1,26 @@
 package com.coremedia.iso.boxes.mdat;
 
+import java.nio.ByteBuffer;
+
 /**
  *
  */
 public class ByteArraySampleImpl implements Sample {
-    public byte[] data;
+    public ByteBuffer data;
 
     public ByteArraySampleImpl(byte[] data) {
+        this.data = ByteBuffer.wrap(data);
+    }
+
+    public ByteArraySampleImpl(ByteBuffer data) {
         this.data = data;
     }
 
     public int getSize() {
-        return data.length;
+        return data.limit();
     }
 
-    public byte[] getBytes() {
+    public ByteBuffer getBytes() {
         return data;
     }
 }

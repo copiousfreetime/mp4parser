@@ -14,6 +14,8 @@ import com.googlecode.mp4parser.authoring.Track;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.*;
@@ -28,10 +30,16 @@ public class DefaultMp4Builder implements Mp4Builder {
     Set<StaticChunkOffsetBox> chunkOffsetBoxes = new HashSet<StaticChunkOffsetBox>();
     private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
 
+    HashMap<Track, List<? extends Sample>> track2Sample = new HashMap<Track, List<? extends Sample>>();
+
     public IsoFile build(Movie movie) throws IOException {
         LOG.info("Creating movie " + movie);
-        IsoFile isoFile = new IsoFile(null);
-        isoFile.parse();
+        for (Track track : movie.getTracks()) {
+            // getting the samples may be a time consuming activity
+            track2Sample.put(track, track.getSamples());
+        }
+
+        IsoFile isoFile = new IsoFile();
         // ouch that is ugly but I don't know how to do it else
         List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
@@ -42,6 +50,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         isoFile.addBox(createMovieBox(movie));
         InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie);
         isoFile.addBox(mdat);
+
         /*
         dataOffset is where the first sample starts. In this special mdat the samples always start
         at offset 16 so that we can use the same offset for large boxes and small boxes
@@ -98,6 +107,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
     private TrackBox createTrackBox(Track track, Movie movie) {
+
         LOG.info("Creating Mp4TrackImpl " + track);
         TrackBox trackBox = new TrackBox();
         TrackHeaderBox tkhd = new TrackHeaderBox();
@@ -244,9 +254,10 @@ public class DefaultMp4Builder implements Mp4Builder {
         stbl.addBox(stsc);
 
         SampleSizeBox stsz = new SampleSizeBox();
-        long[] sizes = new long[track.getSamples().size()];
+        List<? extends Sample> samples = track2Sample.get(track);
+        long[] sizes = new long[samples .size()];
         for (int i = 0; i < sizes.length; i++) {
-            sizes[i] = track.getSamples().get(i).getSize();
+            sizes[i] = samples.get(i).getSize();
         }
         stsz.setSampleSizes(sizes);
 
@@ -282,7 +293,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                         throw new InternalError("I cannot deal with a number of samples > Integer.MAX_VALUE");
                     }
 
-                    offset += current.getSamples().get((int) j).getSize();
+                    offset += track2Sample.get(current).get((int) j).getSize();
                 }
             }
         }
@@ -294,11 +305,13 @@ public class DefaultMp4Builder implements Mp4Builder {
         return trackBox;
     }
 
-    private static class InterleaveChunkMdat implements Box {
+    private class InterleaveChunkMdat implements Box {
         List<Track> tracks;
-        LinkedList<Sample> samples = new LinkedList<Sample>();
+        ArrayList<ByteBuffer> samples = new ArrayList<ByteBuffer>();
         ContainerBox parent;
-        
+
+        long contentSize = 0;
+
         public ContainerBox getParent() {
             return parent;
         }
@@ -311,7 +324,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
 
         private InterleaveChunkMdat(Movie movie) {
-            
+
             tracks = movie.getTracks();
             Map<Track, long[]> chunks = new HashMap<Track, long[]>();
             for (Track track : movie.getTracks()) {
@@ -329,27 +342,9 @@ public class DefaultMp4Builder implements Mp4Builder {
 
                     for (int j = l2i(firstSampleOfChunk); j < firstSampleOfChunk + chunkSizes[i]; j++) {
 
-                        Sample s = track.getSamples().get(j);
-                        Sample last = samples.peekLast();
-                        if (s instanceof ByteArraySampleImpl && last instanceof ByteArraySampleImpl) {
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            try {
-                                baos.write(((ByteArraySampleImpl) last).data);
-                                baos.write(((ByteArraySampleImpl) s).data);
-                                ((ByteArraySampleImpl) last).data = baos.toByteArray();
-                            } catch (IOException e) {
-                                throw new RuntimeException("Should not happen. Even though ... ask sebastian 2534587736", e);
-                            }
-                        } else if (s instanceof FileChannelSampleImpl && last instanceof FileChannelSampleImpl) {
-                            FileChannelSampleImpl l = (FileChannelSampleImpl) last;
-                            if ((l.fileChannel == ((FileChannelSampleImpl) s).fileChannel) && (l.offset + l.size == ((FileChannelSampleImpl) s).offset)) {
-                                l.size += s.getSize();
-                            } else {
-                                samples.add(s);
-                            }
-                        } else {
-                            samples.add(s);
-                        }
+                        Sample s = DefaultMp4Builder.this.track2Sample.get(track).get(j);
+                        contentSize += s.getBytes().limit();
+                        samples.add((ByteBuffer) s.getBytes().rewind());
                     }
 
                 }
@@ -379,12 +374,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
 
         public long getSize() {
-            long size = 16;
-            for (Sample sample : samples) {
-                size += sample.getSize();
-            }
-            return size;
-            
+            return 16 + contentSize;
         }
 
         private boolean isSmallBox(long contentSize) {
@@ -406,18 +396,23 @@ public class DefaultMp4Builder implements Mp4Builder {
             } else {
                 IsoTypeWriter.writeUInt64(bb, size);
             }
-            
-            for (Sample sample : samples) {
-                if (sample instanceof ByteArraySampleImpl) {
-                    writableByteChannel.write(ByteBuffer.wrap(((ByteArraySampleImpl) sample).data));
-                } else if (sample instanceof FileChannelSampleImpl ) {
-                    ((FileChannelSampleImpl) sample).fileChannel.transferTo(
-                            ((FileChannelSampleImpl) sample).offset, 
-                            ((FileChannelSampleImpl) sample).size,
-                            writableByteChannel);
-                    
-                } else {
-                    throw new RuntimeException("Don't know that kind of sample: " + sample.getClass().getSimpleName());
+            bb.rewind();
+            writableByteChannel.write(bb);
+            if (writableByteChannel instanceof GatheringByteChannel) {
+                long bytesWritten = 0;
+                for (ByteBuffer buffer : samples) {
+                    buffer = buffer;
+                }
+                ByteBuffer sampleArray[] = samples.toArray(new ByteBuffer[samples.size()]);
+                do {
+                    bytesWritten += ((GatheringByteChannel) writableByteChannel)
+                            .write(sampleArray);
+                } while (bytesWritten < contentSize);
+                System.err.println(bytesWritten);
+            } else {
+                for (ByteBuffer sample : samples) {
+                    sample.rewind();
+                    writableByteChannel.write(sample);
                 }
             }
         }
@@ -431,7 +426,7 @@ public class DefaultMp4Builder implements Mp4Builder {
      * @param movie
      * @return
      */
-    static long[] getChunkSizes(Track track, Movie movie) {
+    long[] getChunkSizes(Track track, Movie movie) {
         Track referenceTrack = null;
         long[] referenceChunkStarts = null;
         long referenceSampleCount = 0;
@@ -440,7 +435,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             if (test.getSyncSamples() != null && test.getSyncSamples().length > 0) {
                 referenceTrack = test;
                 referenceChunkStarts = test.getSyncSamples();
-                referenceSampleCount = test.getSamples().size();
+                referenceSampleCount = DefaultMp4Builder.this.track2Sample.get(test).size();
                 chunkSizes = new long[referenceTrack.getSyncSamples().length];
             }
 
@@ -450,7 +445,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             referenceSampleCount = referenceTrack.getSamples().size();
             int chunkCount = (int) (Math.ceil(getDuration(referenceTrack) / referenceTrack.getTrackMetaData().getTimescale()) / 2);
             referenceChunkStarts = new long[chunkCount];
-            long chunkSize = referenceTrack.getSamples().size() / chunkCount;
+            long chunkSize = DefaultMp4Builder.this.track2Sample.get(referenceTrack).size() / chunkCount;
             for (int i = 0; i < referenceChunkStarts.length; i++) {
                 referenceChunkStarts[i] = i * chunkSize;
 
@@ -460,7 +455,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         }
 
 
-        long sc = track.getSamples().size();
+        long sc = DefaultMp4Builder.this.track2Sample.get(track).size();
         // Since the number of sample differs per track enormously 25 fps vs Audio for example
         // we calculate the stretch. Stretch is the number of samples in current track that
         // are needed for the time one sample in reference track is presented.
@@ -477,7 +472,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             chunkSizes[i] = end - start;
             // The Stretch makes sure that there are as much audio and video chunks!
         }
-        assert track.getSamples().size() == sum(chunkSizes) : "The number of samples and the sum of all chunk lengths must be equal";
+        assert DefaultMp4Builder.this.track2Sample.get(track).size() == sum(chunkSizes) : "The number of samples and the sum of all chunk lengths must be equal";
         return chunkSizes;
 
 

@@ -22,7 +22,7 @@ public class ChannelHelper {
             ByteBuffer buf = ByteBuffer.allocate(l2i(size));
             readFully(channel, buf, buf.remaining());
             buf.rewind();
-            assert buf.capacity() == size;
+            assert buf.limit() == size;
 
             return buf;
         }

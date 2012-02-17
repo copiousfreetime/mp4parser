@@ -22,7 +22,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
     public IsoFile build(Movie movie) throws IOException {
         LOG.info("Creating movie " + movie);
-        IsoFile isoFile = new IsoFile(null);
+        IsoFile isoFile = new IsoFile();
         List<String> minorBrands = new LinkedList<String>();
         minorBrands.add("isom");
         minorBrands.add("iso2");

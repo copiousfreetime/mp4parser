@@ -10,6 +10,7 @@ import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
 
 import java.io.*;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,10 +38,13 @@ public class AppendExample {
         }
 
         IsoFile out = new DefaultMp4Builder().build(video);
-        FileOutputStream fos = new FileOutputStream(new File(String.format("output.mp4")));
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
-        out.getBox(new IsoOutputStream(bos));
-        bos.close();
+        RandomAccessFile randomAccessFile = new RandomAccessFile(String.format("output.mp4"), "rw");
+        randomAccessFile.setLength(out.getSize());
+        FileChannel fc = randomAccessFile.getChannel();
+        fc.position(0);
+        out.getBox(fc);
+        fc.close();
+        randomAccessFile.close();
     }
 
 

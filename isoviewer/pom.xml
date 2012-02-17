@@ -81,7 +81,7 @@
     <dependencies>
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
-            <artifactId>isoparser</artifactId>
+            <artifactId>isoparser-nio</artifactId>
             <version>1.0-beta-6-SNAPSHOT</version>
         </dependency>
         <dependency>

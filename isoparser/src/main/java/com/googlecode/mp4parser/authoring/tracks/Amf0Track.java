@@ -9,6 +9,7 @@ import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
@@ -39,7 +40,7 @@ public class Amf0Track extends AbstractTrack  {
     public List<ByteArraySampleImpl> getSamples() {
         LinkedList<ByteArraySampleImpl> samples = new LinkedList<ByteArraySampleImpl>();
         for (byte[] bytes : rawSamples.values()) {
-            samples.add(new ByteArraySampleImpl(bytes));
+            samples.add(new ByteArraySampleImpl(ByteBuffer.wrap(bytes)));
         }
         return samples;
     }

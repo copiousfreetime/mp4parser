@@ -64,7 +64,7 @@ public class JHexEditorHEX extends JComponent implements MouseListener, KeyListe
 
     public void paint(Graphics g) {
         debug("paint(" + g + ")");
-        debug("cursor=" + he.cursor + " buff.length=" + he.buff.capacity());
+        debug("cursor=" + he.cursor + " buff.length=" + he.buff.limit());
         Dimension d = getMinimumSize();
         g.setColor(Color.white);
         g.fillRect(0, 0, d.width, d.height);
@@ -74,7 +74,7 @@ public class JHexEditorHEX extends JComponent implements MouseListener, KeyListe
 
         int ini = he.getInicio() * 16;
         long fin = ini + (he.getNumberOfVisibleLines() * 16);
-        if (fin > he.buff.capacity()) fin = he.buff.capacity();
+        if (fin > he.buff.limit()) fin = he.buff.limit();
 
         //datos hex
         int x = 0;

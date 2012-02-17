@@ -86,6 +86,10 @@ public final class Walk {
                         !Box.class.isAssignableFrom(propertyDescriptor.getReadMethod().getReturnType())) {
                     propertyDescriptor.getReadMethod().invoke(b, (Object[]) null);
                 }
+                
+            }
+            if (b instanceof AbstractBox) {
+                assert ((AbstractBox) b).isParsed();
             }
 
         }

@@ -37,16 +37,24 @@ public class IsoFile extends AbstractContainerBox {
     protected BoxParser boxParser = new PropertyBoxParserImpl();
     ReadableByteChannel byteChannel;
 
-    public IsoFile(ReadableByteChannel byteChannel) {
+    public IsoFile() {
+        super("");
+    }
+
+    public IsoFile(ReadableByteChannel byteChannel) throws IOException {
         super("");
         this.byteChannel = byteChannel;
         boxParser = createBoxParser();
-
+        parse();
     }
 
-    public IsoFile(ReadableByteChannel byteChannel, BoxParser boxParser) {
-        this(byteChannel);
+    public IsoFile(ReadableByteChannel byteChannel, BoxParser boxParser) throws IOException {
+        super("");
+        this.byteChannel = byteChannel;
         this.boxParser = boxParser;
+        parse();
+
+
     }
 
     protected BoxParser createBoxParser() {

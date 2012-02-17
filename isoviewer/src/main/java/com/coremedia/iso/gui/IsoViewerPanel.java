@@ -69,7 +69,7 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
 
 
     public void createLayout()  {
-        IsoFile dummy = new IsoFile(null);
+        IsoFile dummy = new IsoFile();
         tree = new BoxJTree();
         tree.setModel(new IsoFileTreeModel(dummy));
         tree.addTreeSelectionListener(new TreeSelectionListener() {

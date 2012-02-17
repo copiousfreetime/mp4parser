@@ -72,7 +72,7 @@ public final class MediaDataBox implements Box {
     }
 
     public long getSize() {
-        return header.capacity() + content.capacity();
+        return header.limit() + content.limit();
     }
 
     public void parse(ReadableByteChannel byteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {

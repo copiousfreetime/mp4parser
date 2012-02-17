@@ -32,7 +32,7 @@ public class UnknownBox extends AbstractBox {
 
     @Override
     protected long getContentSize() {
-        return data.capacity();
+        return data.limit();
     }
 
     @Override

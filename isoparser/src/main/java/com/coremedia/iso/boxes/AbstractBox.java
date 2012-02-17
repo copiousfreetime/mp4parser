@@ -37,7 +37,7 @@ public abstract class AbstractBox implements Box {
     private ByteBuffer content;
 
     public long getSize() {
-        return (content == null ? getContentSize() : content.capacity()) + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.capacity());
+        return (content == null ? getContentSize() : content.limit()) + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.limit());
     }
 
     public boolean isParsed() {
@@ -47,7 +47,7 @@ public abstract class AbstractBox implements Box {
     protected long getHeaderSize() {
         return 4 + // size
                 4 + // type
-                ((content != null ? content.capacity() :
+                ((content != null ? content.limit() :
                         getContentSize()) >= ((1L << 32) - 8) ? 8 : 0) + // 32bit - 8 byte size and type
                 (UserBox.TYPE.equals(getType()) ? 16 : 0);
     }
@@ -143,7 +143,7 @@ public abstract class AbstractBox implements Box {
     }
 
     private boolean verify(ByteBuffer content) {
-        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize() + (deadBytes != null ? deadBytes.capacity() : 0)));
+        ByteBuffer bb = ByteBuffer.allocate(l2i(getContentSize() + (deadBytes != null ? deadBytes.limit() : 0)));
         try {
             getContent(bb);
             if (deadBytes != null) {
@@ -211,7 +211,7 @@ public abstract class AbstractBox implements Box {
     }
 
     private boolean isSmallBox() {
-        return (content == null ? (getContentSize() + (deadBytes != null ? deadBytes.capacity() : 0) + 8) : content.capacity()) < 1L << 32;
+        return (content == null ? (getContentSize() + (deadBytes != null ? deadBytes.limit() : 0) + 8) : content.limit()) < 1L << 32;
     }
 
     public void getBox(WritableByteChannel os) throws IOException {

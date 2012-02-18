@@ -14,6 +14,7 @@ import com.googlecode.mp4parser.authoring.Track;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -255,7 +256,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         SampleSizeBox stsz = new SampleSizeBox();
         List<? extends Sample> samples = track2Sample.get(track);
-        long[] sizes = new long[samples .size()];
+        long[] sizes = new long[samples.size()];
         for (int i = 0; i < sizes.length; i++) {
             sizes[i] = samples.get(i).getSize();
         }
@@ -307,7 +308,7 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     private class InterleaveChunkMdat implements Box {
         List<Track> tracks;
-        ArrayList<ByteBuffer> samples = new ArrayList<ByteBuffer>();
+        List<ByteBuffer> samples = new LinkedList<ByteBuffer>();
         ContainerBox parent;
 
         long contentSize = 0;
@@ -400,10 +401,22 @@ public class DefaultMp4Builder implements Mp4Builder {
             writableByteChannel.write(bb);
             if (writableByteChannel instanceof GatheringByteChannel) {
                 long bytesWritten = 0;
+                ArrayList<ByteBuffer> nuSamples = new ArrayList<ByteBuffer>();
                 for (ByteBuffer buffer : samples) {
-                    buffer = buffer;
+                    int lastIndex = nuSamples.size() - 1;
+
+                    if (lastIndex >= 0 && buffer.array() == nuSamples.get(lastIndex).array() &&
+                            nuSamples.get(lastIndex).arrayOffset() + nuSamples.get(lastIndex).limit() == buffer.arrayOffset()) {
+                        ByteBuffer old = nuSamples.remove(lastIndex);
+                        ByteBuffer nu = ByteBuffer.wrap(buffer.array(), old.arrayOffset(), old.limit() + buffer.limit()).slice();
+                        // We need to slice here since wrap([], offset, length) just sets position and not the arrayOffset.
+                        nuSamples.add(nu);
+                    } else {
+                        nuSamples.add(buffer);
+                    }
+
                 }
-                ByteBuffer sampleArray[] = samples.toArray(new ByteBuffer[samples.size()]);
+                ByteBuffer sampleArray[] = nuSamples.toArray(new ByteBuffer[nuSamples.size()]);
                 do {
                     bytesWritten += ((GatheringByteChannel) writableByteChannel)
                             .write(sampleArray);
@@ -464,7 +477,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             long start = Math.round(stretch * ((referenceChunkStarts[i]) - 1));
             long end = 0;
             if (referenceChunkStarts.length == i + 1) {
-                end = Math.round(stretch * (referenceSampleCount - 1));
+                end = Math.round(stretch * (referenceSampleCount));
             } else {
                 end = Math.round(stretch * ((referenceChunkStarts[i + 1] - 1)));
             }

@@ -44,9 +44,9 @@ public class CompositionTimeToSample extends AbstractFullBox {
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
         int numberOfEntries = l2i(IsoTypeReader.readUInt32(content));
-        entries = new ArrayList<Entry>((int) numberOfEntries);
+        entries = new ArrayList<Entry>(numberOfEntries);
         for (int i = 0; i < numberOfEntries; i++) {
-            Entry e = new Entry(l2i(IsoTypeReader.readUInt32(content)), l2i(IsoTypeReader.readUInt32(content)));
+            Entry e = new Entry(l2i(IsoTypeReader.readUInt32(content)), content.getInt());
             entries.add(e);
         }
     }
@@ -58,7 +58,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
 
         for (Entry entry : entries) {
             IsoTypeWriter.writeUInt32(bb, entry.getCount());
-            IsoTypeWriter.writeUInt32(bb, entry.getOffset());
+            bb.putInt(entry.getOffset());
         }
 
     }

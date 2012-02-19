@@ -16,6 +16,7 @@ import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,15 +97,16 @@ public class Mp4ParserPerformance extends Activity {
             }
             a = System.currentTimeMillis();
             tv.append("3");
-            IsoFile out = new DefaultMp4Builder().build(movie);
+            IsoFile mp4 = new DefaultMp4Builder().build(movie);
             Log.v("PERF", "Building took " + (System.currentTimeMillis() - a));
             text += "Building took " + (System.currentTimeMillis() - a) + "\n";
             tv.append("4");
             FileOutputStream fos = new FileOutputStream(new File(sdCard, String.format("output-%f-%f.mp4", startTime, endTime)));
-            BufferedOutputStream bos = new BufferedOutputStream(fos, 1024*1024);
+            FileChannel outFC = fos.getChannel();
             a = System.currentTimeMillis();
-            out.getBox(new IsoOutputStream(bos));
-            bos.close();
+            mp4.getBox(outFC);
+            fos.close();
+            outFC.close();
             tv.append("5");
             Log.v("PERF", "Writing took " + (System.currentTimeMillis() - a));
             text += "Writing took " + (System.currentTimeMillis() - a) + "\n";

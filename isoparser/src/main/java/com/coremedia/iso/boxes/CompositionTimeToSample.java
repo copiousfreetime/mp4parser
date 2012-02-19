@@ -29,7 +29,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 4 + 8 * entries.size();
+        return 8 + 8 * entries.size();
     }
 
     public List<Entry> getEntries() {
@@ -53,7 +53,7 @@ public class CompositionTimeToSample extends AbstractFullBox {
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
-
+        writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, entries.size());
 
         for (Entry entry : entries) {

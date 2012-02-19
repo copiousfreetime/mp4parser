@@ -109,7 +109,7 @@ public abstract class SampleList<E>  extends AbstractList<E> {
     }
 
     private static SampleTableBox getSampleTableBox(TrackBox trackBox) {
-        return (SampleTableBox) IsoFileConvenienceHelper.get(trackBox, "mdia/minf/stbl");
+        return trackBox.getSampleTableBox();
     }
 
 

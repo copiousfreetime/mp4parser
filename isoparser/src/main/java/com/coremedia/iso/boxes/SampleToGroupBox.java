@@ -25,6 +25,7 @@ public class SampleToGroupBox extends AbstractFullBox {
     public static final String TYPE = "sbgp";
     private long groupingType;
     private long entryCount;
+    private long groupingTypeParameter;
     private List<Entry> entries = new ArrayList<Entry>();
 
     public SampleToGroupBox() {
@@ -36,11 +37,43 @@ public class SampleToGroupBox extends AbstractFullBox {
         return 12 + entryCount * 8;
     }
 
+    public long getGroupingTypeParameter() {
+        return groupingTypeParameter;
+    }
+
+    /**
+     * Usage of this parameter requires version == 1. The version must be set manually.
+     */
+    public void setGroupingTypeParameter(long groupingTypeParameter) {
+        this.groupingTypeParameter = groupingTypeParameter;
+    }
+
+    public List<Entry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
+    }
+
+    public long getGroupingType() {
+        return groupingType;
+    }
+
+
+    public void setGroupingType(long groupingType) {
+        this.groupingType = groupingType;
+    }
 
     @Override
     public void _parseDetails(ByteBuffer content) {
         parseVersionAndFlags(content);
         groupingType = IsoTypeReader.readUInt32(content);
+        if (getVersion() == 1) {
+            groupingTypeParameter = IsoTypeReader.readUInt32(content);
+        } else {
+            groupingTypeParameter = -1;
+        }
         entryCount = IsoTypeReader.readUInt32(content);
 
         for (int i = 0; i < entryCount; i++) {
@@ -56,6 +89,9 @@ public class SampleToGroupBox extends AbstractFullBox {
         writeVersionAndFlags(bb);
 
         IsoTypeWriter.writeUInt32(bb, groupingType);
+        if (getVersion() == 1) {
+            IsoTypeWriter.writeUInt32(bb, groupingTypeParameter);
+        }
         IsoTypeWriter.writeUInt32(bb, entryCount);
         for (Entry entry : entries) {
             IsoTypeWriter.writeUInt32(bb, entry.getSampleCount());

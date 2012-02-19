@@ -31,7 +31,7 @@ public class RequiresParseDetailAspect {
     public void before(JoinPoint joinPoint) {
         if (joinPoint.getTarget() instanceof AbstractBox) {
             if (!((AbstractBox) joinPoint.getTarget()).isParsed()) {
-                System.err.println(String.format("parsed detail %s", joinPoint.getTarget().getClass().getSimpleName()));
+                //System.err.println(String.format("parsed detail %s", joinPoint.getTarget().getClass().getSimpleName()));
                 ((AbstractBox) joinPoint.getTarget()).parseDetails();
             }
         } else {

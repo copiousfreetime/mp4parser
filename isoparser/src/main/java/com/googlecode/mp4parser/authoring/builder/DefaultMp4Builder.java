@@ -4,18 +4,13 @@ import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.mdat.ByteArraySampleImpl;
-import com.coremedia.iso.boxes.mdat.FileChannelSampleImpl;
 import com.coremedia.iso.boxes.mdat.Sample;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -402,10 +397,11 @@ public class DefaultMp4Builder implements Mp4Builder {
             if (writableByteChannel instanceof GatheringByteChannel) {
                 long bytesWritten = 0;
                 ArrayList<ByteBuffer> nuSamples = new ArrayList<ByteBuffer>();
+
                 for (ByteBuffer buffer : samples) {
                     int lastIndex = nuSamples.size() - 1;
 
-                    if (lastIndex >= 0 && buffer.array() == nuSamples.get(lastIndex).array() &&
+                    if (buffer.hasArray() && nuSamples.get(lastIndex).hasArray() && lastIndex >= 0 && buffer.array() == nuSamples.get(lastIndex).array() &&
                             nuSamples.get(lastIndex).arrayOffset() + nuSamples.get(lastIndex).limit() == buffer.arrayOffset()) {
                         ByteBuffer old = nuSamples.remove(lastIndex);
                         ByteBuffer nu = ByteBuffer.wrap(buffer.array(), old.arrayOffset(), old.limit() + buffer.limit()).slice();
@@ -417,11 +413,12 @@ public class DefaultMp4Builder implements Mp4Builder {
 
                 }
                 ByteBuffer sampleArray[] = nuSamples.toArray(new ByteBuffer[nuSamples.size()]);
+
                 do {
                     bytesWritten += ((GatheringByteChannel) writableByteChannel)
                             .write(sampleArray);
                 } while (bytesWritten < contentSize);
-                System.err.println(bytesWritten);
+                //System.err.println(bytesWritten);
             } else {
                 for (ByteBuffer sample : samples) {
                     sample.rewind();

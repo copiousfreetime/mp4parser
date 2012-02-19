@@ -18,6 +18,7 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
+import sun.util.LocaleServiceProviderPool;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -27,12 +28,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 
 /**
  * Abstract base class suitable for most boxes acting purely as container for other boxes.
  */
 public abstract class AbstractContainerBox extends AbstractBox implements ContainerBox {
+    private static Logger LOG = Logger.getLogger(AbstractContainerBox.class.getName());
+
     protected List<Box> boxes = new LinkedList<Box>();
     protected BoxParser boxParser;
 
@@ -143,7 +147,7 @@ public abstract class AbstractContainerBox extends AbstractBox implements Contai
 
             if (content.remaining() != 0) {
                 deadBytes = content.slice();
-                System.err.println("WARNING: Some sizes are wrong");
+                LOG.warning("Some sizes are wrong");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

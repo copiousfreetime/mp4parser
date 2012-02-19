@@ -7,10 +7,8 @@ import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.coremedia.iso.boxes.mdat.ByteArraySampleList;
 import com.coremedia.iso.boxes.mdat.Sample;
-import com.coremedia.iso.boxes.mdat.SegmentSampleList;
 import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
 
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,9 +30,9 @@ public class Mp4TrackImpl extends AbstractTrack {
 
 
     public Mp4TrackImpl(TrackBox trackBox, ReadableByteChannel source) {
-        if (source instanceof FileChannel) {
-            samples = new SegmentSampleList(trackBox, (FileChannel) source);
-        } else {
+        //if (source instanceof FileChannel) {
+          //  samples = new SegmentSampleList(trackBox, (FileChannel) source);
+        /*} else*/ {
             samples = new ByteArraySampleList(trackBox);
         }
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
@@ -120,10 +118,10 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setTrackId(tkhd.getTrackId());
         trackMetaData.setCreationTime(DateHelper.convert(mdhd.getCreationTime()));
         trackMetaData.setLanguage(mdhd.getLanguage());
-        System.err.println(mdhd.getModificationTime());
+/*        System.err.println(mdhd.getModificationTime());
         System.err.println(DateHelper.convert(mdhd.getModificationTime()));
         System.err.println(DateHelper.convert(DateHelper.convert(mdhd.getModificationTime())));
-        System.err.println(DateHelper.convert(DateHelper.convert(DateHelper.convert(mdhd.getModificationTime()))));
+        System.err.println(DateHelper.convert(DateHelper.convert(DateHelper.convert(mdhd.getModificationTime()))));*/
 
         trackMetaData.setModificationTime(DateHelper.convert(mdhd.getModificationTime()));
         trackMetaData.setTimescale(mdhd.getTimescale());

@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.ChannelHelper;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
+import sun.util.LocaleServiceProviderPool;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -27,12 +28,14 @@ import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Abstract base class for a full iso box only containing ither boxes.
  */
 public abstract class FullContainerBox extends AbstractFullBox implements ContainerBox {
     protected List<Box> boxes = new LinkedList<Box>();
+    private static Logger LOG = Logger.getLogger(FullContainerBox.class.getName());
     BoxParser boxParser;
 
     public void setBoxes(List<Box> boxes) {
@@ -105,7 +108,7 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
 
             if (content.remaining() != 0) {
                 deadBytes = content.slice();
-                System.err.println("WARNING: Some sizes are wrong");
+                LOG.severe("Some sizes are wrong");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -134,7 +137,7 @@ public abstract class FullContainerBox extends AbstractFullBox implements Contai
     protected final void writeChildBoxes(ByteBuffer bb) throws IOException {
         WritableByteChannel wbc = new ByteBufferByteChannel(bb);
         for (Box box : boxes) {
-               box.getBox(wbc);
+            box.getBox(wbc);
         }
     }
 

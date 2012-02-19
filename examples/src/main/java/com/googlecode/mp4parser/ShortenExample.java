@@ -12,6 +12,7 @@ import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +23,9 @@ import java.util.List;
 public class ShortenExample {
     public static void main(String[] args) throws IOException {
         //Movie movie = new MovieCreator().build(new RandomAccessFile("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov", "r").getChannel());
-        Movie movie = new MovieCreator().build(Channels.newChannel(new BufferedInputStream(new FileInputStream("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov"))));
+        ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov")));
+        Movie movie = new MovieCreator().build(in);
+        in.close();
 
         List<Track> tracks = movie.getTracks();
         movie.setTracks(new LinkedList<Track>());
@@ -79,13 +82,17 @@ public class ShortenExample {
             }
             movie.addTrack(new CroppedTrack(track, startSample, endSample));
         }
-
+        long start1 = System.currentTimeMillis();
         IsoFile out = new DefaultMp4Builder().build(movie);
+        long start2 = System.currentTimeMillis();
         FileOutputStream fos = new FileOutputStream(String.format("output-%f-%f.mp4", startTime, endTime));
         FileChannel fc = fos.getChannel();
         out.getBox(fc);
         fc.close();
         fos.close();
+        long start3 = System.currentTimeMillis();
+        System.err.println("Building IsoFile took : " + (start2 - start1) + "ms");
+        System.err.println("Writing IsoFile took : " + (start3 - start2) + "ms");
     }
 
     private static double correctTimeToNextSyncSample(Track track, double cutHere) {

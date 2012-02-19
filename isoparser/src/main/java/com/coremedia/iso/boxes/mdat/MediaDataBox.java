@@ -75,12 +75,16 @@ public final class MediaDataBox implements Box {
         return header.limit() + content.limit();
     }
 
-    public void parse(ReadableByteChannel byteChannel, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+    public void parse(ReadableByteChannel in, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
         this.header = header;
-        if (contentSize > Integer.MAX_VALUE) {
-            throw new RuntimeException("This 'mdat' does not support large  boxes");
+        if (in instanceof FileChannel && contentSize > 1024 * 1024) {
+            // It's quite expensive to map a file into the memory. Just do it when the box is larger than a MB.
+            content = ((FileChannel) in).map(FileChannel.MapMode.READ_ONLY, ((FileChannel) in).position(), contentSize);
+            ((FileChannel) in).position(((FileChannel) in).position() + contentSize);
+        } else {
+            content = ChannelHelper.readFully(in, l2i(contentSize));
         }
-        content = ChannelHelper.readFully(byteChannel, l2i(contentSize));
+
 
     }
 

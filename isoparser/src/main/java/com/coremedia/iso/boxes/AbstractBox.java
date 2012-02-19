@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.logging.Logger;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
 
@@ -35,6 +36,7 @@ import static com.coremedia.iso.boxes.CastUtils.l2i;
  */
 public abstract class AbstractBox implements Box {
     private ByteBuffer content;
+    private static Logger LOG = Logger.getLogger(AbstractBox.class.getName());
 
     public long getSize() {
         return (content == null ? getContentSize() : content.limit()) + getHeaderSize() + (deadBytes == null ? 0 : deadBytes.limit());
@@ -168,7 +170,8 @@ public abstract class AbstractBox implements Box {
             if (v1 != v2) {
                 if ((v1 != v1) && (v2 != v2))    // For float and double
                     continue;
-                System.err.println("buffers differ at " + i + "/" + j);
+                LOG.severe("Some sizes are wrong");
+                LOG.severe("buffers differ at " + i + "/" + j);
                 return false;
             }
         }

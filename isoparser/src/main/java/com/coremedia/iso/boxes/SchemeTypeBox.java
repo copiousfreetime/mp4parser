@@ -66,7 +66,7 @@ public class SchemeTypeBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        return 8 + (((getFlags() & 1) == 1) ? Utf8.utf8StringLengthInBytes(schemeUri) + 1 : 0);
+        return 12 + (((getFlags() & 1) == 1) ? Utf8.utf8StringLengthInBytes(schemeUri) + 1 : 0);
     }
 
     @Override

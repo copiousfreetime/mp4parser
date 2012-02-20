@@ -1,6 +1,7 @@
 package com.googlecode.mp4parser.authoring.builder;
 
 import com.coremedia.iso.BoxParser;
+import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.*;
@@ -414,10 +415,14 @@ public class DefaultMp4Builder implements Mp4Builder {
                 }
                 ByteBuffer sampleArray[] = nuSamples.toArray(new ByteBuffer[nuSamples.size()]);
 
+                for (ByteBuffer byteBuffer : sampleArray) {
+                    ChannelHelper.writeFully(writableByteChannel, byteBuffer);
+                }
+                     /*
                 do {
                     bytesWritten += ((GatheringByteChannel) writableByteChannel)
                             .write(sampleArray);
-                } while (bytesWritten < contentSize);
+                } while (bytesWritten < contentSize);*/
                 //System.err.println(bytesWritten);
             } else {
                 for (ByteBuffer sample : samples) {

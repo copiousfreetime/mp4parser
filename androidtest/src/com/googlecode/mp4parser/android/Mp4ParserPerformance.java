@@ -7,7 +7,6 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.TextView;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
@@ -16,7 +15,9 @@ import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,9 +31,32 @@ public class Mp4ParserPerformance extends Activity {
         setContentView(R.layout.main);
         TextView tv = (TextView) findViewById(R.id.text);
         String text = "";
+
+        File sdCard = Environment.getExternalStorageDirectory();
+        /*    try {
+        FileChannel fc = new RandomAccessFile(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov").getAbsolutePath(), "r").getChannel();
+        ArrayList<ByteBuffer> bb = new ArrayList<ByteBuffer>(200);
+        for (int i = 0; i < 200; i++) {
+            bb.add(fc.map(FileChannel.MapMode.READ_ONLY, i * 20000, (i + 1) * 20000));
+        }
+        FileOutputStream fos = new FileOutputStream(new File(sdCard, String.format("output.mp4")));
+        FileChannel outFC = fos.getChannel();
+        outFC.write(bb.toArray(new ByteBuffer[200]));
+        fos.close();
+        outFC.close();
+        tv.append("5");
+
+    } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+        */
+
+
         try {
-            Debug.startMethodTracing("mp4");
-            File sdCard = Environment.getExternalStorageDirectory();
+            //Debug.startMethodTracing("mp4");
+
             long a = System.currentTimeMillis();
             tv.append("1");
 //            Movie movie = new MovieCreator().build(new RandomAccessFileIsoBufferWrapperImpl(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov")));

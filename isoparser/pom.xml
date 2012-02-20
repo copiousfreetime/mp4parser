@@ -112,6 +112,9 @@
                     </dependency>
 
                 </dependencies>
+                <configuration>
+                    <source>1.5</source>
+                </configuration>
             </plugin>
 
             <plugin>

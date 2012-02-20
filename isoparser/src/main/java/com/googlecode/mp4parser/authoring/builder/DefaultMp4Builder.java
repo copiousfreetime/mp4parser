@@ -413,16 +413,24 @@ public class DefaultMp4Builder implements Mp4Builder {
                     }
 
                 }
-                ByteBuffer sampleArray[] = nuSamples.toArray(new ByteBuffer[nuSamples.size()]);
+                // ByteBuffer sampleArray[] = nuSamples.toArray(new ByteBuffer[nuSamples.size()]);
 
-                for (ByteBuffer byteBuffer : sampleArray) {
+                /*   for (ByteBuffer byteBuffer : sampleArray) {
                     ChannelHelper.writeFully(writableByteChannel, byteBuffer);
+                }*/
+
+                int STEPSIZE = 1024;
+                for (int i = 0; i < Math.ceil((double) nuSamples.size() / STEPSIZE); i++) {
+                    ByteBuffer[] sampleArray = nuSamples.subList(
+                            i * STEPSIZE, // start
+                            (i + 1) * STEPSIZE < nuSamples.size() ? (i + 1) * STEPSIZE : nuSamples.size() // end
+                    ).toArray(new ByteBuffer[0]);
+                   // ((i + 1) * STEPSIZE < nuSamples.size() ? (i + 1) * STEPSIZE : nuSamples.size()) - (i * STEPSIZE)
+                    do {
+                        bytesWritten += ((GatheringByteChannel) writableByteChannel)
+                                .write(sampleArray);
+                    } while (sampleArray[sampleArray.length - 1].remaining() > 0);
                 }
-                     /*
-                do {
-                    bytesWritten += ((GatheringByteChannel) writableByteChannel)
-                            .write(sampleArray);
-                } while (bytesWritten < contentSize);*/
                 //System.err.println(bytesWritten);
             } else {
                 for (ByteBuffer sample : samples) {

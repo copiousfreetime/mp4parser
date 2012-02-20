@@ -33,15 +33,19 @@ public class Mp4ParserPerformance extends Activity {
         String text = "";
 
         File sdCard = Environment.getExternalStorageDirectory();
-        /*    try {
+  /*        try {
         FileChannel fc = new RandomAccessFile(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov").getAbsolutePath(), "r").getChannel();
-        ArrayList<ByteBuffer> bb = new ArrayList<ByteBuffer>(200);
-        for (int i = 0; i < 200; i++) {
-            bb.add(fc.map(FileChannel.MapMode.READ_ONLY, i * 20000, (i + 1) * 20000));
+        ByteBuffer content = fc.map(FileChannel.MapMode.READ_ONLY, 0, 20000000) ;
+        ArrayList<ByteBuffer> bb = new ArrayList<ByteBuffer>(1200);
+        for (int i = 0; i < 1200; i++) {
+            content.position(i*1000);
+            ByteBuffer part = content.slice();
+            part.limit(1000);
+            bb.add(part );
         }
         FileOutputStream fos = new FileOutputStream(new File(sdCard, String.format("output.mp4")));
         FileChannel outFC = fos.getChannel();
-        outFC.write(bb.toArray(new ByteBuffer[200]));
+        outFC.write(bb.toArray(new ByteBuffer[800]));
         fos.close();
         outFC.close();
         tv.append("5");
@@ -50,8 +54,8 @@ public class Mp4ParserPerformance extends Activity {
         throw new RuntimeException(e);
     } catch (IOException e) {
         throw new RuntimeException(e);
-    }
-        */
+    }   */
+
 
 
         try {

@@ -5,17 +5,11 @@ import java.util.*;
 /**
  * A SortedSet that contains just one value.
  */
-public class DummySortedMap<K, V> implements SortedMap<K, V> {
-    SortedSet<K> keys = new TreeSet<K>() {
-    };
+public class DummyMap<K, V> implements Map<K, V> {
+    HashSet<K> keys = new HashSet<K>();
     V value;
 
-    public DummySortedMap(SortedSet<K> keys, V value) {
-        this.keys = keys;
-        this.value = value;
-    }
-
-    public DummySortedMap(V value) {
+    public DummyMap(V value) {
         this.value = value;
     }
 
@@ -23,24 +17,9 @@ public class DummySortedMap<K, V> implements SortedMap<K, V> {
         return null;  // I don't have any
     }
 
-    public SortedMap<K, V> subMap(K fromKey, K toKey) {
-        return new DummySortedMap<K, V>(keys.subSet(fromKey, toKey), value);
-    }
-
-    public SortedMap<K, V> headMap(K toKey) {
-        return new DummySortedMap<K, V>(keys.headSet(toKey), value);
-    }
-
-    public SortedMap<K, V> tailMap(K fromKey) {
-        return new DummySortedMap<K, V>(keys.tailSet(fromKey), value);
-    }
-
-    public K firstKey() {
-        return keys.first();
-    }
-
-    public K lastKey() {
-        return keys.last();
+    public void addKeys(K[] keys) {
+        Collections.addAll(this.keys, keys);
+        
     }
 
     public int size() {

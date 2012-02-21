@@ -230,7 +230,7 @@ public class EditListBox extends AbstractFullBox {
                 IsoTypeWriter.writeUInt64(bb, mediaTime);
             } else {
                 IsoTypeWriter.writeUInt32(bb, l2i(segmentDuration));
-                IsoTypeWriter.writeUInt32(bb, l2i(mediaTime));
+                bb.putInt(l2i(mediaTime));
             }
             IsoTypeWriter.writeFixedPont1616(bb, mediaRate);
         }

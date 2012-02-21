@@ -21,7 +21,7 @@ public class SampleListModel extends AbstractListModel {
     }
 
     public ByteBuffer getElementAt(int index) {
-        return ByteBuffer.wrap(list.get(index).getBytes());
+        return list.get(index).getBytes();
 
     }
 

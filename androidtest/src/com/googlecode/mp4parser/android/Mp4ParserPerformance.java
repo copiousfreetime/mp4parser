@@ -33,29 +33,28 @@ public class Mp4ParserPerformance extends Activity {
         String text = "";
 
         File sdCard = Environment.getExternalStorageDirectory();
-  /*        try {
-        FileChannel fc = new RandomAccessFile(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov").getAbsolutePath(), "r").getChannel();
-        ByteBuffer content = fc.map(FileChannel.MapMode.READ_ONLY, 0, 20000000) ;
-        ArrayList<ByteBuffer> bb = new ArrayList<ByteBuffer>(1200);
-        for (int i = 0; i < 1200; i++) {
-            content.position(i*1000);
-            ByteBuffer part = content.slice();
-            part.limit(1000);
-            bb.add(part );
-        }
-        FileOutputStream fos = new FileOutputStream(new File(sdCard, String.format("output.mp4")));
-        FileChannel outFC = fos.getChannel();
-        outFC.write(bb.toArray(new ByteBuffer[800]));
-        fos.close();
-        outFC.close();
-        tv.append("5");
+        /*        try {
+         FileChannel fc = new RandomAccessFile(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov").getAbsolutePath(), "r").getChannel();
+         ByteBuffer content = fc.map(FileChannel.MapMode.READ_ONLY, 0, 20000000) ;
+         ArrayList<ByteBuffer> bb = new ArrayList<ByteBuffer>(1200);
+         for (int i = 0; i < 1200; i++) {
+             content.position(i*1000);
+             ByteBuffer part = content.slice();
+             part.limit(1000);
+             bb.add(part );
+         }
+         FileOutputStream fos = new FileOutputStream(new File(sdCard, String.format("output.mp4")));
+         FileChannel outFC = fos.getChannel();
+         outFC.write(bb.toArray(new ByteBuffer[800]));
+         fos.close();
+         outFC.close();
+         tv.append("5");
 
-    } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    }   */
-
+     } catch (FileNotFoundException e) {
+         throw new RuntimeException(e);
+     } catch (IOException e) {
+         throw new RuntimeException(e);
+     }   */
 
 
         try {
@@ -133,11 +132,14 @@ public class Mp4ParserPerformance extends Activity {
             FileChannel outFC = fos.getChannel();
             a = System.currentTimeMillis();
             mp4.getBox(outFC);
+            long fileSize = outFC.size();
             fos.close();
             outFC.close();
             tv.append("5");
-            Log.v("PERF", "Writing took " + (System.currentTimeMillis() - a));
-            text += "Writing took " + (System.currentTimeMillis() - a) + "\n";
+            long systemEndTime = System.currentTimeMillis();
+            Log.v("PERF", "Writing took " + (systemEndTime - a));
+            text += "Writing took " + (systemEndTime - a) + "\n";
+            text += "Writing speed " + (fileSize / (systemEndTime - a) / 1000) + " MB/s\n";
             tv.setText(text);
             Debug.stopMethodTracing();
         } catch (IOException e) {

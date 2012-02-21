@@ -24,6 +24,7 @@ public class CroppedTrack extends AbstractTrack {
     Track origTrack;
     private int fromSample;
     private int toSample;
+    private long[] syncSampleArray;
 
     public CroppedTrack(Track origTrack, long fromSample, long toSample) {
         this.origTrack = origTrack;
@@ -87,22 +88,26 @@ public class CroppedTrack extends AbstractTrack {
         }
     }
 
-    public long[] getSyncSamples() {
-        if (origTrack.getSyncSamples() != null && origTrack.getSyncSamples().length > 0) {
-            List<Long> syncSamples = new LinkedList<Long>();
-            for (long l : origTrack.getSyncSamples()) {
-                if (l >= fromSample && l < toSample) {
-                    syncSamples.add(l - fromSample);
+    synchronized public long[] getSyncSamples() {
+        if (this.syncSampleArray == null) {
+            if (origTrack.getSyncSamples() != null && origTrack.getSyncSamples().length > 0) {
+                List<Long> syncSamples = new LinkedList<Long>();
+                for (long l : origTrack.getSyncSamples()) {
+                    if (l >= fromSample && l < toSample) {
+                        syncSamples.add(l - fromSample);
+                    }
                 }
-            }
-            long[] syncSampleArray = new long[syncSamples.size()];
-            for (int i = 0; i < syncSampleArray.length; i++) {
-                syncSampleArray[i] = syncSamples.get(i);
+                syncSampleArray = new long[syncSamples.size()];
+                for (int i = 0; i < syncSampleArray.length; i++) {
+                    syncSampleArray[i] = syncSamples.get(i);
 
+                }
+                return syncSampleArray;
+            } else {
+                return null;
             }
-            return syncSampleArray;
         } else {
-            return null;
+            return this.syncSampleArray;
         }
     }
 

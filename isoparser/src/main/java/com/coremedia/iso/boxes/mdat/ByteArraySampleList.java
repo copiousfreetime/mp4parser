@@ -5,6 +5,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.TrackBox;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class ByteArraySampleList extends SampleList<ByteArraySampleImpl> {
     IsoFile isoFile;
     HashMap<MediaDataBox, Long> mdatStartCache = new HashMap<MediaDataBox, Long>();
     HashMap<MediaDataBox, Long> mdatEndCache = new HashMap<MediaDataBox, Long>();
+    ArrayList<MediaDataBox> mdats = new ArrayList<MediaDataBox>(1);
 
 
     public ByteArraySampleList(TrackBox trackBox) {
@@ -31,6 +33,7 @@ public class ByteArraySampleList extends SampleList<ByteArraySampleImpl> {
                     long contentOffset = currentOffset + ((MediaDataBox) b).getHeader().limit();
                     mdatStartCache.put((MediaDataBox) b, contentOffset);
                     mdatEndCache.put((MediaDataBox) b, contentOffset + currentSize);
+                    mdats.add((MediaDataBox) b);
                 } else {
                     throw new RuntimeException("Sample need to be in mdats and mdats need to be instanceof MediaDataBox");
                 }
@@ -46,8 +49,9 @@ public class ByteArraySampleList extends SampleList<ByteArraySampleImpl> {
     public ByteArraySampleImpl get(int index) {
         // it is a two stage lookup: from index to offset to size
         Long offset = getOffsetKeys().get(index);
-        int sampleSize = l2i(offsets2Sizes.get(offset));
-        for (MediaDataBox mediaDataBox : mdatStartCache.keySet()) {
+        int sampleSize = l2i(offsets2Sizes.get(offset));  
+
+        for (MediaDataBox mediaDataBox : mdats) {
             long start = mdatStartCache.get(mediaDataBox);
             long end = mdatEndCache.get(mediaDataBox);
             if ((start <= offset) && (offset + sampleSize <= end)) {

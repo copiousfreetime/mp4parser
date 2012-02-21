@@ -9,9 +9,11 @@ import com.coremedia.iso.boxes.mdat.Sample;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import sun.nio.ch.DirectBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -28,12 +30,19 @@ public class DefaultMp4Builder implements Mp4Builder {
     private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
 
     HashMap<Track, List<? extends Sample>> track2Sample = new HashMap<Track, List<? extends Sample>>();
+    HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
 
     public IsoFile build(Movie movie) throws IOException {
         LOG.info("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity
-            track2Sample.put(track, track.getSamples());
+            List<? extends Sample> samples = track.getSamples();
+            track2Sample.put(track, samples);
+            long[] sizes = new long[samples.size()];
+            for (int i = 0; i < sizes.length; i++) {
+                sizes[i] = samples.get(i).getSize();
+            }
+            track2SampleSizes.put(track, sizes);
         }
 
         IsoFile isoFile = new IsoFile();
@@ -213,22 +222,27 @@ public class DefaultMp4Builder implements Mp4Builder {
 
         stbl.addBox(track.getSampleDescriptionBox());
 
-        if (track.getDecodingTimeEntries() != null && !track.getDecodingTimeEntries().isEmpty()) {
+        List<TimeToSampleBox.Entry> decodingTimeToSampleEntries = track.getDecodingTimeEntries();
+        if (decodingTimeToSampleEntries != null && !track.getDecodingTimeEntries().isEmpty()) {
             TimeToSampleBox stts = new TimeToSampleBox();
             stts.setEntries(track.getDecodingTimeEntries());
             stbl.addBox(stts);
         }
-        if (track.getCompositionTimeEntries() != null && !track.getCompositionTimeEntries().isEmpty()) {
+
+        List<CompositionTimeToSample.Entry> compositionTimeToSampleEntries = track.getCompositionTimeEntries();
+        if (compositionTimeToSampleEntries != null && !compositionTimeToSampleEntries.isEmpty()) {
             CompositionTimeToSample ctts = new CompositionTimeToSample();
-            ctts.setEntries(track.getCompositionTimeEntries());
+            ctts.setEntries(compositionTimeToSampleEntries);
             stbl.addBox(ctts);
         }
 
-        if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
+        long[] syncSamples = track.getSyncSamples();
+        if (syncSamples != null && syncSamples.length > 0) {
             SyncSampleBox stss = new SyncSampleBox();
-            stss.setSampleNumber(track.getSyncSamples());
+            stss.setSampleNumber(syncSamples);
             stbl.addBox(stss);
         }
+
         if (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty()) {
             SampleDependencyTypeBox sdtp = new SampleDependencyTypeBox();
             sdtp.setEntries(track.getSampleDependencies());
@@ -251,12 +265,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         stbl.addBox(stsc);
 
         SampleSizeBox stsz = new SampleSizeBox();
-        List<? extends Sample> samples = track2Sample.get(track);
-        long[] sizes = new long[samples.size()];
-        for (int i = 0; i < sizes.length; i++) {
-            sizes[i] = samples.get(i).getSize();
-        }
-        stsz.setSampleSizes(sizes);
+        stsz.setSampleSizes(track2SampleSizes.get(track));
 
         stbl.addBox(stsz);
         // The ChunkOffsetBox we create here is just a stub
@@ -285,12 +294,8 @@ public class DefaultMp4Builder implements Mp4Builder {
                     chunkOffset[i] = offset;
                 }
 
-                for (long j = firstSampleOfChunk; j < firstSampleOfChunk + chunkSizes[i]; j++) {
-                    if (j > Integer.MAX_VALUE) {
-                        throw new InternalError("I cannot deal with a number of samples > Integer.MAX_VALUE");
-                    }
-
-                    offset += track2Sample.get(current).get((int) j).getSize();
+                for (int j = l2i(firstSampleOfChunk); j < firstSampleOfChunk + chunkSizes[i] ; j++) {
+                    offset += track2SampleSizes.get(current)[j];
                 }
             }
         }
@@ -396,39 +401,16 @@ public class DefaultMp4Builder implements Mp4Builder {
             bb.rewind();
             writableByteChannel.write(bb);
             if (writableByteChannel instanceof GatheringByteChannel) {
-                long bytesWritten = 0;
-                ArrayList<ByteBuffer> nuSamples = new ArrayList<ByteBuffer>();
-
-                for (ByteBuffer buffer : samples) {
-                    int lastIndex = nuSamples.size() - 1;
-
-                    if (buffer.hasArray() && nuSamples.get(lastIndex).hasArray() && lastIndex >= 0 && buffer.array() == nuSamples.get(lastIndex).array() &&
-                            nuSamples.get(lastIndex).arrayOffset() + nuSamples.get(lastIndex).limit() == buffer.arrayOffset()) {
-                        ByteBuffer old = nuSamples.remove(lastIndex);
-                        ByteBuffer nu = ByteBuffer.wrap(buffer.array(), old.arrayOffset(), old.limit() + buffer.limit()).slice();
-                        // We need to slice here since wrap([], offset, length) just sets position and not the arrayOffset.
-                        nuSamples.add(nu);
-                    } else {
-                        nuSamples.add(buffer);
-                    }
-
-                }
-                // ByteBuffer sampleArray[] = nuSamples.toArray(new ByteBuffer[nuSamples.size()]);
-
-                /*   for (ByteBuffer byteBuffer : sampleArray) {
-                    ChannelHelper.writeFully(writableByteChannel, byteBuffer);
-                }*/
+                List<ByteBuffer> nuSamples = unifyAdjacentBuffers(samples);
 
                 int STEPSIZE = 1024;
                 for (int i = 0; i < Math.ceil((double) nuSamples.size() / STEPSIZE); i++) {
-                    ByteBuffer[] sampleArray = nuSamples.subList(
+                    List<ByteBuffer> sublist = nuSamples.subList(
                             i * STEPSIZE, // start
-                            (i + 1) * STEPSIZE < nuSamples.size() ? (i + 1) * STEPSIZE : nuSamples.size() // end
-                    ).toArray(new ByteBuffer[0]);
-                   // ((i + 1) * STEPSIZE < nuSamples.size() ? (i + 1) * STEPSIZE : nuSamples.size()) - (i * STEPSIZE)
+                            (i + 1) * STEPSIZE < nuSamples.size() ? (i + 1) * STEPSIZE : nuSamples.size()); // end
+                    ByteBuffer sampleArray[] = sublist.toArray(new ByteBuffer[sublist.size()]);
                     do {
-                        bytesWritten += ((GatheringByteChannel) writableByteChannel)
-                                .write(sampleArray);
+                        ((GatheringByteChannel) writableByteChannel).write(sampleArray);
                     } while (sampleArray[sampleArray.length - 1].remaining() > 0);
                 }
                 //System.err.println(bytesWritten);
@@ -484,12 +466,15 @@ public class DefaultMp4Builder implements Mp4Builder {
         // are needed for the time one sample in reference track is presented.
         double stretch = (double) sc / referenceSampleCount;
         for (int i = 0; i < chunkSizes.length; i++) {
-            long start = Math.round(stretch * ((referenceChunkStarts[i]) - 1));
+            //long start = Math.round(stretch * ((referenceChunkStarts[i]) - 1));
+            long start = (long)(stretch * ((referenceChunkStarts[i]) - 1));
             long end = 0;
             if (referenceChunkStarts.length == i + 1) {
-                end = Math.round(stretch * (referenceSampleCount));
+                //end = Math.round(stretch * (referenceSampleCount));
+                end = (long) (stretch * (referenceSampleCount));
             } else {
-                end = Math.round(stretch * ((referenceChunkStarts[i + 1] - 1)));
+                // end = Math.round(stretch * ((referenceChunkStarts[i + 1] - 1)));
+                end = (long) (stretch * ((referenceChunkStarts[i + 1] - 1)));
             }
 
             chunkSizes[i] = end - start;
@@ -531,5 +516,31 @@ public class DefaultMp4Builder implements Mp4Builder {
             return a;
         }
         return gcd(b, a % b);
+    }
+
+    public List<ByteBuffer> unifyAdjacentBuffers(List<ByteBuffer> samples) {
+        ArrayList<ByteBuffer> nuSamples = new ArrayList<ByteBuffer>(samples.size());
+        for (ByteBuffer buffer : samples) {
+            int lastIndex = nuSamples.size() - 1;
+
+            if (lastIndex >= 0 && buffer.hasArray() && nuSamples.get(lastIndex).hasArray() && buffer.array() == nuSamples.get(lastIndex).array() &&
+                    nuSamples.get(lastIndex).arrayOffset() + nuSamples.get(lastIndex).limit() == buffer.arrayOffset()) {
+                ByteBuffer oldBuffer = nuSamples.remove(lastIndex);
+                ByteBuffer nu = ByteBuffer.wrap(buffer.array(), oldBuffer.arrayOffset(), oldBuffer.limit() + buffer.limit()).slice();
+                // We need to slice here since wrap([], offset, length) just sets position and not the arrayOffset.
+                nuSamples.add(nu);
+            } else if (lastIndex >= 0 &&
+                    buffer instanceof MappedByteBuffer && nuSamples.get(lastIndex) instanceof MappedByteBuffer &&
+                    nuSamples.get(lastIndex).limit() == nuSamples.get(lastIndex).capacity() - buffer.capacity()) {
+                // This can go wrong - but will it?
+                ByteBuffer oldBuffer = nuSamples.get(lastIndex);
+                oldBuffer.limit(buffer.limit() + oldBuffer.limit());
+            } else {
+                nuSamples.add(buffer);
+            }
+
+
+        }
+        return nuSamples;
     }
 }

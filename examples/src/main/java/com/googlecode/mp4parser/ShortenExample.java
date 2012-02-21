@@ -92,7 +92,8 @@ public class ShortenExample {
         fos.close();
         long start3 = System.currentTimeMillis();
         System.err.println("Building IsoFile took : " + (start2 - start1) + "ms");
-        System.err.println("Writing IsoFile took : " + (start3 - start2) + "ms");
+        System.err.println("Writing IsoFile took  : " + (start3 - start2) + "ms");
+        System.err.println("Writing IsoFile speed : " +  (new File(String.format("output-%f-%f.mp4", startTime, endTime)).length()/(start3 - start2)/1000) + "MB/s");
     }
 
     private static double correctTimeToNextSyncSample(Track track, double cutHere) {

@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class ProgressiveDownloadInformationBoxTest {
         entries.add(new ProgressiveDownloadInformationBox.Entry(20, 10));
         pdin.setEntries(entries);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        pdin.getBox(new IsoOutputStream(baos));
+        pdin.getBox(Channels.newChannel(baos));
         byte[] fullBox = baos.toByteArray();
         ByteBuffer bb = ByteBuffer.wrap(fullBox);
         long lengthWritten = IsoTypeReader.readUInt32(bb);

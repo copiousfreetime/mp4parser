@@ -24,7 +24,6 @@ public class SampleListTest {
         fos.write(content);
         fos.close();
         IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(content)));
-        isoFile.parse();
 
         TrackBox tb = isoFile.getBoxes(MovieBox.class).get(0).getBoxes(TrackBox.class).get(0);
         ByteArraySampleList sl = new ByteArraySampleList(tb);

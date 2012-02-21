@@ -207,7 +207,7 @@ public abstract class AbstractBox implements Box {
             IsoTypeWriter.writeUInt64(byteBuffer, getSize());
         }
         if (UserBox.TYPE.equals(getType())) {
-            byteBuffer.put(userType);
+            byteBuffer.put(getUserType());
         }
 
 

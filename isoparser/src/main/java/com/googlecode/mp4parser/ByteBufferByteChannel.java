@@ -1,5 +1,6 @@
 package com.googlecode.mp4parser;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
@@ -14,11 +15,15 @@ public class ByteBufferByteChannel implements ByteChannel {
         this.byteBuffer = byteBuffer;
     }
 
-    public int read(ByteBuffer dst) {
+    public int read(ByteBuffer dst) throws IOException {
         byte[] b = dst.array();
         int r = dst.remaining();
-        byteBuffer.get(b, dst.position(), r);
-        return r;
+        if (byteBuffer.remaining() >= r) {
+            byteBuffer.get(b, dst.position(), r);
+            return r;
+        } else {
+            throw new EOFException("Reading beyond end of stream");
+        }
     }
 
     public boolean isOpen() {

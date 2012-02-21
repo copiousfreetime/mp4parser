@@ -20,7 +20,6 @@ public class MetaBoxTest {
     @Test
     public void testRooundTrip() throws IOException {
         IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(metaBox)));
-        isoFile.parse();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         IsoOutputStream ios = new IsoOutputStream(baos);
         isoFile.getBox(ios);

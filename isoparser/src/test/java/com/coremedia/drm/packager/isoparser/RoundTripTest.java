@@ -87,7 +87,6 @@ public class RoundTripTest extends TestCase {
 
 
         IsoFile isoFile = new IsoFile(new FileInputStream(originalFile).getChannel());
-        isoFile.parse();
         long start3 = System.currentTimeMillis();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

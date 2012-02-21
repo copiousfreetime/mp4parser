@@ -27,7 +27,6 @@ public class Test {
         fos.close();
 
         IsoFile reread = new IsoFile(new FileOutputStream("/home/sannies/suckerpunch-samurai_h640w.mp4").getChannel());
-        reread.parse();
 
     }
 }

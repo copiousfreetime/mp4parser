@@ -68,7 +68,7 @@ public class BaseLocationBox extends AbstractFullBox {
         content.get(new byte[256 - Utf8.utf8StringLengthInBytes(baseLocation) - 1]);
         purchaseLocation = IsoTypeReader.readString(content);
         content.get(new byte[256 - Utf8.utf8StringLengthInBytes(purchaseLocation) - 1]);
-        content.get(new byte[256]);
+        content.get(new byte[512]);
     }
 
     @Override

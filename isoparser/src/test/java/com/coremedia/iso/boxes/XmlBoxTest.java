@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.util.Properties;
 
 /**
@@ -20,13 +21,12 @@ public class XmlBoxTest {
         XmlBox xmlBox = new XmlBox();
         xmlBox.setXml("<a></a>"); // but the box doesnt care if well-formed
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        xmlBox.getBox(new IsoOutputStream(baos));
+        xmlBox.getBox(Channels.newChannel(baos));
 
         Properties props = new Properties();
         props.put("xml ", XmlBox.class.getName() + "()");
         PropertyBoxParserImpl parser = new PropertyBoxParserImpl(props);
-        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())), parser);
-        isoFile.parse();
+        IsoFile isoFile = new IsoFile(new ByteBufferByteChannel((ByteBuffer) ByteBuffer.wrap(baos.toByteArray()).rewind()), parser);
 
         Assert.assertTrue(!isoFile.getBoxes().isEmpty());
         XmlBox xmlBox2 = (XmlBox) isoFile.getBoxes().get(0);

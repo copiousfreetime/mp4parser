@@ -34,7 +34,7 @@ public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return 20;
+        return 24;
     }
 
     @Override
@@ -49,6 +49,7 @@ public class CompositionShiftLeastGreatestAtom extends AbstractFullBox {
 
     @Override
     protected void getContent(ByteBuffer bb) throws IOException {
+        writeVersionAndFlags(bb);
         bb.putInt(compositionOffsetToDisplayOffsetShift);
         bb.putInt(leastDisplayOffset);
         bb.putInt(greatestDisplayOffset);

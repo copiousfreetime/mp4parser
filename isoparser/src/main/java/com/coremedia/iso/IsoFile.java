@@ -71,7 +71,7 @@ public class IsoFile extends AbstractContainerBox {
         throw new IOException("This method is not meant to be called. Use #parse() directly.");
     }
 
-    public void parse() throws IOException {
+    private void parse() throws IOException {
 
         boolean done = false;
         while (!done) {

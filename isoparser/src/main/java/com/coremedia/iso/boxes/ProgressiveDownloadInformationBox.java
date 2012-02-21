@@ -20,7 +20,7 @@ public class ProgressiveDownloadInformationBox extends AbstractFullBox {
 
     @Override
     protected long getContentSize() {
-        return entries.size() * 8;
+        return 4 + entries.size() * 8;
     }
 
     @Override

@@ -18,7 +18,6 @@ public class PathTest {
     @Before
     public void setup() throws IOException {
         isoFile = new IsoFile(Channels.newChannel(PathTest.class.getResourceAsStream("/multiTrack.3gp")));
-        isoFile.parse();
         path = new Path(isoFile);
     }
 

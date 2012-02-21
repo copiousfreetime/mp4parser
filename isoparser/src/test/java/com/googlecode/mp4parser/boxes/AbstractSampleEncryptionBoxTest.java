@@ -43,7 +43,7 @@ public abstract class AbstractSampleEncryptionBoxTest {
         Assert.assertEquals(baos.size(), senc.getSize());
         Assert.assertEquals(baos.size(), sizeBeforeWrite);
         IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
-        iso.parse();
+
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
@@ -71,7 +71,6 @@ public abstract class AbstractSampleEncryptionBoxTest {
         Assert.assertEquals(baos.size(), senc.getSize());
         Assert.assertEquals(sizeBeforeWrite, senc.getSize());
         IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
-        iso.parse();
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
@@ -99,7 +98,6 @@ public abstract class AbstractSampleEncryptionBoxTest {
         senc.getBox(new IsoOutputStream(baos));
         Assert.assertEquals(baos.size(), senc.getSize());
         IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
-        iso.parse();
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);
@@ -135,7 +133,6 @@ public abstract class AbstractSampleEncryptionBoxTest {
         Assert.assertEquals(baos.size(), senc.getSize());
         
         IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
-        iso.parse();
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractSampleEncryptionBox);
         AbstractSampleEncryptionBox senc2 = (AbstractSampleEncryptionBox) iso.getBoxes().get(0);

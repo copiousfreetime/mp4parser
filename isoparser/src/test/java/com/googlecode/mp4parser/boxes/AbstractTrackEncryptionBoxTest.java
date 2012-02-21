@@ -28,7 +28,6 @@ public abstract class AbstractTrackEncryptionBoxTest {
         Assert.assertEquals(baos.size(), tenc.getSize());
         Assert.assertEquals(baos.size(), sizeBeforeWrite);
         IsoFile iso = new IsoFile(new ByteBufferByteChannel(ByteBuffer.wrap(baos.toByteArray())));
-        iso.parse();
 
         Assert.assertTrue(iso.getBoxes().get(0) instanceof AbstractTrackEncryptionBox);
         AbstractTrackEncryptionBox tenc2 = (AbstractTrackEncryptionBox) iso.getBoxes().get(0);

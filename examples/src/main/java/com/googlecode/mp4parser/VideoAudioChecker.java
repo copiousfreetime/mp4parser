@@ -12,7 +12,6 @@ public class VideoAudioChecker {
 
     public static void main(String[] args) throws IOException {
         IsoFile isoFile = new IsoFile(Channels.newChannel(SubTitleExample.class.getResourceAsStream("/count-video.mp4")) );
-        isoFile.parse();
     }
     public TYPE getType(IsoFile isoFile) {
 

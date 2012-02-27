@@ -13,7 +13,6 @@ import java.nio.channels.Channels;
 public class GetDuration {
     public static void main(String[] args) throws IOException {
         IsoFile isoFile = new IsoFile(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-video.mp4")));
-        isoFile.parse();
         double lengthInSeconds = (double)
                 isoFile.getMovieBox().getMovieHeaderBox().getDuration() /
                 isoFile.getMovieBox().getMovieHeaderBox().getTimescale();

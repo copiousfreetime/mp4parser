@@ -31,6 +31,11 @@ public class DefaultMp4Builder implements Mp4Builder {
 
     HashMap<Track, List<? extends Sample>> track2Sample = new HashMap<Track, List<? extends Sample>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
+    private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
+
+    public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
+        this.intersectionFinder = intersectionFinder;
+    }
 
     public IsoFile build(Movie movie) throws IOException {
         LOG.info("Creating movie " + movie);
@@ -248,7 +253,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             sdtp.setEntries(track.getSampleDependencies());
             stbl.addBox(sdtp);
         }
-        long chunkSize[] = getChunkSizes(track, movie);
+        int chunkSize[] = getChunkSizes(track, movie);
         SampleToChunkBox stsc = new SampleToChunkBox();
         stsc.setEntries(new LinkedList<SampleToChunkBox.Entry>());
         long lastChunkSize = Integer.MIN_VALUE; // to be sure the first chunks hasn't got the same size
@@ -285,7 +290,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             LOG.finer("Calculating chunk offsets for track_" + track.getTrackMetaData().getTrackId() + " chunk " + i);
             for (Track current : movie.getTracks()) {
                 LOG.finest("Adding offsets of track_" + current.getTrackMetaData().getTrackId());
-                long[] chunkSizes = getChunkSizes(current, movie);
+                int[] chunkSizes = getChunkSizes(current, movie);
                 long firstSampleOfChunk = 0;
                 for (int j = 0; j < i; j++) {
                     firstSampleOfChunk += chunkSizes[j];
@@ -293,8 +298,7 @@ public class DefaultMp4Builder implements Mp4Builder {
                 if (current == track) {
                     chunkOffset[i] = offset;
                 }
-
-                for (int j = l2i(firstSampleOfChunk); j < firstSampleOfChunk + chunkSizes[i] ; j++) {
+                for (int j = l2i(firstSampleOfChunk); j < firstSampleOfChunk + chunkSizes[i]; j++) {
                     offset += track2SampleSizes.get(current)[j];
                 }
             }
@@ -328,7 +332,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         private InterleaveChunkMdat(Movie movie) {
 
             tracks = movie.getTracks();
-            Map<Track, long[]> chunks = new HashMap<Track, long[]>();
+            Map<Track, int[]> chunks = new HashMap<Track, int[]>();
             for (Track track : movie.getTracks()) {
                 chunks.put(track, getChunkSizes(track, movie));
             }
@@ -336,7 +340,7 @@ public class DefaultMp4Builder implements Mp4Builder {
             for (int i = 0; i < chunks.values().iterator().next().length; i++) {
                 for (Track track : tracks) {
 
-                    long[] chunkSizes = chunks.get(track);
+                    int[] chunkSizes = chunks.get(track);
                     long firstSampleOfChunk = 0;
                     for (int j = 0; j < i; j++) {
                         firstSampleOfChunk += chunkSizes[j];
@@ -431,50 +435,19 @@ public class DefaultMp4Builder implements Mp4Builder {
      * @param movie
      * @return
      */
-    long[] getChunkSizes(Track track, Movie movie) {
-        Track referenceTrack = null;
-        long[] referenceChunkStarts = null;
-        long referenceSampleCount = 0;
-        long[] chunkSizes = null;
-        for (Track test : movie.getTracks()) {
-            if (test.getSyncSamples() != null && test.getSyncSamples().length > 0) {
-                referenceTrack = test;
-                referenceChunkStarts = test.getSyncSamples();
-                referenceSampleCount = DefaultMp4Builder.this.track2Sample.get(test).size();
-                chunkSizes = new long[referenceTrack.getSyncSamples().length];
-            }
+    int[] getChunkSizes(Track track, Movie movie) {
 
-        }
-        if (referenceTrack == null) {
-            referenceTrack = movie.getTracks().get(0);
-            referenceSampleCount = referenceTrack.getSamples().size();
-            int chunkCount = (int) (Math.ceil(getDuration(referenceTrack) / referenceTrack.getTrackMetaData().getTimescale()) / 2);
-            referenceChunkStarts = new long[chunkCount];
-            long chunkSize = DefaultMp4Builder.this.track2Sample.get(referenceTrack).size() / chunkCount;
-            for (int i = 0; i < referenceChunkStarts.length; i++) {
-                referenceChunkStarts[i] = i * chunkSize;
-
-            }
-
-            chunkSizes = new long[chunkCount];
-        }
+        int[] referenceChunkStarts = intersectionFinder.sampleNumbers(track, movie);
+        int[] chunkSizes = new int[referenceChunkStarts.length];
 
 
-        long sc = DefaultMp4Builder.this.track2Sample.get(track).size();
-        // Since the number of sample differs per track enormously 25 fps vs Audio for example
-        // we calculate the stretch. Stretch is the number of samples in current track that
-        // are needed for the time one sample in reference track is presented.
-        double stretch = (double) sc / referenceSampleCount;
-        for (int i = 0; i < chunkSizes.length; i++) {
-            //long start = Math.round(stretch * ((referenceChunkStarts[i]) - 1));
-            long start = (long)(stretch * ((referenceChunkStarts[i]) - 1));
-            long end = 0;
+        for (int i = 0; i < referenceChunkStarts.length; i++) {
+            int start = referenceChunkStarts[i] - 1;
+            int end;
             if (referenceChunkStarts.length == i + 1) {
-                //end = Math.round(stretch * (referenceSampleCount));
-                end = (long) (stretch * (referenceSampleCount));
+                end = track.getSamples().size() - 1;
             } else {
-                // end = Math.round(stretch * ((referenceChunkStarts[i + 1] - 1)));
-                end = (long) (stretch * ((referenceChunkStarts[i + 1] - 1)));
+                end = referenceChunkStarts[i + 1] - 1;
             }
 
             chunkSizes[i] = end - start;
@@ -487,7 +460,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     }
 
 
-    private static long sum(long[] ls) {
+    private static long sum(int[] ls) {
         long rc = 0;
         for (long l : ls) {
             rc += l;
@@ -522,7 +495,6 @@ public class DefaultMp4Builder implements Mp4Builder {
         ArrayList<ByteBuffer> nuSamples = new ArrayList<ByteBuffer>(samples.size());
         for (ByteBuffer buffer : samples) {
             int lastIndex = nuSamples.size() - 1;
-
             if (lastIndex >= 0 && buffer.hasArray() && nuSamples.get(lastIndex).hasArray() && buffer.array() == nuSamples.get(lastIndex).array() &&
                     nuSamples.get(lastIndex).arrayOffset() + nuSamples.get(lastIndex).limit() == buffer.arrayOffset()) {
                 ByteBuffer oldBuffer = nuSamples.remove(lastIndex);
@@ -538,8 +510,6 @@ public class DefaultMp4Builder implements Mp4Builder {
             } else {
                 nuSamples.add(buffer);
             }
-
-
         }
         return nuSamples;
     }

@@ -8,15 +8,16 @@ import java.util.BitSet;
 public class BitReaderBuffer {
 
     private ByteBuffer buffer;
+    int initialPos;
     int position;
 
     public BitReaderBuffer(ByteBuffer buffer) {
         this.buffer = buffer;
-
+        initialPos = buffer.position();
     }
 
     public int readBits(int i) {
-        byte b = buffer.get(position / 8);
+        byte b = buffer.get(initialPos + position / 8);
         int v = b < 0 ? b + 256 : b;
         int left = 8 - position % 8;
         int rc;
@@ -30,7 +31,7 @@ public class BitReaderBuffer {
             rc = rc << then;
             rc += readBits(then);
         }
-        buffer.position((int) Math.ceil((double) position / 8));
+        buffer.position(initialPos + (int) Math.ceil((double) position / 8));
         return rc;
     }
 

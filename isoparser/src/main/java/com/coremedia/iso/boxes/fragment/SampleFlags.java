@@ -136,5 +136,33 @@ public class SampleFlags {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
+        SampleFlags that = (SampleFlags) o;
+
+        if (reserved != that.reserved) return false;
+        if (sampleDegradationPriority != that.sampleDegradationPriority) return false;
+        if (sampleDependsOn != that.sampleDependsOn) return false;
+        if (sampleHasRedundancy != that.sampleHasRedundancy) return false;
+        if (sampleIsDependedOn != that.sampleIsDependedOn) return false;
+        if (sampleIsDifferenceSample != that.sampleIsDifferenceSample) return false;
+        if (samplePaddingValue != that.samplePaddingValue) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = reserved;
+        result = 31 * result + sampleDependsOn;
+        result = 31 * result + sampleIsDependedOn;
+        result = 31 * result + sampleHasRedundancy;
+        result = 31 * result + samplePaddingValue;
+        result = 31 * result + (sampleIsDifferenceSample ? 1 : 0);
+        result = 31 * result + sampleDegradationPriority;
+        return result;
+    }
 }

@@ -19,6 +19,7 @@ package com.coremedia.iso.boxes.fragment;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
+import com.googlecode.mp4parser.ParseDetail;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -61,6 +62,15 @@ public class TrackRunBox extends AbstractFullBox {
         private SampleFlags sampleFlags;
         private int sampleCompositionTimeOffset;
 
+        public Entry() {
+        }
+
+        public Entry(long sampleDuration, long sampleSize, SampleFlags sampleFlags, int sampleCompositionTimeOffset) {
+            this.sampleDuration = sampleDuration;
+            this.sampleSize = sampleSize;
+            this.sampleFlags = sampleFlags;
+            this.sampleCompositionTimeOffset = sampleCompositionTimeOffset;
+        }
 
         public long getSampleDuration() {
             return sampleDuration;
@@ -106,7 +116,11 @@ public class TrackRunBox extends AbstractFullBox {
     }
 
     public void setDataOffset(int dataOffset) {
-        setFlags(getFlags() | 0x1); // turn on dataoffset
+        if (dataOffset == -1) {
+            setFlags(getFlags() & (0xFFFFFF ^ 1));
+        } else {
+            setFlags(getFlags() | 0x1); // turn on dataoffset
+        }
         this.dataOffset = dataOffset;
     }
 
@@ -231,6 +245,8 @@ public class TrackRunBox extends AbstractFullBox {
 
         if ((getFlags() & 0x1) == 1) { //dataOffsetPresent
             dataOffset = l2i(IsoTypeReader.readUInt32(content));
+        } else {
+            dataOffset = -1;
         }
         if ((getFlags() & 0x4) == 0x4) { //firstSampleFlagsPresent
             firstSampleFlags = new SampleFlags(content);
@@ -271,7 +287,7 @@ public class TrackRunBox extends AbstractFullBox {
         return (getFlags() & 0x100) == 0x100;
     }
 
-    public boolean isSampleFlagsPresentPresent() {
+    public boolean isSampleFlagsPresent() {
         return (getFlags() & 0x400) == 0x400;
     }
 
@@ -279,15 +295,62 @@ public class TrackRunBox extends AbstractFullBox {
         return (getFlags() & 0x800) == 0x800;
     }
 
+    public void setDataOffsetPresent(boolean v) {
+        if (v) {
+            setFlags(getFlags() | 0x01);
+        } else {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x1));
+        }
+    }
+
+    public void setSampleSizePresent(boolean v) {
+        if (v) {
+            setFlags(getFlags() | 0x200);
+        } else {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x200));
+        }
+    }
+
+    public void setSampleDurationPresent(boolean v) {
+
+        if (v) {
+            setFlags(getFlags() | 0x100);
+        } else {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x100));
+        }
+    }
+
+    public void setSampleFlagsPresent(boolean v) {
+        if (v) {
+            setFlags(getFlags() | 0x400);
+        } else {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x400));
+        }
+    }
+
+    public void setSampleCompositionTimeOffsetPresent(boolean v) {
+        if (v) {
+            setFlags(getFlags() | 0x800);
+        } else {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x800));
+        }
+
+    }
+
     public int getDataOffset() {
         return dataOffset;
     }
 
-    public String getFirstSampleFlags() {
-        return firstSampleFlags != null ? firstSampleFlags.toString() : "";
+    public SampleFlags getFirstSampleFlags() {
+        return firstSampleFlags;
     }
 
     public void setFirstSampleFlags(SampleFlags firstSampleFlags) {
+        if (firstSampleFlags == null) {
+            setFlags(getFlags() & (0xFFFFFF ^ 0x4));
+        } else {
+            setFlags(getFlags() | 0x4);
+        }
         this.firstSampleFlags = firstSampleFlags;
     }
 
@@ -300,7 +363,7 @@ public class TrackRunBox extends AbstractFullBox {
         sb.append(", dataOffsetPresent=").append(isDataOffsetPresent());
         sb.append(", sampleSizePresent=").append(isSampleSizePresent());
         sb.append(", sampleDurationPresent=").append(isSampleDurationPresent());
-        sb.append(", sampleFlagsPresentPresent=").append(isSampleFlagsPresentPresent());
+        sb.append(", sampleFlagsPresentPresent=").append(isSampleFlagsPresent());
         sb.append(", sampleCompositionTimeOffsetPresent=").append(isSampleCompositionTimeOffsetPresent());
         sb.append(", firstSampleFlags=").append(firstSampleFlags);
         sb.append('}');

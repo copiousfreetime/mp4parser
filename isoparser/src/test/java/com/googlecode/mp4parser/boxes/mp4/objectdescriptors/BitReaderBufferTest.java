@@ -9,6 +9,16 @@ public class BitReaderBufferTest {
     ByteBuffer testSequence = ByteBuffer.wrap(new byte[]{-1, 0, -1, 0});
 
     @Test
+    public void readFromTheMiddle() {
+        ByteBuffer b = ByteBuffer.wrap(new byte[] {0, -1});
+        b.get();
+        BitReaderBuffer brb = new BitReaderBuffer(b);
+        Assert.assertEquals(15, brb.readBits(4));
+        Assert.assertEquals(15, brb.readBits(4));
+
+    }
+
+    @Test
     public void testRead_8() {
         BitReaderBuffer bitReaderBuffer = new BitReaderBuffer(testSequence);
         Assert.assertEquals(15 , bitReaderBuffer.readBits(4));

@@ -14,6 +14,16 @@ import java.nio.ByteBuffer;
  * To change this template use File | Settings | File Templates.
  */
 public class BitWriterBufferTest {
+    @Test 
+    public void testWriteWithinBuffer() {
+        ByteBuffer b = ByteBuffer.allocate(2);
+        b.put((byte) 0);
+        BitWriterBuffer bwb = new BitWriterBuffer(b);
+        bwb.writeBits(15, 4);
+        Assert.assertEquals("0000000011110000", toString(b));
+
+    }
+    
     @Test
     public void testSimple() {
         ByteBuffer bb = ByteBuffer.allocate(4);

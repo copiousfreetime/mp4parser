@@ -8,8 +8,7 @@ import java.nio.ByteBuffer;
 public class BitWriterBuffer {
 
     private ByteBuffer buffer;
-    private int bitsLeft = 8;
-    private int pos = 0;
+    int position = 0;
 
     public BitWriterBuffer(ByteBuffer buffer) {
         this.buffer = buffer;
@@ -17,22 +16,19 @@ public class BitWriterBuffer {
     }
 
     public void writeBits(int i, int numBits) {
-        if (numBits <= bitsLeft) {
-            int current = IsoTypeReader.byte2int(buffer.get(pos));
-            current += i << (bitsLeft - numBits);
-            buffer.put(pos, IsoTypeWriter.int2byte(current));
-            bitsLeft -= numBits;
+        int left = 8 - position % 8;
+        if (numBits <= left) {
+            int current = (buffer.get(position / 8));
+            current = current < 0 ? current + 256 : current;
+            current += i << (left - numBits);
+            buffer.put(position / 8, (byte) (current > 127 ? current - 256 : current));
+            position += numBits;
         } else {
-            int bitsSecondWrite = numBits - bitsLeft;
-            int a = i >> bitsSecondWrite;
-            int b = i - (bitsSecondWrite << a);
-            writeBits(a, bitsLeft);
-            writeBits(b, bitsSecondWrite);
+            int bitsSecondWrite = numBits - left;
+            writeBits(i >> bitsSecondWrite, left);
+            writeBits(i & (1 << bitsSecondWrite) - 1, bitsSecondWrite);
         }
-        if (bitsLeft == 0) {
-            pos++;
-            bitsLeft = 8;
-        }
+
     }
 
 

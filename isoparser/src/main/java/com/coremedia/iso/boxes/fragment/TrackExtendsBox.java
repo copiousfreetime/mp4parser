@@ -66,7 +66,7 @@ public class TrackExtendsBox extends AbstractFullBox {
         defaultSampleDescriptionIndex = IsoTypeReader.readUInt32(content);
         defaultSampleDuration = IsoTypeReader.readUInt32(content);
         defaultSampleSize = IsoTypeReader.readUInt32(content);
-        defaultSampleFlags = new SampleFlags(IsoTypeReader.readUInt32(content));
+        defaultSampleFlags = new SampleFlags(content);
     }
 
     public long getTrackId() {

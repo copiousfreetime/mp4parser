@@ -53,7 +53,7 @@ public final class IsoTypeWriter {
         bb.put((byte) ((result & 0x00FF)));
     }
 
-    private static byte int2byte(int i) {
+    public static byte int2byte(int i) {
         i = i & 0xFF;
         return (byte) (i > 127 ? i - 256 : i);
     }

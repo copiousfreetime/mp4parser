@@ -76,16 +76,16 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
         IsoTypeWriter.writeUInt32(bb, trackId);
 
         if ((getFlags() & 0x1) == 1) { //baseDataOffsetPresent
-            IsoTypeWriter.writeUInt64(bb, baseDataOffset);
+            IsoTypeWriter.writeUInt64(bb, getBaseDataOffset());
         }
         if ((getFlags() & 0x2) == 0x2) { //sampleDescriptionIndexPresent
-            IsoTypeWriter.writeUInt32(bb, sampleDescriptionIndex);
+            IsoTypeWriter.writeUInt32(bb, getSampleDescriptionIndex());
         }
         if ((getFlags() & 0x8) == 0x8) { //defaultSampleDurationPresent
-            IsoTypeWriter.writeUInt32(bb, defaultSampleDuration);
+            IsoTypeWriter.writeUInt32(bb, getDefaultSampleDuration());
         }
         if ((getFlags() & 0x10) == 0x10) { //defaultSampleSizePresent
-            IsoTypeWriter.writeUInt32(bb, defaultSampleSize);
+            IsoTypeWriter.writeUInt32(bb, getDefaultSampleSize());
         }
         if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
             defaultSampleFlags.getContent(bb);
@@ -109,7 +109,7 @@ public class TrackFragmentHeaderBox extends AbstractFullBox {
             defaultSampleSize = IsoTypeReader.readUInt32(content);
         }
         if ((getFlags() & 0x20) == 0x20) { //defaultSampleFlagsPresent
-            defaultSampleFlags = new SampleFlags(IsoTypeReader.readUInt32(content));
+            defaultSampleFlags = new SampleFlags(content);
         }
         if ((getFlags() & 0x10000) == 0x10000) { //durationIsEmpty
             durationIsEmpty = true;

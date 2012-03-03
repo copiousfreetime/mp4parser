@@ -59,7 +59,7 @@ public class TrackRunBox extends AbstractFullBox {
         private long sampleDuration;
         private long sampleSize;
         private SampleFlags sampleFlags;
-        private long sampleCompositionTimeOffset;
+        private int sampleCompositionTimeOffset;
 
 
         public long getSampleDuration() {
@@ -74,7 +74,7 @@ public class TrackRunBox extends AbstractFullBox {
             return sampleFlags.toString();
         }
 
-        public long getSampleCompositionTimeOffset() {
+        public int getSampleCompositionTimeOffset() {
             return sampleCompositionTimeOffset;
         }
 
@@ -90,7 +90,7 @@ public class TrackRunBox extends AbstractFullBox {
             this.sampleFlags = sampleFlags;
         }
 
-        public void setSampleCompositionTimeOffset(long sampleCompositionTimeOffset) {
+        public void setSampleCompositionTimeOffset(int sampleCompositionTimeOffset) {
             this.sampleCompositionTimeOffset = sampleCompositionTimeOffset;
         }
 
@@ -171,7 +171,7 @@ public class TrackRunBox extends AbstractFullBox {
     }
 
     protected long getContentSize() {
-        long size = 4;
+        long size = 8;
 
         if ((getFlags() & 0x1) == 0x1) { //dataOffsetPresent
             size += 4;
@@ -219,7 +219,7 @@ public class TrackRunBox extends AbstractFullBox {
                 entry.sampleFlags.getContent(bb);
             }
             if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
-                IsoTypeWriter.writeUInt32(bb, entry.sampleCompositionTimeOffset);
+                bb.putInt(entry.sampleCompositionTimeOffset);
             }
         }
     }
@@ -233,7 +233,7 @@ public class TrackRunBox extends AbstractFullBox {
             dataOffset = l2i(IsoTypeReader.readUInt32(content));
         }
         if ((getFlags() & 0x4) == 0x4) { //firstSampleFlagsPresent
-            firstSampleFlags = new SampleFlags(IsoTypeReader.readUInt32(content));
+            firstSampleFlags = new SampleFlags(content);
         }
 
         for (int i = 0; i < sampleCount; i++) {
@@ -245,10 +245,10 @@ public class TrackRunBox extends AbstractFullBox {
                 entry.sampleSize = IsoTypeReader.readUInt32(content);
             }
             if ((getFlags() & 0x400) == 0x400) { //sampleFlagsPresent
-                entry.sampleFlags = new SampleFlags(IsoTypeReader.readUInt32(content));
+                entry.sampleFlags = new SampleFlags(content);
             }
             if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
-                entry.sampleCompositionTimeOffset = IsoTypeReader.readUInt32(content);
+                entry.sampleCompositionTimeOffset = content.getInt();
             }
             entries.add(entry);
         }

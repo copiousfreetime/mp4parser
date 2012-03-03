@@ -33,7 +33,7 @@ public final class IsoTypeReader {
         return byte2int(bb.get());
     }
 
-    private static int byte2int(byte b) {
+    public static int byte2int(byte b) {
         return b < 0 ? b + 256 : b;
     }
 

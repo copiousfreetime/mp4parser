@@ -19,19 +19,19 @@ public class BitReaderBuffer {
         byte b = buffer.get(position / 8);
         int v = b < 0 ? b + 256 : b;
         int left = 8 - position % 8;
-
+        int rc;
         if (i <= left) {
-            int rc = (v << (position % 8) & 0xFF) >> ((position % 8) + (left - i));
+            rc = (v << (position % 8) & 0xFF) >> ((position % 8) + (left - i));
             position += i;
-            return rc;
         } else {
             int now = left;
             int then = i - left;
-            int a = readBits(now);
-            a = a << then;
-            a += readBits(then);
-            return a;
+            rc = readBits(now);
+            rc = rc << then;
+            rc += readBits(then);
         }
+        buffer.position((int) Math.ceil((double) position / 8));
+        return rc;
     }
 
 

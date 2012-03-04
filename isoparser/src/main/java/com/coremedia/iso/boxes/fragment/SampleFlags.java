@@ -39,7 +39,7 @@ public class SampleFlags {
     private int sampleIsDependedOn;
     private int sampleHasRedundancy;
     private int samplePaddingValue;
-    private boolean sampleIsDifferenceSample;
+    private boolean sampleIsDifferenceSample = true;
     private int sampleDegradationPriority;
 
     public SampleFlags() {

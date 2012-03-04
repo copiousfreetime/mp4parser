@@ -1,5 +1,6 @@
 package com.googlecode.mp4parser.authoring.builder;
 
+import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.fragment.*;
@@ -10,6 +11,7 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -17,7 +19,7 @@ import java.util.logging.Logger;
  * Creates a fragmented MP4 file.
  */
 public class FragmentedMp4Builder implements Mp4Builder {
-    FragmentIntersectionFinder intersectionFinder;
+    FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl();
     private static final Logger LOG = Logger.getLogger(FragmentedMp4Builder.class.getName());
 
     public IsoFile build(Movie movie) throws IOException {
@@ -49,9 +51,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
                     if (startSample == endSample) {
                         // empty fragment
                         // just don't add any boxes.
+                    } else if (track.getType() == Track.Type.UNKNOWN || track.getType() == Track.Type.NULL) {
+                        // no unknown or null tracks
                     } else {
-                        isoFile.addBox(createMoof(startSample, endSample, track, i));
+                        isoFile.addBox(createMoof(startSample, endSample, track, i + 1));
                         MediaDataBoxWithSamples mdat = new MediaDataBoxWithSamples();
+                        System.err.println("Create mdat from " + startSample + " to " + endSample);
                         for (Sample sample : track.getSamples().subList(startSample, endSample)) {
                             mdat.addSample(sample);
                         }
@@ -68,21 +73,28 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return isoFile;
     }
 
+    public static void dumpHex(ByteBuffer bb) {
+        byte[] b = new byte[bb.limit()];
+        bb.get(b);
+        System.err.println(Hex.encodeHex(b));
+        bb.rewind();
+
+    }
+
     private MovieFragmentBox createMoof(int startSample, int endSample, Track track, int sequenceNumber) {
         List<? extends Sample> samples = track.getSamples().subList(startSample, endSample);
 
         long[] sampleSizes = new long[samples.size()];
         for (int i = 0; i < sampleSizes.length; i++) {
             sampleSizes[i] = samples.get(i).getSize();
-
         }
 
 
         final TrackFragmentHeaderBox tfhd = new TrackFragmentHeaderBox();
-        tfhd.setBaseDataOffset(-1);
-        SampleFlags sf = new SampleFlags(0x0000c0);
+        SampleFlags sf = new SampleFlags();
 
         tfhd.setDefaultSampleFlags(sf);
+        tfhd.setBaseDataOffset(-1);
         MovieFragmentBox moof = new MovieFragmentBox();
 
 
@@ -98,14 +110,12 @@ public class FragmentedMp4Builder implements Mp4Builder {
         mfhd.setSequenceNumber(sequenceNumber);
         tfhd.setTrackId(track.getTrackMetaData().getTrackId());
 
-        trun.setFlags(0x100 | 0x200 | 0x001 | 0x800 | 0x004);
-        trun.setFirstSampleFlags(new SampleFlags(0x00000040));
-        // sampleDuration | sampleSize | dataOffset | compositionTime | firstSampleFlags
+        trun.setSampleDurationPresent(true);
+        trun.setSampleSizePresent(true);
+
 
         List<TrackRunBox.Entry> entries = new ArrayList<TrackRunBox.Entry>(endSample - startSample);
 
-
-        int mdatSize = 0;
 
         Queue<TimeToSampleBox.Entry> timeQueue = new LinkedList<TimeToSampleBox.Entry>(track.getDecodingTimeEntries());
         long durationEntriesLeft = timeQueue.peek().getCount();
@@ -119,30 +129,30 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         if (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty() ||
                 track.getSyncSamples() != null && track.getSyncSamples().length != 0) {
-            trun.setFlags(trun.getFlags() | 0x400);
+            trun.setSampleFlagsPresent(true);
         }
 
         for (int i = 0; i < sampleSizes.length; i++) {
             TrackRunBox.Entry entry = new TrackRunBox.Entry();
             entry.setSampleSize(sampleSizes[i]);
-            mdatSize += sampleSizes[i];
-            if (trun.isSampleFlagsPresentPresent()) {
-                long flag = 0;
+            if (trun.isSampleFlagsPresent()) {
+                SampleFlags sflags = new SampleFlags();
+
                 if (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty()) {
 
                     SampleDependencyTypeBox.Entry e = track.getSampleDependencies().get(i);
-                    flag |= ((e.getSampleDependsOn() & 3) << 24);
-                    flag |= ((e.getSampleIsDependentOn() & 3) << 22);
-                    flag |= ((e.getSampleHasRedundancy() & 3) << 20);
+                    sflags.setSampleDependsOn(e.getSampleDependsOn());
+                    sflags.setSampleIsDependedOn(e.getSampleIsDependentOn());
+                    sflags.setSampleHasRedundancy(e.getSampleHasRedundancy());
                 }
                 if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
                     if (Arrays.binarySearch(track.getSyncSamples(), i) < 0) {
                         // we have to mark non-sync samples!
-                        flag |= (1 << 16);
+                        sflags.setSampleIsDifferenceSample(false);
                     }
                 }
                 // i don't have sample degradation
-                entry.setSampleFlags(new SampleFlags(flag));
+                entry.setSampleFlags(sflags);
 
             }
 
@@ -153,6 +163,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
             }
 
             if (compositionTimeQueue != null) {
+                trun.setSampleCompositionTimeOffsetPresent(true);
                 entry.setSampleCompositionTimeOffset(compositionTimeQueue.peek().getOffset());
                 if (--compositionTimeEntriesLeft == 0 && compositionTimeQueue.size() > 1) {
                     compositionTimeQueue.remove();
@@ -167,7 +178,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         //System.err.println("entries.size() " + entries.size());
 
         trun.setEntries(entries);
-
+        trun.setDataOffset(1); // dummy to make size correct
         trun.setDataOffset((int) (8 + moof.getSize())); // mdat header + moof size
         return moof;
     }
@@ -178,7 +189,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         mvhd.setCreationTime(DateHelper.convert(new Date()));
         mvhd.setModificationTime(DateHelper.convert(new Date()));
 
-        long movieTimeScale = getTimescale(movie);
+        long movieTimeScale = movie.getTimescale();
         long duration = 0;
 
         for (Track track : movie.getTracks()) {
@@ -210,7 +221,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
             trex.setDefaultSampleDescriptionIndex(1);
             trex.setDefaultSampleDuration(0);
             trex.setDefaultSampleSize(0);
-            trex.setDefaultSampleFlags(new SampleFlags(0));
+            trex.setDefaultSampleFlags(new SampleFlags());
             // Don't set any good defaults here.
             mvex.addBox(trex);
         }
@@ -255,7 +266,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
         // We need to take edit list box into account in trackheader duration
         // but as long as I don't support edit list boxes it is sufficient to
         // just translate media duration to movie timescale
-        tkhd.setDuration(getDuration(track) * getTimescale(movie) / track.getTrackMetaData().getTimescale());
+        tkhd.setDuration(getDuration(track) * movie.getTimescale() / track.getTrackMetaData().getTimescale());
         tkhd.setHeight(track.getTrackMetaData().getHeight());
         tkhd.setWidth(track.getTrackMetaData().getWidth());
         tkhd.setLayer(track.getTrackMetaData().getLayer());
@@ -329,7 +340,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         stbl.addBox(track.getSampleDescriptionBox());
         stbl.addBox(new TimeToSampleBox());
-        stbl.addBox(new SampleToChunkBox());
+        //stbl.addBox(new SampleToChunkBox());
         stbl.addBox(new StaticChunkOffsetBox());
 
         minf.addBox(stbl);
@@ -350,19 +361,5 @@ public class FragmentedMp4Builder implements Mp4Builder {
         return duration;
     }
 
-    public long getTimescale(Movie movie) {
-        long timescale = movie.getTracks().iterator().next().getTrackMetaData().getTimescale();
-        for (Track track : movie.getTracks()) {
-            timescale = gcd(track.getTrackMetaData().getTimescale(), timescale);
-        }
-        return timescale;
-    }
-
-    public static long gcd(long a, long b) {
-        if (b == 0) {
-            return a;
-        }
-        return gcd(b, a % b);
-    }
 
 }

@@ -17,6 +17,7 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -67,5 +68,14 @@ public class SampleDescriptionBox extends FullContainerBox {
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, boxes.size());
         writeChildBoxes(bb);
+    }
+
+    public SampleEntry getSampleEntry() {
+        for (Box box : boxes) {
+            if (box instanceof SampleEntry) {
+                return (SampleEntry) box;
+            }
+        }
+        return null;
     }
 }

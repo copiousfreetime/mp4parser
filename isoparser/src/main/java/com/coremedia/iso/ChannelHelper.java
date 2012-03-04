@@ -20,7 +20,7 @@ public class ChannelHelper {
             return bb;
         } else {
             ByteBuffer buf = ByteBuffer.allocate(l2i(size));
-            readFully(channel, buf, buf.remaining());
+            readFully(channel, buf, buf.limit());
             buf.rewind();
             assert buf.limit() == size;
 

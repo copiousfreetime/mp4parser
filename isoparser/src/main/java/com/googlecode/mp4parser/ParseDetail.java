@@ -2,9 +2,6 @@ package com.googlecode.mp4parser;
 
 import java.lang.annotation.*;
 
-/**
- *
- */
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

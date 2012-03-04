@@ -67,4 +67,19 @@ public class Movie {
     }
 
 
+    public long getTimescale() {
+        long timescale = this.getTracks().iterator().next().getTrackMetaData().getTimescale();
+        for (Track track : this.getTracks()) {
+            timescale = gcd(track.getTrackMetaData().getTimescale(), timescale);
+        }
+        return timescale;
+    }
+
+    public static long gcd(long a, long b) {
+        if (b == 0) {
+            return a;
+        }
+        return gcd(b, a % b);
+    }
+
 }

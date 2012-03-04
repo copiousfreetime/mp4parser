@@ -25,6 +25,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
@@ -77,6 +78,7 @@ public class IsoFile extends AbstractContainerBox {
         while (!done) {
             try {
                 Box box = boxParser.parseBox(byteChannel, this);
+                System.err.println(box.getType());
                 if (box != null) {
                     boxes.add(box);
                 } else {
@@ -174,7 +176,16 @@ public class IsoFile extends AbstractContainerBox {
 
     public void getBox(WritableByteChannel os) throws IOException {
         for (Box box : boxes) {
-            box.getBox(os);
+            
+            if (os instanceof FileChannel) {
+                long startPos = ((FileChannel) os).position();
+                box.getBox(os);
+                long size = ((FileChannel) os).position() - startPos;
+                assert size == box.getSize();
+            } else {
+                box.getBox(os);
+            }
+            
         }
     }
 }

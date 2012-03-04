@@ -44,6 +44,9 @@ import java.util.List;
  * also be referenced and used.
  */
 public class MediaDataBoxWithSamples implements Box {
+    static int index = 0;
+
+
     ContainerBox parent;
     LinkedList<Sample> samples = new LinkedList<Sample>();
 
@@ -69,31 +72,45 @@ public class MediaDataBoxWithSamples implements Box {
         return "mdat";
     }
 
-    public byte[] getUserType() {
-        return new byte[0];
-    }
-
-
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         long size = getContentSize();
         if (isSmall(size)) {
             ByteBuffer bb = ByteBuffer.allocate(8);
-            IsoTypeWriter.writeUInt32(bb, size);
+            IsoTypeWriter.writeUInt32(bb, 8 + size);
             bb.put(IsoFile.fourCCtoBytes("mdat"));
+            bb.rewind();
+            writableByteChannel.write(bb);
         } else {
             ByteBuffer bb = ByteBuffer.allocate(16);
             IsoTypeWriter.writeUInt32(bb, 1);
             bb.put(IsoFile.fourCCtoBytes("mdat"));
-            IsoTypeWriter.writeUInt64(bb, size);
+            IsoTypeWriter.writeUInt64(bb, 16 + size);
+            bb.rewind();
+            writableByteChannel.write(bb);
         }
-        ArrayList<ByteBuffer> bb = new ArrayList<ByteBuffer>(samples.size());
+
+        ArrayList<ByteBuffer> nuSamples = new ArrayList<ByteBuffer>(samples.size());
         for (Sample sample : samples) {
-            bb.add(sample.getBytes());
+            nuSamples.add(sample.getBytes());
         }
-        if (writableByteChannel instanceof GatheringByteChannel) {
-            ((GatheringByteChannel) writableByteChannel).write(bb.toArray(new ByteBuffer[bb.size()]));
-        } else {
-            for (ByteBuffer byteBuffer : bb) {
+        System.err.println("Reanable gathering bytechannel !");
+        System.err.println("Reanable gathering bytechannel !");
+        System.err.println("Reanable gathering bytechannel !");
+       /* if (writableByteChannel instanceof GatheringByteChannel) {
+            int STEPSIZE = 1024;
+            for (int i = 0; i < Math.ceil((double) nuSamples.size() / STEPSIZE); i++) {
+                List<ByteBuffer> sublist = nuSamples.subList(
+                        i * STEPSIZE, // start
+                        (i + 1) * STEPSIZE < nuSamples.size() ? (i + 1) * STEPSIZE : nuSamples.size()); // end
+                ByteBuffer sampleArray[] = sublist.toArray(new ByteBuffer[sublist.size()]);
+                do {
+                    ((GatheringByteChannel) writableByteChannel).write(sampleArray);
+                } while (sampleArray[sampleArray.length - 1].remaining() > 0);
+            }
+
+        } else */{
+            for (ByteBuffer byteBuffer : nuSamples) {
+                System.err.println(index++ + ": " + byteBuffer.limit());
                 writableByteChannel.write(byteBuffer);
             }
         }

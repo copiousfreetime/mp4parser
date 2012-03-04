@@ -60,10 +60,6 @@ public final class MediaDataBox implements Box {
         return TYPE;
     }
 
-    public byte[] getUserType() {
-        return null;
-    }
-
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
         header.rewind();
         content.rewind();

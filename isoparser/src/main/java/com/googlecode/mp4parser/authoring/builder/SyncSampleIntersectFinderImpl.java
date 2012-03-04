@@ -3,6 +3,8 @@ package com.googlecode.mp4parser.authoring.builder;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
+import java.util.Arrays;
+
 /**
  *
  */
@@ -15,7 +17,7 @@ public class SyncSampleIntersectFinderImpl implements FragmentIntersectionFinder
             long[] currentTrackSyncSamples = currentTrack.getSyncSamples();
 
             if (currentTrackSyncSamples != null && currentTrackSyncSamples.length > 0) {
-                if (syncSampleContainingTrack == null) {
+                if (syncSampleContainingTrack == null || Arrays.equals(syncSamples, currentTrackSyncSamples)) {
                     syncSampleContainingTrack = currentTrack;
                     syncSampleContainingTrackSampleCount = currentTrack.getSamples().size();
                     syncSamples = currentTrackSyncSamples;

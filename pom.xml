@@ -17,9 +17,17 @@
         <module>isoparser</module>
         <module>isoviewer</module>
         <module>examples</module>
-        <module>androidtest</module>
+
         <!--<module>codecs</module>-->
     </modules>
+    <profiles>
+        <profile>
+            <id>android</id>
+            <modules>
+                <module>androidtest</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -132,24 +132,27 @@ public class FragmentedMp4Builder implements Mp4Builder {
             trun.setSampleFlagsPresent(true);
         }
 
+        // SampleFlags firstSampleFlags = new SampleFlags();
+        // firstSampleFlags.setSampleIsDifferenceSample(false);
+
+        // trun.setFirstSampleFlags(firstSampleFlags);
+
         for (int i = 0; i < sampleSizes.length; i++) {
             TrackRunBox.Entry entry = new TrackRunBox.Entry();
             entry.setSampleSize(sampleSizes[i]);
             if (trun.isSampleFlagsPresent()) {
+                //if (false) {
                 SampleFlags sflags = new SampleFlags();
 
                 if (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty()) {
-
                     SampleDependencyTypeBox.Entry e = track.getSampleDependencies().get(i);
                     sflags.setSampleDependsOn(e.getSampleDependsOn());
                     sflags.setSampleIsDependedOn(e.getSampleIsDependentOn());
                     sflags.setSampleHasRedundancy(e.getSampleHasRedundancy());
                 }
                 if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
-                    if (Arrays.binarySearch(track.getSyncSamples(), i) < 0) {
-                        // we have to mark non-sync samples!
-                        sflags.setSampleIsDifferenceSample(false);
-                    }
+                    // we have to mark non-sync samples!
+                    sflags.setSampleIsDifferenceSample(Arrays.binarySearch(track.getSyncSamples(), i) < 0);
                 }
                 // i don't have sample degradation
                 entry.setSampleFlags(sflags);
@@ -170,12 +173,8 @@ public class FragmentedMp4Builder implements Mp4Builder {
                     compositionTimeEntriesLeft = compositionTimeQueue.element().getCount();
                 }
             }
-
-
             entries.add(entry);
         }
-        //System.err.println(endSample - startSample);
-        //System.err.println("entries.size() " + entries.size());
 
         trun.setEntries(entries);
         trun.setDataOffset(1); // dummy to make size correct

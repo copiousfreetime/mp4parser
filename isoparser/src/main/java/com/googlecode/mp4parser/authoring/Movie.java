@@ -41,7 +41,7 @@ public class Movie {
     public String toString() {
         String s = "Movie{ ";
         for (Track track : tracks) {
-            s += "track_" + track.getTrackMetaData().getTrackId() + " (" + track.getType() + "), ";
+            s += "track_" + track.getTrackMetaData().getTrackId() + " (" + track.getHandler() + "), ";
         }
 
         s += ", movieMetaData=" + movieMetaData + '}';

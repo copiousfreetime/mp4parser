@@ -1,5 +1,6 @@
 package com.googlecode.mp4parser;
 
+import com.coremedia.iso.boxes.NullMediaHeaderBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.coremedia.iso.boxes.mdat.Sample;
 import com.googlecode.mp4parser.authoring.Movie;
@@ -19,7 +20,7 @@ public class DumpAmf0TrackToPropertyFile {
 
 
         for (Track track : movie.getTracks()) {
-            if (track.getType() == Track.Type.AMF0) {
+            if (track.getHandler().equals("data") && (track.getMediaHeaderBox() instanceof NullMediaHeaderBox) ) {
                 long time = 0;
                 Iterator<? extends Sample> samples = track.getSamples().iterator();
                 Properties properties = new Properties();

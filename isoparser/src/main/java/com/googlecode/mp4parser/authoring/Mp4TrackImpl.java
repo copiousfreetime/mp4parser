@@ -26,32 +26,17 @@ public class Mp4TrackImpl extends AbstractTrack {
     private long[] syncSamples;
     private List<SampleDependencyTypeBox.Entry> sampleDependencies;
     private TrackMetaData trackMetaData = new TrackMetaData();
-    private Type type;
-
+    private String handler;
+    private AbstractMediaHeaderBox mihd;
 
     public Mp4TrackImpl(TrackBox trackBox, ReadableByteChannel source) {
-        //if (source instanceof FileChannel) {
-          //  samples = new SegmentSampleList(trackBox, (FileChannel) source);
-        /*} else*/ {
-            samples = new ByteArraySampleList(trackBox);
-        }
+        samples = new ByteArraySampleList(trackBox);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
-        AbstractMediaHeaderBox mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
-        if (mihd instanceof VideoMediaHeaderBox) {
-            type = Type.VIDEO;
-        } else if (mihd instanceof SoundMediaHeaderBox) {
-            type = Type.SOUND;
-        } else if (mihd instanceof HintMediaHeaderBox) {
-            type = Type.HINT;
-        } else if (mihd instanceof NullMediaHeaderBox) {
-            if (stbl.getSampleDescriptionBox().getBoxes(ActionMessageFormat0SampleEntryBox.class).size() > 0) {
-                type = Type.AMF0;
-            } else {
-                type = Type.NULL;
-            }
-        } else {
-            type = Type.UNKNOWN;
-        }
+        handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
+
+
+        mihd = trackBox.getMediaBox().getMediaInformationBox().getMediaHeaderBox();
+
 
         sampleDescriptionBox = stbl.getSampleDescriptionBox();
         if (trackBox.getParent().getBoxes(MovieExtendsBox.class).size() > 0) {
@@ -134,7 +119,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         return samples;
     }
 
- 
+
     public SampleDescriptionBox getSampleDescriptionBox() {
         return sampleDescriptionBox;
     }
@@ -159,8 +144,12 @@ public class Mp4TrackImpl extends AbstractTrack {
         return trackMetaData;
     }
 
-    public Type getType() {
-        return type;
+    public String getHandler() {
+        return handler;
+    }
+
+    public AbstractMediaHeaderBox getMediaHeaderBox() {
+        return mihd;
     }
 
 }

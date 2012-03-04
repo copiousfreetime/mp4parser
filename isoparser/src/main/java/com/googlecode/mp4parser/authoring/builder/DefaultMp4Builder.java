@@ -33,6 +33,12 @@ public class DefaultMp4Builder implements Mp4Builder {
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
     private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
 
+    List<String> hdlrs = new LinkedList<String>();
+
+    public void setAllowedHandlers(List<String> hdlrs ) {
+        this.hdlrs = hdlrs;
+    }
+
     public void setIntersectionFinder(FragmentIntersectionFinder intersectionFinder) {
         this.intersectionFinder = intersectionFinder;
     }
@@ -107,9 +113,7 @@ public class DefaultMp4Builder implements Mp4Builder {
         mvhd.setNextTrackId(++nextTrackId);
         movieBoxChildren.add(mvhd);
         for (Track track : movie.getTracks()) {
-            if (track.getType() != Track.Type.UNKNOWN) {
-                movieBoxChildren.add(createTrackBox(track, movie));
-            }
+            movieBoxChildren.add(createTrackBox(track, movie));
         }
         // metadata here
         movieBox.setBoxes(movieBoxChildren);
@@ -171,47 +175,12 @@ public class DefaultMp4Builder implements Mp4Builder {
         mdia.addBox(mdhd);
         HandlerBox hdlr = new HandlerBox();
         mdia.addBox(hdlr);
-        switch (track.getType()) {
-            case VIDEO:
-                hdlr.setHandlerType("vide");
-                break;
-            case SOUND:
-                hdlr.setHandlerType("soun");
-                break;
-            case HINT:
-                hdlr.setHandlerType("hint");
-                break;
-            case TEXT:
-                hdlr.setHandlerType("text");
-                break;
-            case AMF0:
-                hdlr.setHandlerType("data");
-                break;
-            default:
-                throw new RuntimeException("Dont know handler type " + track.getType());
-        }
+
+        hdlr.setHandlerType(track.getHandler());
 
         MediaInformationBox minf = new MediaInformationBox();
-        switch (track.getType()) {
-            case VIDEO:
-                VideoMediaHeaderBox vmhd = new VideoMediaHeaderBox();
-                minf.addBox(vmhd);
-                break;
-            case SOUND:
-                SoundMediaHeaderBox smhd = new SoundMediaHeaderBox();
-                minf.addBox(smhd);
-                break;
-            case HINT:
-                HintMediaHeaderBox hmhd = new HintMediaHeaderBox();
-                minf.addBox(hmhd);
-                break;
-            case TEXT:
-            case AMF0:
-            case NULL:
-                NullMediaHeaderBox nmhd = new NullMediaHeaderBox();
-                minf.addBox(nmhd);
-                break;
-        }
+        minf.addBox(track.getMediaHeaderBox());
+
         // dinf: all these three boxes tell us is that the actual
         // data is in the current file and not somewhere external
         DataInformationBox dinf = new DataInformationBox();

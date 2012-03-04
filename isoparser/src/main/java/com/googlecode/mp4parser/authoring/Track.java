@@ -1,9 +1,6 @@
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.mdat.Sample;
 
 import java.util.List;
@@ -29,7 +26,7 @@ public interface Track {
 
     TrackMetaData getTrackMetaData();
 
-    Type getType();
+    String getHandler();
 
     boolean isEnabled();
 
@@ -41,13 +38,6 @@ public interface Track {
     
     List<? extends Sample> getSamples();
 
-    public enum Type {
-        VIDEO(),
-        HINT(),
-        TEXT(),
-        AMF0(),
-        NULL(),
-        SOUND(),
-        UNKNOWN()
-    }
+    public AbstractMediaHeaderBox getMediaHeaderBox();
+
 }

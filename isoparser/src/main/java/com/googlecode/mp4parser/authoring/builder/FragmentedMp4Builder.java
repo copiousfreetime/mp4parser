@@ -20,7 +20,12 @@ import java.util.logging.Logger;
  */
 public class FragmentedMp4Builder implements Mp4Builder {
     FragmentIntersectionFinder intersectionFinder = new SyncSampleIntersectFinderImpl();
+
     private static final Logger LOG = Logger.getLogger(FragmentedMp4Builder.class.getName());
+
+    public List<String> getAllowedHandlers() {
+        return Arrays.asList("soun", "vide");
+    }
 
     public IsoFile build(Movie movie) throws IOException {
         LOG.info("Creating movie " + movie);
@@ -42,29 +47,30 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
         for (int i = 0; i < maxNumberOfFragments; i++) {
             for (Track track : movie.getTracks()) {
-                int[] startSamples = intersectionFinder.sampleNumbers(track, movie);
-                if (i < startSamples.length) {
-                    int startSample = startSamples[i];
+                if (getAllowedHandlers().isEmpty() || getAllowedHandlers().contains(track.getHandler())) {
+                    int[] startSamples = intersectionFinder.sampleNumbers(track, movie);
 
-                    int endSample = i + 1 < startSamples.length ? startSamples[i + 1] : track.getSamples().size();
+                    if (i < startSamples.length) {
+                        int startSample = startSamples[i];
 
-                    if (startSample == endSample) {
-                        // empty fragment
-                        // just don't add any boxes.
-                    } else if (track.getType() == Track.Type.UNKNOWN || track.getType() == Track.Type.NULL) {
-                        // no unknown or null tracks
-                    } else {
-                        isoFile.addBox(createMoof(startSample, endSample, track, i + 1));
-                        MediaDataBoxWithSamples mdat = new MediaDataBoxWithSamples();
-                        System.err.println("Create mdat from " + startSample + " to " + endSample);
-                        for (Sample sample : track.getSamples().subList(startSample, endSample)) {
-                            mdat.addSample(sample);
+                        int endSample = i + 1 < startSamples.length ? startSamples[i + 1] : track.getSamples().size();
+
+                        if (startSample == endSample) {
+                            // empty fragment
+                            // just don't add any boxes.
+                        } else {
+                            isoFile.addBox(createMoof(startSample, endSample, track, i + 1));
+                            MediaDataBoxWithSamples mdat = new MediaDataBoxWithSamples();
+                            System.err.println("Create mdat from " + startSample + " to " + endSample);
+                            for (Sample sample : track.getSamples().subList(startSample, endSample)) {
+                                mdat.addSample(sample);
+                            }
+                            isoFile.addBox(mdat);
                         }
-                        isoFile.addBox(mdat);
-                    }
 
-                } else {
-                    //obvious this track has not that many fragments
+                    } else {
+                        //obvious this track has not that many fragments
+                    }
                 }
             }
         }
@@ -152,7 +158,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
                 }
                 if (track.getSyncSamples() != null && track.getSyncSamples().length > 0) {
                     // we have to mark non-sync samples!
-                    sflags.setSampleIsDifferenceSample(Arrays.binarySearch(track.getSyncSamples(), i) < 0);
+                    sflags.setSampleIsDifferenceSample(Arrays.binarySearch(track.getSyncSamples(), startSample + i + 1) < 0);
                 }
                 // i don't have sample degradation
                 entry.setSampleFlags(sflags);
@@ -229,9 +235,7 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
 
         for (Track track : movie.getTracks()) {
-            if (track.getType() != Track.Type.UNKNOWN) {
-                movieBox.addBox(createTrackBox(track, movie));
-            }
+            movieBox.addBox(createTrackBox(track, movie));
         }
         // metadata here
         return movieBox;
@@ -283,47 +287,11 @@ public class FragmentedMp4Builder implements Mp4Builder {
         mdia.addBox(mdhd);
         HandlerBox hdlr = new HandlerBox();
         mdia.addBox(hdlr);
-        switch (track.getType()) {
-            case VIDEO:
-                hdlr.setHandlerType("vide");
-                break;
-            case SOUND:
-                hdlr.setHandlerType("soun");
-                break;
-            case HINT:
-                hdlr.setHandlerType("hint");
-                break;
-            case TEXT:
-                hdlr.setHandlerType("text");
-                break;
-            case AMF0:
-                hdlr.setHandlerType("data");
-                break;
-            default:
-                throw new RuntimeException("Dont know handler type " + track.getType());
-        }
+        hdlr.setHandlerType(track.getHandler());
 
         MediaInformationBox minf = new MediaInformationBox();
-        switch (track.getType()) {
-            case VIDEO:
-                VideoMediaHeaderBox vmhd = new VideoMediaHeaderBox();
-                minf.addBox(vmhd);
-                break;
-            case SOUND:
-                SoundMediaHeaderBox smhd = new SoundMediaHeaderBox();
-                minf.addBox(smhd);
-                break;
-            case HINT:
-                HintMediaHeaderBox hmhd = new HintMediaHeaderBox();
-                minf.addBox(hmhd);
-                break;
-            case TEXT:
-            case AMF0:
-            case NULL:
-                NullMediaHeaderBox nmhd = new NullMediaHeaderBox();
-                minf.addBox(nmhd);
-                break;
-        }
+        minf.addBox(track.getMediaHeaderBox());
+
         // dinf: all these three boxes tell us is that the actual
         // data is in the current file and not somewhere external
         DataInformationBox dinf = new DataInformationBox();

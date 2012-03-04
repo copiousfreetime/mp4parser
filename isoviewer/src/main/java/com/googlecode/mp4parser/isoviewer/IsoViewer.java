@@ -5,9 +5,7 @@ import com.coremedia.iso.gui.IsoViewerPanel;
 import org.jdesktop.application.*;
 import org.jdesktop.application.session.PropertySupport;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +25,12 @@ public class IsoViewer extends SingleFrameApplication {
 
         if (args.length > 0) {
             openInitially = new File(args[0]);
+        }
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }

@@ -1,9 +1,6 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.mdat.Sample;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Track;
@@ -123,9 +120,11 @@ public class CroppedTrack extends AbstractTrack {
         return origTrack.getTrackMetaData();
     }
 
-    public Type getType() {
-        return origTrack.getType();
+    public String getHandler() {
+        return origTrack.getHandler();
     }
 
-
+    public AbstractMediaHeaderBox getMediaHeaderBox() {
+        return origTrack.getMediaHeaderBox();
+    }
 }

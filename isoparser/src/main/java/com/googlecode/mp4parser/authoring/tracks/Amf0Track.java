@@ -1,9 +1,6 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.mdat.ByteArraySampleImpl;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
@@ -89,7 +86,11 @@ public class Amf0Track extends AbstractTrack  {
         return trackMetaData;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Type getType() {
-        return Type.AMF0;
+    public String getHandler() {
+        return "data";
+    }
+
+    public AbstractMediaHeaderBox getMediaHeaderBox() {
+        return new NullMediaHeaderBox();
     }
 }

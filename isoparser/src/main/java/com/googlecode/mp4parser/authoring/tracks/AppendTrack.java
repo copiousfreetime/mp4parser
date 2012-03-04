@@ -1,10 +1,7 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.mdat.Sample;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Track;
@@ -139,7 +136,11 @@ public class AppendTrack extends AbstractTrack {
         return tracks[0].getTrackMetaData();
     }
 
-    public Type getType() {
-        return tracks[0].getType();
+    public String getHandler() {
+        return tracks[0].getHandler();
+    }
+
+    public AbstractMediaHeaderBox getMediaHeaderBox() {
+        return tracks[0].getMediaHeaderBox();
     }
 }

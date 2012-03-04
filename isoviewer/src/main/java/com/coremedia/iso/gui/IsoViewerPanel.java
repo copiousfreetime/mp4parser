@@ -21,6 +21,7 @@ import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.TrackBox;
 import com.coremedia.iso.boxes.mdat.ByteArraySampleList;
 import com.coremedia.iso.gui.hex.JHexEditor;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 import com.googlecode.mp4parser.util.Path;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Resource;
@@ -36,6 +37,8 @@ import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * The main UI class for the ISO viewer. Contains all other UI components.
@@ -191,7 +194,7 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
             }
         };
         Logger.getLogger("").addHandler(myTemperaryLogHandler);
-        isoFile.parse();
+
 
         Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
         System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
@@ -267,8 +270,12 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
             detailPanel.revalidate();
             ByteBuffer displayMe;
             if (object instanceof com.coremedia.iso.boxes.Box) {
-                throw new RuntimeException("OMG - so much to repair");
-                //displayMe = ((Box) object).getIsoFile().getOriginalIso().getSegment(((Box) object).getOffset(), ((Box) object).getSize());
+                displayMe = ByteBuffer.allocate(l2i(((Box) object).getSize()));
+                try {
+                    ((Box) object).getBox(new ByteBufferByteChannel(displayMe));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             } else {
                 displayMe = ByteBuffer.allocate(0);
             }

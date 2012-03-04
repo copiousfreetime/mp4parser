@@ -27,17 +27,15 @@ public class FragmentFileSet {
         FlatPackageWriterImpl flatPackageWriter = new FlatPackageWriterImpl();
         flatPackageWriter.setOutputDirectory(new File("/home/sannies/smootstreaming"));
         MovieCreator movieCreator = new MovieCreator();
-        List<Track> tracks = new LinkedList<Track>();
+        Movie movie = new Movie();
         for (String input : inputs) {
             FileChannel fc = new FileInputStream(input).getChannel();
             Movie m = movieCreator.build(fc);
             for (Track track : m.getTracks()) {
-                tracks.add(track);
+                movie.addTrack(track);
             }
 
         }
-        Movie movie = new Movie();
-        movie.setTracks(tracks);
         flatPackageWriter.write(movie);
     }
 }

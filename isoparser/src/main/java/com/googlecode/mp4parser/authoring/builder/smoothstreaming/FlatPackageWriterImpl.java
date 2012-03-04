@@ -12,10 +12,10 @@ import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class FlatPackageWriterImpl implements PackageWriter {
     private File outputDirectory;
@@ -48,18 +48,21 @@ public class FlatPackageWriterImpl implements PackageWriter {
                     mediaOutDir = new File(outputDirectory, "video");
                 } else {
                     System.err.println("Skipping Track with handler " + track.getHandler() + " and " + track.getMediaHeaderBox().getClass().getSimpleName());
-                    break;
+                    continue;
                 }
                 File bitrateOutputDir = new File(mediaOutDir, bitrate);
                 bitrateOutputDir.mkdirs();
+
                 long[] fragmentTimes = manifestWriter.calculateFragmentDurations(track, qualities);
                 long startTime = 0;
+                int currentFragment = 0;
                 while (boxIt.hasNext()) {
                     Box b = boxIt.next();
                     if (b instanceof MovieFragmentBox) {
                         assert ((MovieFragmentBox) b).getTrackCount() == 1;
                         if (((MovieFragmentBox) b).getTrackNumbers()[0] == trackId) {
                             FileOutputStream fos = new FileOutputStream(new File(bitrateOutputDir, Long.toString(startTime)));
+                            startTime += fragmentTimes[currentFragment++];
                             FileChannel fc = fos.getChannel();
                             Box mdat = boxIt.next();
                             assert mdat.getType().equals("mdat");
@@ -69,13 +72,10 @@ public class FlatPackageWriterImpl implements PackageWriter {
                     }
 
                 }
-                for (Box box : isoFile.getBoxes()) {
-
-                }
-
         }
-
-        manifestWriter.getManifest(qualities);
+        FileWriter fw = new FileWriter(new File(outputDirectory, "Manifest"));
+        fw.write(manifestWriter.getManifest(qualities));
+        fw.close();
 
     }
 }

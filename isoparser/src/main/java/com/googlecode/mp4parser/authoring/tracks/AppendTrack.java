@@ -1,14 +1,18 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
 import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.mdat.Sample;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -35,8 +39,8 @@ public class AppendTrack extends AbstractTrack {
         }
     }
 
-    public List<? extends Sample> getSamples() {
-        ArrayList<Sample> lists = new ArrayList<Sample>();
+    public List<ByteBuffer> getSamples() {
+        ArrayList<ByteBuffer> lists = new ArrayList<ByteBuffer>();
 
         for (Track track : tracks) {
             lists.addAll(track.getSamples());

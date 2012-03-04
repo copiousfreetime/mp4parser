@@ -46,5 +46,33 @@ public class ReadWriteExample {
 
     }
 
+    /*
+      public static void main(String[] args) throws IOException {
+        MovieCreator mc = new MovieCreator();
+
+        Movie video = mc.build(new FileInputStream("/media/scratch/qualitaetstest_cinovu_sherminfiles/abendlandinchristenhand_1039kps.mp4").getChannel());
+
+        IsoFile out1 = new FragmentedMp4Builder().build(video);
+        IsoFile out2 = new DefaultMp4Builder().build(video);
+
+
+        FileChannel fc1 = new RandomAccessFile("output.fmp4", "rw").getChannel();
+        fc1.position(0);
+        out1.getBox(fc1);
+        fc1.truncate(fc1.position());
+        fc1.close();
+
+        FileChannel fc2 = new RandomAccessFile("output.mp4", "rw").getChannel();
+        fc2.position(0);
+        out2.getBox(fc2);
+        fc2.truncate(fc2.position());
+        fc2.close();
+
+
+    }
+
+
+     */
+
 
 }

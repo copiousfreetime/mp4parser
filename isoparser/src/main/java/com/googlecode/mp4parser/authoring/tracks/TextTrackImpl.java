@@ -1,7 +1,11 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.mdat.ByteArraySampleImpl;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.NullMediaHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.coremedia.iso.boxes.sampleentry.TextSampleEntry;
 import com.googlecode.mp4parser.authoring.AbstractTrack;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
@@ -10,6 +14,7 @@ import com.googlecode.mp4parser.boxes.threegpp26245.FontTableBox;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -48,13 +53,13 @@ public class TextTrackImpl extends AbstractTrack {
     }
 
 
-    public List<ByteArraySampleImpl> getSamples() {
-        List<ByteArraySampleImpl> samples = new LinkedList<ByteArraySampleImpl>();
+    public List<ByteBuffer> getSamples() {
+        List<ByteBuffer> samples = new LinkedList<ByteBuffer>();
         long lastEnd = 0;
         for (Line sub : subs) {
             long silentTime = sub.from - lastEnd;
             if (silentTime > 0) {
-                samples.add(new ByteArraySampleImpl(new byte[]{0, 0}));
+                samples.add(ByteBuffer.wrap(new byte[]{0, 0}));
             } else if (silentTime < 0) {
                 throw new Error("Subtitle display times may not intersect");
             }
@@ -67,7 +72,7 @@ public class TextTrackImpl extends AbstractTrack {
             } catch (IOException e) {
                 throw new Error("VM is broken. Does not support UTF-8");
             }
-            samples.add(new ByteArraySampleImpl(baos.toByteArray()));
+            samples.add(ByteBuffer.wrap(baos.toByteArray()));
             lastEnd = sub.to;
         }
         return samples;

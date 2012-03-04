@@ -16,7 +16,9 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.IsoTypeReader;
+import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.DoNotParseDetail;
 
 import java.io.IOException;

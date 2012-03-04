@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * This box contains all the objects that declare characteristic information of the media in the track.
  */

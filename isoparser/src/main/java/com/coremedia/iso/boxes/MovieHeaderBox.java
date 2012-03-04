@@ -22,8 +22,6 @@ import com.coremedia.iso.IsoTypeWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
-
 /**
  * <code>
  * Box Type: 'mvhd'<br>

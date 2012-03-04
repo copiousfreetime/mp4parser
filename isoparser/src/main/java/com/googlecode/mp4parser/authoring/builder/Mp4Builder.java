@@ -4,7 +4,6 @@ import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.authoring.Movie;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Transforms a <code>Movie</code> object to an IsoFile. Implementations can

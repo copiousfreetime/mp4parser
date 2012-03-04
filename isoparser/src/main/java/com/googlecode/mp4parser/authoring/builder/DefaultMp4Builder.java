@@ -1,15 +1,35 @@
 package com.googlecode.mp4parser.authoring.builder;
 
 import com.coremedia.iso.BoxParser;
-import com.coremedia.iso.ChannelHelper;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.mdat.Sample;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.DataEntryUrlBox;
+import com.coremedia.iso.boxes.DataInformationBox;
+import com.coremedia.iso.boxes.DataReferenceBox;
+import com.coremedia.iso.boxes.EditBox;
+import com.coremedia.iso.boxes.EditListBox;
+import com.coremedia.iso.boxes.FileTypeBox;
+import com.coremedia.iso.boxes.HandlerBox;
+import com.coremedia.iso.boxes.MediaBox;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.MediaInformationBox;
+import com.coremedia.iso.boxes.MovieBox;
+import com.coremedia.iso.boxes.MovieHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleSizeBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.SampleToChunkBox;
+import com.coremedia.iso.boxes.StaticChunkOffsetBox;
+import com.coremedia.iso.boxes.SyncSampleBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
-import sun.nio.ch.DirectBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,7 +37,15 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
@@ -29,7 +57,7 @@ public class DefaultMp4Builder implements Mp4Builder {
     Set<StaticChunkOffsetBox> chunkOffsetBoxes = new HashSet<StaticChunkOffsetBox>();
     private static Logger LOG = Logger.getLogger(DefaultMp4Builder.class.getName());
 
-    HashMap<Track, List<? extends Sample>> track2Sample = new HashMap<Track, List<? extends Sample>>();
+    HashMap<Track, List<ByteBuffer>> track2Sample = new HashMap<Track, List<ByteBuffer>>();
     HashMap<Track, long[]> track2SampleSizes = new HashMap<Track, long[]>();
     private FragmentIntersectionFinder intersectionFinder = new TwoSecondIntersectionFinder();
 
@@ -47,11 +75,11 @@ public class DefaultMp4Builder implements Mp4Builder {
         LOG.info("Creating movie " + movie);
         for (Track track : movie.getTracks()) {
             // getting the samples may be a time consuming activity
-            List<? extends Sample> samples = track.getSamples();
+            List<ByteBuffer> samples = track.getSamples();
             track2Sample.put(track, samples);
             long[] sizes = new long[samples.size()];
             for (int i = 0; i < sizes.length; i++) {
-                sizes[i] = samples.get(i).getSize();
+                sizes[i] = samples.get(i).limit();
             }
             track2SampleSizes.put(track, sizes);
         }
@@ -317,9 +345,9 @@ public class DefaultMp4Builder implements Mp4Builder {
 
                     for (int j = l2i(firstSampleOfChunk); j < firstSampleOfChunk + chunkSizes[i]; j++) {
 
-                        Sample s = DefaultMp4Builder.this.track2Sample.get(track).get(j);
-                        contentSize += s.getBytes().limit();
-                        samples.add((ByteBuffer) s.getBytes().rewind());
+                        ByteBuffer s = DefaultMp4Builder.this.track2Sample.get(track).get(j);
+                        contentSize += s.limit();
+                        samples.add((ByteBuffer) s.rewind());
                     }
 
                 }

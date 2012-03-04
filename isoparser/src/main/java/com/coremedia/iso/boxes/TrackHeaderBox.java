@@ -23,8 +23,6 @@ import com.coremedia.iso.IsoTypeWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
-
 /**
  * This box specifies the characteristics of a single track. Exactly one Track Header Box is contained in a track.<br>
  * In the absence of an edit list, the presentation of a track starts at the beginning of the overall presentation. An

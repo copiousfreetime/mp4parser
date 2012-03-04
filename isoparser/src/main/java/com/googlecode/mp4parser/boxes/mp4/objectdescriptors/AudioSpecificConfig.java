@@ -15,8 +15,6 @@
  */
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import com.coremedia.iso.Hex;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;

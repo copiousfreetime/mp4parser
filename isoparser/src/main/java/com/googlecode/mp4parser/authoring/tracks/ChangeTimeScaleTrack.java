@@ -1,10 +1,14 @@
 package com.googlecode.mp4parser.authoring.tracks;
 
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.mdat.Sample;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.TrackMetaData;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +75,7 @@ public class ChangeTimeScaleTrack implements Track {
         return source.isInPoster();
     }
 
-    public List<? extends Sample> getSamples() {
+    public List<ByteBuffer> getSamples() {
         return source.getSamples();
     }
 

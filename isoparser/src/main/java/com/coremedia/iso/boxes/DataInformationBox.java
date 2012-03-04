@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * <code>
  * Box Type: 'dinf'<br>

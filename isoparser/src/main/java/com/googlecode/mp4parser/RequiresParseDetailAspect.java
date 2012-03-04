@@ -2,7 +2,6 @@ package com.googlecode.mp4parser;
 
 import com.coremedia.iso.boxes.AbstractBox;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 

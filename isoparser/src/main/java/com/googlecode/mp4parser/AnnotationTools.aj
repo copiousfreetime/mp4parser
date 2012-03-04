@@ -1,13 +1,13 @@
 package com.googlecode.mp4parser;
 
 
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.Signature;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.Signature;
 
 public aspect AnnotationTools {
 

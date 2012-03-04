@@ -19,7 +19,6 @@ package com.coremedia.iso.boxes.fragment;
 import com.coremedia.iso.IsoTypeReader;
 import com.coremedia.iso.IsoTypeWriter;
 import com.coremedia.iso.boxes.AbstractFullBox;
-import com.googlecode.mp4parser.ParseDetail;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -346,7 +345,7 @@ public class TrackRunBox extends AbstractFullBox {
     }
 
     public String getFirstSampleFlags4View() {
-        return firstSampleFlags.toString();
+        return firstSampleFlags != null ? firstSampleFlags.toString() : "";
     }
 
     public void setFirstSampleFlags(SampleFlags firstSampleFlags) {

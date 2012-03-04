@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * The sample table contains all the time and data indexing of the media samples in a track. Using the tables
  * here, it is possible to locate samples in time, determine their type (e.g. I-frame or not), and determine their

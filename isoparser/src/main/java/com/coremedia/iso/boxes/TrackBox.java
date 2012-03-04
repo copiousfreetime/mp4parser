@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * Tracks are used for two purposes: (a) to contain media data (media tracks) and (b) to contain packetization
  * information for streaming protocols (hint tracks).  <br>

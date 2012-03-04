@@ -5,7 +5,6 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
 import java.io.IOException;
-import java.util.List;
 
 public interface ManifestWriter {
     String getManifest(Movie inputs) throws IOException;

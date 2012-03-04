@@ -21,7 +21,11 @@ import com.coremedia.iso.IsoTypeWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import static com.coremedia.iso.boxes.CastUtils.l2i;
 

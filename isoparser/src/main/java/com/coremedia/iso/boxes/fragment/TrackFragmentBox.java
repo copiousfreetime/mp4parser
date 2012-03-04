@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractContainerBox;
 import com.coremedia.iso.boxes.Box;
 

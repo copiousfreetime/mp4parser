@@ -1,15 +1,31 @@
 package com.coremedia.iso.boxes.mdat;
 
-import com.coremedia.iso.IsoFileConvenienceHelper;
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.*;
+import com.coremedia.iso.IsoFile;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.ChunkOffsetBox;
+import com.coremedia.iso.boxes.SampleSizeBox;
+import com.coremedia.iso.boxes.SampleToChunkBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackRunBox;
 
-import java.util.*;
+import java.nio.ByteBuffer;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  *
  */
-public abstract class SampleList<E> extends AbstractList<E> {
+public class SampleList extends AbstractList<ByteBuffer> {
 
     Map<Long, Long> offsets2Sizes;
     List<Long> offsetKeys = null;
@@ -100,7 +116,23 @@ public abstract class SampleList<E> extends AbstractList<E> {
                 }
             }
         }
+        this.isoFile = trackBox.getIsoFile();
 
+        long currentOffset = 0;
+        for (Box b : isoFile.getBoxes()) {
+            long currentSize = b.getSize();
+            if ("mdat".equals(b.getType())) {
+                if (b instanceof MediaDataBox) {
+                    long contentOffset = currentOffset + ((MediaDataBox) b).getHeader().limit();
+                    mdatStartCache.put((MediaDataBox) b, contentOffset);
+                    mdatEndCache.put((MediaDataBox) b, contentOffset + currentSize);
+                    mdats.add((MediaDataBox) b);
+                } else {
+                    throw new RuntimeException("Sample need to be in mdats and mdats need to be instanceof MediaDataBox");
+                }
+            }
+            currentOffset += currentSize;
+        }
 
     }
 
@@ -108,6 +140,34 @@ public abstract class SampleList<E> extends AbstractList<E> {
     @Override
     public int size() {
         return offsets2Sizes.size();
+    }
+
+    IsoFile isoFile;
+    HashMap<MediaDataBox, Long> mdatStartCache = new HashMap<MediaDataBox, Long>();
+    HashMap<MediaDataBox, Long> mdatEndCache = new HashMap<MediaDataBox, Long>();
+    ArrayList<MediaDataBox> mdats = new ArrayList<MediaDataBox>(1);
+
+
+
+    @Override
+    public ByteBuffer get(int index) {
+        // it is a two stage lookup: from index to offset to size
+        Long offset = getOffsetKeys().get(index);
+        int sampleSize = l2i(offsets2Sizes.get(offset));
+
+        for (MediaDataBox mediaDataBox : mdats) {
+            long start = mdatStartCache.get(mediaDataBox);
+            long end = mdatEndCache.get(mediaDataBox);
+            if ((start <= offset) && (offset + sampleSize <= end)) {
+                ByteBuffer bb = mediaDataBox.getContent();
+                bb.position(l2i(offset - start));
+                ByteBuffer sample = bb.slice();
+                sample.limit(sampleSize);
+                return sample;
+            }
+        }
+
+        throw new RuntimeException("The sample with offset " + offset + " and size " + sampleSize + " is NOT located within an mdat");
     }
 
 

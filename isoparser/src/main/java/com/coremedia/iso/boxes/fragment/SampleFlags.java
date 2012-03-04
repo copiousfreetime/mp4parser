@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.boxes.fragment;
 
-import com.coremedia.iso.IsoTypeWriter;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitReaderBuffer;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.BitWriterBuffer;
 

@@ -23,6 +23,7 @@ public class BoxJTree extends JTree implements PropertySupport {
     public BoxJTree() {
         setCellRenderer(new BoxNodeRenderer());
         setRootVisible(false);
+        setLargeModel(true);
         setName("boxTree");
     }
 

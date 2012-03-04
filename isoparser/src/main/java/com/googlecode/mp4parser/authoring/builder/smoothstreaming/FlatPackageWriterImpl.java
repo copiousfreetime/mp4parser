@@ -15,7 +15,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.util.*;
+import java.util.Iterator;
 
 public class FlatPackageWriterImpl implements PackageWriter {
     private File outputDirectory;

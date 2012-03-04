@@ -1,9 +1,6 @@
 package com.googlecode.mp4parser.boxes.mp4.objectdescriptors;
 
-import com.coremedia.iso.IsoTypeReader;
-
 import java.nio.ByteBuffer;
-import java.util.BitSet;
 
 public class BitReaderBuffer {
 

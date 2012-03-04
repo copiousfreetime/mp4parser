@@ -4,7 +4,6 @@ import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
 import com.googlecode.mp4parser.authoring.tracks.ChangeTimeScaleTrack;
 
 import java.io.IOException;

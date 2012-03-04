@@ -18,7 +18,6 @@ package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.BoxParser;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
-import sun.util.LocaleServiceProviderPool;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

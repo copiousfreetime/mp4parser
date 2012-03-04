@@ -1,19 +1,55 @@
 package com.googlecode.mp4parser.authoring.builder;
 
+import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.fragment.*;
-import com.coremedia.iso.boxes.mdat.MediaDataBoxWithSamples;
-import com.coremedia.iso.boxes.mdat.Sample;
+import com.coremedia.iso.IsoTypeWriter;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.ContainerBox;
+import com.coremedia.iso.boxes.DataEntryUrlBox;
+import com.coremedia.iso.boxes.DataInformationBox;
+import com.coremedia.iso.boxes.DataReferenceBox;
+import com.coremedia.iso.boxes.FileTypeBox;
+import com.coremedia.iso.boxes.HandlerBox;
+import com.coremedia.iso.boxes.MediaBox;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.MediaInformationBox;
+import com.coremedia.iso.boxes.MovieBox;
+import com.coremedia.iso.boxes.MovieHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.StaticChunkOffsetBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
+import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
+import com.coremedia.iso.boxes.fragment.MovieFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.SampleFlags;
+import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
+import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
+import com.coremedia.iso.boxes.fragment.TrackRunBox;
 import com.googlecode.mp4parser.authoring.DateHelper;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.nio.channels.GatheringByteChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.logging.Logger;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * Creates a fragmented MP4 file.
@@ -80,12 +116,61 @@ public class FragmentedMp4Builder implements Mp4Builder {
     }
 
     private Box createMdat(int startSample, int endSample, Track track, int i) {
-        MediaDataBoxWithSamples mdat = new MediaDataBoxWithSamples();
-        System.err.println("Create mdat from " + startSample + " to " + endSample);
-        for (Sample sample : track.getSamples().subList(startSample, endSample)) {
-            mdat.addSample(sample);
-        }
-        return mdat;
+        final List<ByteBuffer> samples = ByteBufferHelper.mergeAdjacentBuffers(track.getSamples().subList(startSample, endSample));
+        return new Box() {
+            ContainerBox parent;
+            public ContainerBox getParent() {
+                return parent;
+            }
+
+            public void setParent(ContainerBox parent) {
+                this.parent = parent;
+            }
+
+            public long getSize() {
+                long size = 8; // I don't expect 2gig fragments
+                for (ByteBuffer sample : samples) {
+                    size+=sample.limit();
+                }
+                return size;
+            }
+
+            public String getType() {
+                return "mdat";
+            }
+
+            public void getBox(WritableByteChannel writableByteChannel) throws IOException {
+                ByteBuffer header = ByteBuffer.allocate(8);
+                IsoTypeWriter.writeUInt32(header, l2i(getSize()));
+                header.put(IsoFile.fourCCtoBytes(getType()));
+                header.rewind();
+                writableByteChannel.write(header);
+                if (writableByteChannel instanceof GatheringByteChannel) {
+
+                    int STEPSIZE = 1024;
+                    for (int i = 0; i < Math.ceil((double) samples.size() / STEPSIZE); i++) {
+                        List<ByteBuffer> sublist = samples.subList(
+                                i * STEPSIZE, // start
+                                (i + 1) * STEPSIZE < samples.size() ? (i + 1) * STEPSIZE : samples.size()); // end
+                        ByteBuffer sampleArray[] = sublist.toArray(new ByteBuffer[sublist.size()]);
+                        do {
+                            ((GatheringByteChannel) writableByteChannel).write(sampleArray);
+                        } while (sampleArray[sampleArray.length - 1].remaining() > 0);
+                    }
+                    //System.err.println(bytesWritten);
+                } else {
+                    for (ByteBuffer sample : samples) {
+                        sample.rewind();
+                        writableByteChannel.write(sample);
+                    }
+                }
+
+            }
+
+            public void parse(ReadableByteChannel inFC, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+
+            }
+        };
 
     }
 
@@ -126,11 +211,11 @@ public class FragmentedMp4Builder implements Mp4Builder {
 
 
     List<? extends Box> createTruns(int startSample, int endSample, Track track, int sequenceNumber) {
-        List<? extends Sample> samples = track.getSamples().subList(startSample, endSample);
+        List<ByteBuffer> samples = track.getSamples().subList(startSample, endSample);
 
         long[] sampleSizes = new long[samples.size()];
         for (int i = 0; i < sampleSizes.length; i++) {
-            sampleSizes[i] = samples.get(i).getSize();
+            sampleSizes[i] = samples.get(i).limit();
         }
         TrackRunBox trun = new TrackRunBox();
 
@@ -150,14 +235,15 @@ public class FragmentedMp4Builder implements Mp4Builder {
         long compositionTimeEntriesLeft = compositionTimeQueue != null ? compositionTimeQueue.peek().getCount() : -1;
 
 
-        if (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty() ||
-                track.getSyncSamples() != null && track.getSyncSamples().length != 0) {
-            trun.setSampleFlagsPresent(true);
-        }
+        boolean sampleFlagsRequired = (track.getSampleDependencies() != null && !track.getSampleDependencies().isEmpty() ||
+                track.getSyncSamples() != null && track.getSyncSamples().length != 0);
+
+        trun.setSampleFlagsPresent(sampleFlagsRequired);
+
         for (int i = 0; i < sampleSizes.length; i++) {
             TrackRunBox.Entry entry = new TrackRunBox.Entry();
             entry.setSampleSize(sampleSizes[i]);
-            if (trun.isSampleFlagsPresent()) {
+            if (sampleFlagsRequired) {
                 //if (false) {
                 SampleFlags sflags = new SampleFlags();
 

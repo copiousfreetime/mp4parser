@@ -1,6 +1,5 @@
 package com.coremedia.iso;
 
-import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.ContainerBox;
 import com.coremedia.iso.boxes.UserBox;

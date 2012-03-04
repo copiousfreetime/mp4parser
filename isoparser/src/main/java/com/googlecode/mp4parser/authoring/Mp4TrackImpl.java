@@ -1,14 +1,21 @@
 package com.googlecode.mp4parser.authoring;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.SampleDependencyTypeBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
 import com.coremedia.iso.boxes.fragment.TrackRunBox;
-import com.coremedia.iso.boxes.mdat.ByteArraySampleList;
-import com.coremedia.iso.boxes.mdat.Sample;
-import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
+import com.coremedia.iso.boxes.mdat.SampleList;
 
+import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +26,7 @@ import static com.coremedia.iso.boxes.CastUtils.l2i;
  * Represents a single track of an MP4 file.
  */
 public class Mp4TrackImpl extends AbstractTrack {
-    private List<? extends Sample> samples;
+    private List<ByteBuffer> samples;
     private SampleDescriptionBox sampleDescriptionBox;
     private List<TimeToSampleBox.Entry> decodingTimeEntries;
     private List<CompositionTimeToSample.Entry> compositionTimeEntries;
@@ -30,7 +37,7 @@ public class Mp4TrackImpl extends AbstractTrack {
     private AbstractMediaHeaderBox mihd;
 
     public Mp4TrackImpl(TrackBox trackBox, ReadableByteChannel source) {
-        samples = new ByteArraySampleList(trackBox);
+        samples = new SampleList(trackBox);
         SampleTableBox stbl = trackBox.getMediaBox().getMediaInformationBox().getSampleTableBox();
         handler = trackBox.getMediaBox().getHandlerBox().getHandlerType();
 
@@ -115,7 +122,7 @@ public class Mp4TrackImpl extends AbstractTrack {
         trackMetaData.setLayer(tkhd.getLayer());
     }
 
-    public List<? extends Sample> getSamples() {
+    public List<ByteBuffer> getSamples() {
         return samples;
     }
 

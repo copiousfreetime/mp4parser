@@ -17,7 +17,6 @@
 package com.coremedia.iso.boxes;
 
 import com.coremedia.iso.IsoFile;
-import com.googlecode.mp4parser.DoNotParseDetail;
 
 import java.util.List;
 

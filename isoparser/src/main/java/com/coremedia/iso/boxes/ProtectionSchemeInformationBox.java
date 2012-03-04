@@ -16,8 +16,6 @@
 
 package com.coremedia.iso.boxes;
 
-import com.coremedia.iso.IsoFile;
-
 /**
  * The <code>ProtectionSchemeInformationBox</code> contains all the information required both
  * to understand the encryption transform applied and its parameters, and also to find other

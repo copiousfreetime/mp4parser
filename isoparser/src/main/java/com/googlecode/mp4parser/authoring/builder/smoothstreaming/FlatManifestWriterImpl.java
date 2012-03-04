@@ -2,9 +2,12 @@ package com.googlecode.mp4parser.authoring.builder.smoothstreaming;
 
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.IsoFileConvenienceHelper;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.OriginalFormatBox;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SoundMediaHeaderBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
-import com.coremedia.iso.boxes.mdat.Sample;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
@@ -152,8 +155,8 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
     public long getBitrate(Track track) {
         long bitrate = 0;
-        for (Sample sample : track.getSamples()) {
-            bitrate += sample.getSize();
+        for (ByteBuffer sample : track.getSamples()) {
+            bitrate += sample.limit();
         }
         bitrate *= 8; // from bytes to bits
         bitrate /= getDuration(track) / track.getTrackMetaData().getTimescale(); // per second

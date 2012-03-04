@@ -22,8 +22,6 @@ import com.coremedia.iso.IsoTypeWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
-
 /**
  * This box defines overall information which is media-independent, and relevant to the entire presentation
  * considered as a whole.

@@ -17,8 +17,6 @@
 package com.coremedia.iso.boxes;
 
 
-import com.coremedia.iso.IsoFile;
-
 import java.util.List;
 
 /**

@@ -1,8 +1,6 @@
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.boxes.mdat.Sample;
-
-import javax.swing.*;
+import javax.swing.AbstractListModel;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -10,9 +8,9 @@ import java.util.List;
  *
  */
 public class SampleListModel extends AbstractListModel {
-    List<? extends Sample> list;
+    List<ByteBuffer> list;
 
-    public SampleListModel(List<? extends Sample> list) {
+    public SampleListModel(List<ByteBuffer> list) {
         this.list = list;
     }
 
@@ -21,7 +19,7 @@ public class SampleListModel extends AbstractListModel {
     }
 
     public ByteBuffer getElementAt(int index) {
-        return list.get(index).getBytes();
+        return list.get(index);
 
     }
 

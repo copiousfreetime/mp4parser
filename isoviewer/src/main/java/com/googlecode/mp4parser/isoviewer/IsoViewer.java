@@ -19,6 +19,13 @@ public class IsoViewer extends SingleFrameApplication {
     Logger logger = Logger.getLogger("IsoViewer");
     File openInitially = null;
 
+    public IsoViewer() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected void initialize(String[] args) {
@@ -27,11 +34,6 @@ public class IsoViewer extends SingleFrameApplication {
             openInitially = new File(args[0]);
         }
 
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
     }
 

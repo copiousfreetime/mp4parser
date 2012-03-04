@@ -93,11 +93,8 @@ public class MediaDataBoxWithSamples implements Box {
         for (Sample sample : samples) {
             nuSamples.add(sample.getBytes());
         }
-        System.err.println("Reanable gathering bytechannel !");
-        System.err.println("Reanable gathering bytechannel !");
-        System.err.println("Reanable gathering bytechannel !");
-       /* if (writableByteChannel instanceof GatheringByteChannel) {
-            int STEPSIZE = 1024;
+        if (writableByteChannel instanceof GatheringByteChannel) {
+            int STEPSIZE = 1024; // android throws exception when using more.
             for (int i = 0; i < Math.ceil((double) nuSamples.size() / STEPSIZE); i++) {
                 List<ByteBuffer> sublist = nuSamples.subList(
                         i * STEPSIZE, // start
@@ -108,9 +105,8 @@ public class MediaDataBoxWithSamples implements Box {
                 } while (sampleArray[sampleArray.length - 1].remaining() > 0);
             }
 
-        } else */{
+        } else {
             for (ByteBuffer byteBuffer : nuSamples) {
-                System.err.println(index++ + ": " + byteBuffer.limit());
                 writableByteChannel.write(byteBuffer);
             }
         }

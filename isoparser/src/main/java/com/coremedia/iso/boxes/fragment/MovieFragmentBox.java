@@ -88,4 +88,7 @@ public class MovieFragmentBox extends AbstractContainerBox  {
         return trackNumbers;
     }
 
+    public List<TrackRunBox> getTrackRunBoxes() {
+        return getBoxes(TrackRunBox.class, true);
+    }
 }

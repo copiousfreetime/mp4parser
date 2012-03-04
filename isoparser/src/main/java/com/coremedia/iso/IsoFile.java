@@ -78,7 +78,6 @@ public class IsoFile extends AbstractContainerBox {
         while (!done) {
             try {
                 Box box = boxParser.parseBox(byteChannel, this);
-                System.err.println(box.getType());
                 if (box != null) {
                     boxes.add(box);
                 } else {

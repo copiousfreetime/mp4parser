@@ -26,7 +26,7 @@ public class BitWriterBuffer {
             writeBits(i >> bitsSecondWrite, left);
             writeBits(i & (1 << bitsSecondWrite) - 1, bitsSecondWrite);
         }
-        buffer.position(initialPos + (int) Math.ceil((double)position / 8));
+        buffer.position(initialPos + position / 8 + ((position % 8 > 0) ? 1 : 0));
     }
 
 

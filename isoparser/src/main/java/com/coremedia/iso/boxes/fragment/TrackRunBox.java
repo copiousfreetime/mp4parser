@@ -185,25 +185,26 @@ public class TrackRunBox extends AbstractFullBox {
 
     protected long getContentSize() {
         long size = 8;
+        int flags = getFlags();
 
-        if ((getFlags() & 0x1) == 0x1) { //dataOffsetPresent
+        if ((flags & 0x1) == 0x1) { //dataOffsetPresent
             size += 4;
         }
-        if ((getFlags() & 0x4) == 0x4) { //firstSampleFlagsPresent
+        if ((flags & 0x4) == 0x4) { //firstSampleFlagsPresent
             size += 4;
         }
 
         long entrySize = 0;
-        if ((getFlags() & 0x100) == 0x100) { //sampleDurationPresent
+        if ((flags & 0x100) == 0x100) { //sampleDurationPresent
             entrySize += 4;
         }
-        if ((getFlags() & 0x200) == 0x200) { //sampleSizePresent
+        if ((flags & 0x200) == 0x200) { //sampleSizePresent
             entrySize += 4;
         }
-        if ((getFlags() & 0x400) == 0x400) { //sampleFlagsPresent
+        if ((flags & 0x400) == 0x400) { //sampleFlagsPresent
             entrySize += 4;
         }
-        if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
+        if ((flags & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
             entrySize += 4;
         }
         size += entrySize * entries.size();
@@ -213,25 +214,26 @@ public class TrackRunBox extends AbstractFullBox {
     protected void getContent(ByteBuffer bb) throws IOException {
         writeVersionAndFlags(bb);
         IsoTypeWriter.writeUInt32(bb, entries.size());
+        int flags = getFlags();
 
-        if ((getFlags() & 0x1) == 1) { //dataOffsetPresent
+        if ((flags & 0x1) == 1) { //dataOffsetPresent
             IsoTypeWriter.writeUInt32(bb, dataOffset);
         }
-        if ((getFlags() & 0x4) == 0x4) { //firstSampleFlagsPresent
+        if ((flags & 0x4) == 0x4) { //firstSampleFlagsPresent
             firstSampleFlags.getContent(bb);
         }
 
         for (Entry entry : entries) {
-            if ((getFlags() & 0x100) == 0x100) { //sampleDurationPresent
+            if ((flags & 0x100) == 0x100) { //sampleDurationPresent
                 IsoTypeWriter.writeUInt32(bb, entry.sampleDuration);
             }
-            if ((getFlags() & 0x200) == 0x200) { //sampleSizePresent
+            if ((flags & 0x200) == 0x200) { //sampleSizePresent
                 IsoTypeWriter.writeUInt32(bb, entry.sampleSize);
             }
-            if ((getFlags() & 0x400) == 0x400) { //sampleFlagsPresent
+            if ((flags & 0x400) == 0x400) { //sampleFlagsPresent
                 entry.sampleFlags.getContent(bb);
             }
-            if ((getFlags() & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
+            if ((flags & 0x800) == 0x800) { //sampleCompositionTimeOffsetPresent
                 bb.putInt(entry.sampleCompositionTimeOffset);
             }
         }

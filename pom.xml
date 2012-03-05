@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.coremedia.drm</groupId>
-    <artifactId>all</artifactId>
+    <artifactId>all-nio</artifactId>
     <packaging>pom</packaging>
     <version>2-SNAPSHOT</version>
     <name>IsoBox4j - All</name>
@@ -17,9 +17,17 @@
         <module>isoparser</module>
         <module>isoviewer</module>
         <module>examples</module>
-        <module>androidtest</module>
+
         <!--<module>codecs</module>-->
     </modules>
+    <profiles>
+        <profile>
+            <id>android</id>
+            <modules>
+                <module>androidtest</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

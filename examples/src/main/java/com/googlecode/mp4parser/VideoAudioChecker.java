@@ -1,25 +1,19 @@
 package com.googlecode.mp4parser;
 
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.HandlerBox;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.channels.Channels;
 import java.util.List;
 
 public class VideoAudioChecker {
 
     public static void main(String[] args) throws IOException {
-
-        IsoBufferWrapper isoBufferWrapper = new IsoBufferWrapperImpl(readFully(SubTitleExample.class.getResourceAsStream("/count-video.mp4")));
-        IsoFile isoFile = new IsoFile(isoBufferWrapper);
-        isoFile.parse();
+        IsoFile isoFile = new IsoFile(Channels.newChannel(SubTitleExample.class.getResourceAsStream("/count-video.mp4")));
     }
+
     public TYPE getType(IsoFile isoFile) {
 
         List<HandlerBox> handlerBoxes =
@@ -36,14 +30,4 @@ public class VideoAudioChecker {
         VIDEO;
     }
 
-
-    static byte[] readFully(InputStream is) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[2048];
-        int n = 0;
-        while (-1 != (n = is.read(buffer))) {
-            baos.write(buffer, 0, n);
-        }
-        return baos.toByteArray();
-    }
 }

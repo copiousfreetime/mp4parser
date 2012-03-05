@@ -2,13 +2,16 @@ package com.googlecode.mp4parser.isoviewer;
 
 
 import com.coremedia.iso.gui.IsoViewerPanel;
-import org.jdesktop.application.*;
-import org.jdesktop.application.session.PropertySupport;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ApplicationActionMap;
+import org.jdesktop.application.ApplicationContext;
+import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import java.awt.*;
+import javax.swing.UIManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -21,6 +24,13 @@ public class IsoViewer extends SingleFrameApplication {
     Logger logger = Logger.getLogger("IsoViewer");
     File openInitially = null;
 
+    public IsoViewer() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected void initialize(String[] args) {
@@ -28,6 +38,7 @@ public class IsoViewer extends SingleFrameApplication {
         if (args.length > 0) {
             openInitially = new File(args[0]);
         }
+
 
     }
 

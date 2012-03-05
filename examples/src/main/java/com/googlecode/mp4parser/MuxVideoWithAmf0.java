@@ -1,20 +1,23 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.builder.TwoSecondIntersectionFinder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.Amf0Track;
 import org.apache.commons.codec.binary.Base64;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -22,8 +25,8 @@ import java.util.Properties;
  */
 public class MuxVideoWithAmf0 {
     public static void main(String[] args) throws IOException {
-        Movie video = new MovieCreator().build(new IsoBufferWrapperImpl(readFully(Mp4WithAudioDelayExample.class.getResourceAsStream("/example-sans-amf0.mp4"))));
-        
+        Movie video = new MovieCreator().build(Channels.newChannel(Mp4WithAudioDelayExample.class.getResourceAsStream("/example-sans-amf0.mp4")));
+
         Properties props = new Properties();
         props.load(MuxVideoWithAmf0.class.getResourceAsStream("/amf0track.properties"));
         HashMap<Long, byte[]> samples = new HashMap<Long, byte[]>();
@@ -42,7 +45,7 @@ public class MuxVideoWithAmf0 {
         BufferedOutputStream bos = new BufferedOutputStream(fos);
         out.getBox(new IsoOutputStream(bos));
         bos.close();
-        
+
     }
 
     static byte[] readFully(InputStream is) throws IOException {

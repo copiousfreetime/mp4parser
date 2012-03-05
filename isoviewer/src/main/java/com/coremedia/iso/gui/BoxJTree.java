@@ -1,15 +1,16 @@
 package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.Box;
 import com.googlecode.mp4parser.util.Path;
 import org.jdesktop.application.session.PropertySupport;
 
-import javax.swing.*;
+import javax.swing.JTree;
 import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.util.*;
+import java.awt.Component;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -23,6 +24,7 @@ public class BoxJTree extends JTree implements PropertySupport {
     public BoxJTree() {
         setCellRenderer(new BoxNodeRenderer());
         setRootVisible(false);
+        setLargeModel(true);
         setName("boxTree");
     }
 
@@ -44,7 +46,7 @@ public class BoxJTree extends JTree implements PropertySupport {
 
     public void setSessionState(Component c, Object state) {
         LinkedList<String> openPath = (LinkedList<String>) state;
-        Path nuMp4Path = new Path((IsoFile)this.getModel().getRoot());
+        Path nuMp4Path = new Path((IsoFile) this.getModel().getRoot());
         if (!openPath.isEmpty()) {
 
             for (String s : openPath) {

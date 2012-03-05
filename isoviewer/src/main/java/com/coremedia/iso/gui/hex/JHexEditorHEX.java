@@ -25,7 +25,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
 
 /**
  * Shows the left part of the hex editor. Hex view.
@@ -64,7 +63,7 @@ public class JHexEditorHEX extends JComponent implements MouseListener, KeyListe
 
     public void paint(Graphics g) {
         debug("paint(" + g + ")");
-        debug("cursor=" + he.cursor + " buff.length=" + he.buff.size());
+        debug("cursor=" + he.cursor + " buff.length=" + he.buff.limit());
         Dimension d = getMinimumSize();
         g.setColor(Color.white);
         g.fillRect(0, 0, d.width, d.height);
@@ -74,42 +73,39 @@ public class JHexEditorHEX extends JComponent implements MouseListener, KeyListe
 
         int ini = he.getInicio() * 16;
         long fin = ini + (he.getNumberOfVisibleLines() * 16);
-        if (fin > he.buff.size()) fin = he.buff.size();
+        if (fin > he.buff.limit()) fin = he.buff.limit();
 
         //datos hex
         int x = 0;
         int y = 0;
-        try {
-            he.buff.position(ini);
-            for (int n = ini; n < fin; n++) {
-                if (n == he.cursor) {
-                    if (hasFocus()) {
-                        g.setColor(Color.black);
-                        he.filledCursor(g, (x * 3), y, 2);
-                        g.setColor(Color.blue);
-                        he.filledCursor(g, (x * 3) + cursor, y, 1);
-                    } else {
-                        g.setColor(Color.blue);
-                        he.cuadro(g, (x * 3), y, 2);
-                    }
-
-                    if (hasFocus()) g.setColor(Color.white);
-                    else g.setColor(Color.black);
-                } else {
+        he.buff.position(ini);
+        for (int n = ini; n < fin; n++) {
+            if (n == he.cursor) {
+                if (hasFocus()) {
                     g.setColor(Color.black);
+                    he.filledCursor(g, (x * 3), y, 2);
+                    g.setColor(Color.blue);
+                    he.filledCursor(g, (x * 3) + cursor, y, 1);
+                } else {
+                    g.setColor(Color.blue);
+                    he.cuadro(g, (x * 3), y, 2);
                 }
 
-                String s = ("0" + Integer.toHexString(he.buff.readByte()));
-                s = s.substring(s.length() - 2);
-                he.printString(g, s, ((x++) * 3), y);
-                if (x == 16) {
-                    x = 0;
-                    y++;
-                }
+                if (hasFocus()) g.setColor(Color.white);
+                else g.setColor(Color.black);
+            } else {
+                g.setColor(Color.black);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            String s = ("0" + Integer.toHexString(he.buff.get()));
+            s = s.substring(s.length() - 2);
+            he.printString(g, s, ((x++) * 3), y);
+            if (x == 16) {
+                x = 0;
+                y++;
+            }
         }
+
     }
 
     private void debug(String s) {

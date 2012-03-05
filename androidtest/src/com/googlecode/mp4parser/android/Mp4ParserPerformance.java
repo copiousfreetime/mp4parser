@@ -7,8 +7,6 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.TextView;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
-import com.coremedia.iso.RandomAccessFileIsoBufferWrapperImpl;
 import com.coremedia.iso.boxes.TimeToSampleBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
@@ -16,10 +14,11 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,13 +32,39 @@ public class Mp4ParserPerformance extends Activity {
         setContentView(R.layout.main);
         TextView tv = (TextView) findViewById(R.id.text);
         String text = "";
+
+        File sdCard = Environment.getExternalStorageDirectory();
+        /*        try {
+         FileChannel fc = new RandomAccessFile(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov").getAbsolutePath(), "r").getChannel();
+         ByteBuffer content = fc.map(FileChannel.MapMode.READ_ONLY, 0, 20000000) ;
+         ArrayList<ByteBuffer> bb = new ArrayList<ByteBuffer>(1200);
+         for (int i = 0; i < 1200; i++) {
+             content.position(i*1000);
+             ByteBuffer part = content.slice();
+             part.limit(1000);
+             bb.add(part );
+         }
+         FileOutputStream fos = new FileOutputStream(new File(sdCard, String.format("output.mp4")));
+         FileChannel outFC = fos.getChannel();
+         outFC.write(bb.toArray(new ByteBuffer[800]));
+         fos.close();
+         outFC.close();
+         tv.append("5");
+
+     } catch (FileNotFoundException e) {
+         throw new RuntimeException(e);
+     } catch (IOException e) {
+         throw new RuntimeException(e);
+     }   */
+
+
         try {
-            Debug.startMethodTracing("mp4");
-            File sdCard = Environment.getExternalStorageDirectory();
+            //Debug.startMethodTracing("mp4");
+
             long a = System.currentTimeMillis();
             tv.append("1");
 //            Movie movie = new MovieCreator().build(new RandomAccessFileIsoBufferWrapperImpl(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov")));
-            Movie movie = new MovieCreator().build(new RandomAccessFileIsoBufferWrapperImpl(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov")));
+            Movie movie = new MovieCreator().build(new RandomAccessFile(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov").getAbsolutePath(), "r").getChannel());
             tv.append("2");
             Log.v("PERF", "Parsing took " + (System.currentTimeMillis() - a));
             text += "Parsing took " + Long.toString(System.currentTimeMillis() - a) + "\n";
@@ -100,18 +125,22 @@ public class Mp4ParserPerformance extends Activity {
             }
             a = System.currentTimeMillis();
             tv.append("3");
-            IsoFile out = new DefaultMp4Builder().build(movie);
+            IsoFile mp4 = new DefaultMp4Builder().build(movie);
             Log.v("PERF", "Building took " + (System.currentTimeMillis() - a));
             text += "Building took " + (System.currentTimeMillis() - a) + "\n";
             tv.append("4");
             FileOutputStream fos = new FileOutputStream(new File(sdCard, String.format("output-%f-%f.mp4", startTime, endTime)));
-            BufferedOutputStream bos = new BufferedOutputStream(fos, 1024*1024);
+            FileChannel outFC = fos.getChannel();
             a = System.currentTimeMillis();
-            out.getBox(new IsoOutputStream(bos));
-            bos.close();
+            mp4.getBox(outFC);
+            long fileSize = outFC.size();
+            fos.close();
+            outFC.close();
             tv.append("5");
-            Log.v("PERF", "Writing took " + (System.currentTimeMillis() - a));
-            text += "Writing took " + (System.currentTimeMillis() - a) + "\n";
+            long systemEndTime = System.currentTimeMillis();
+            Log.v("PERF", "Writing took " + (systemEndTime - a));
+            text += "Writing took " + (systemEndTime - a) + "\n";
+            text += "Writing speed " + (fileSize / (systemEndTime - a) / 1000) + " MB/s\n";
             tv.setText(text);
             Debug.stopMethodTracing();
         } catch (IOException e) {

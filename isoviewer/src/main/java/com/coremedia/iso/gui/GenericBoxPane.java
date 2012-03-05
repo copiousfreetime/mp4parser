@@ -16,7 +16,6 @@
 
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullBox;
@@ -51,18 +50,14 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 
 /**
  * Detailed view of a Box.
@@ -133,9 +128,9 @@ public class GenericBoxPane extends JPanel {
     protected void addHeader() {
         JLabel displayName = new JLabel();
         if (box instanceof UnknownBox) {
-            displayName.setText("Unknown Box - " + IsoFile.bytesToFourCC(box.getType()));
+            displayName.setText("Unknown Box - " + box.getType());
         } else {
-            displayName.setText(names.getProperty(IsoFile.bytesToFourCC(box.getType()), IsoFile.bytesToFourCC(box.getType())));
+            displayName.setText(names.getProperty(box.getType(), box.getType()));
         }
 
         Font curFont = displayName.getFont();
@@ -147,19 +142,9 @@ public class GenericBoxPane extends JPanel {
         this.add(displayName);
         gridBagConstraints.gridwidth = 1;
         gridBagConstraints.gridy++;
+        add("type", new NonEditableJTextField(box.getType()));
 
-        try {
-            add("type", new NonEditableJTextField(new String(box.getType(), "ISO-8859-1")));
-        } catch (UnsupportedEncodingException e) {
-            add("type", new NonEditableJTextField(new String(box.getType())));
-        }
-        final byte[] guid = box.getUserType();
-        if (guid != null && guid.length > 0) {
-            ByteBuffer b = ByteBuffer.wrap(guid);
-            b.order(ByteOrder.BIG_ENDIAN);
-            UUID uuid = new UUID(b.getLong(), b.getLong());
-            add("userType", new NonEditableJTextField(uuid.toString()));
-        }
+
         add("size", new NonEditableJTextField(String.valueOf(box.getSize())));
 
 

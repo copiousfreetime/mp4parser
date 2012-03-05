@@ -16,31 +16,52 @@
 
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.IsoBufferWrapper;
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.coremedia.iso.gui.hex.JHexEditor;
+import com.googlecode.mp4parser.ByteBufferByteChannel;
 import com.googlecode.mp4parser.util.Path;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Resource;
 import org.jdesktop.application.session.PropertySupport;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Frame;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
+import static com.coremedia.iso.boxes.CastUtils.l2i;
 
 /**
  * The main UI class for the ISO viewer. Contains all other UI components.
@@ -73,8 +94,8 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
     }
 
 
-    public void createLayout()  {
-        IsoFile dummy = new IsoFile(new IsoBufferWrapperImpl(new byte[]{}));
+    public void createLayout() {
+        IsoFile dummy = new IsoFile();
         tree = new BoxJTree();
         tree.setModel(new IsoFileTreeModel(dummy));
         tree.addTreeSelectionListener(new TreeSelectionListener() {
@@ -97,7 +118,7 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
         JScrollPane scrollPane = new JScrollPane(detailPanel);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         rawDataSplitPane.setTopComponent(scrollPane);
-        rawDataSplitPane.setBottomComponent(new JHexEditor(new IsoBufferWrapperImpl(new byte[0])));
+        rawDataSplitPane.setBottomComponent(new JHexEditor(ByteBuffer.allocate(0)));
         rawDataSplitPane.setResizeWeight(0.8);
 
         JSplitPane splitPane = new JSplitPane();
@@ -153,17 +174,10 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
 
         JList jlist = new JList();
         jlist.setCellRenderer(new SampleListRenderer());
-        String handlerType = tb.getMediaBox().getHandlerReferenceBox().getHandlerType();
-        SampleDescriptionBox sampleDescriptionBox = tb.getMediaBox().getMediaInformationBox().getSampleTableBox().getSampleDescriptionBox();
-        List<AvcConfigurationBox> avcC = sampleDescriptionBox.getBoxes(AvcConfigurationBox.class, true);
-        int nalLengthSize = 0;
-        if (avcC != null && avcC.size() > 0) {
-            nalLengthSize = avcC.get(0).getLengthSizeMinusOne() + 1;
-        }
-        jlist.setModel(new SampleListModel(new SampleList(tb), tb.getTrackHeaderBox().getTrackId(), handlerType, nalLengthSize));
+        jlist.setModel(new SampleListModel(new SampleList(tb)));
         jlist.setLayoutOrientation(JList.VERTICAL);
         jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        jlist.setPrototypeCellValue(new SampleListModel.Entry(new IsoBufferWrapperImpl(new byte[1000]), 1000000000, 0, handlerType, nalLengthSize));
+        jlist.setPrototypeCellValue(ByteBuffer.allocate(1000));
         JScrollPane jScrollPane = new JScrollPane();
         jScrollPane.getViewport().add(jlist);
         detailPane.add(new JLabel(String.format(trackViewDetailPaneHeader, tb.getTrackHeaderBox().getTrackId())), BorderLayout.PAGE_START);
@@ -171,8 +185,8 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
         jlist.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    rawDataSplitPane.setBottomComponent(new JHexEditor(((SampleListModel.Entry) ((JList) e.getSource()).getSelectedValue()).sample));
-                    ;
+                    rawDataSplitPane.setBottomComponent(new JHexEditor((ByteBuffer) ((JList) e.getSource()).getSelectedValue()));
+
                 }
             }
         });
@@ -185,7 +199,7 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
 
     public void open(File f) throws IOException {
         this.file = f;
-        IsoFile isoFile = new IsoFile(new IsoBufferWrapperImpl(f));
+        IsoFile isoFile = new IsoFile(new RandomAccessFile(f, "r").getChannel());
         long start = System.nanoTime();
         final List<LogRecord> messages = new LinkedList<LogRecord>();
         Handler myTemperaryLogHandler = new Handler() {
@@ -203,7 +217,7 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
             }
         };
         Logger.getLogger("").addHandler(myTemperaryLogHandler);
-        isoFile.parse();
+
 
         Logger.getAnonymousLogger().removeHandler(myTemperaryLogHandler);
         System.err.println("Parsing took " + ((System.nanoTime() - start) / 1000000d) + "ms.");
@@ -212,7 +226,6 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
         tree.setModel(new IsoFileTreeModel(isoFile));
         tree.revalidate();
         Path nuMp4Path = new Path(isoFile);
-
 
 
         trackList.setModel(new TrackListModel(isoFile));
@@ -228,8 +241,8 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
 
         }
         if (details instanceof Box && oldMp4Path != null) {
-            String path = oldMp4Path.createPath((com.coremedia.iso.boxes.Box) details);
-            com.coremedia.iso.boxes.Box nuDetail = nuMp4Path.getPath(path);
+            String path = oldMp4Path.createPath((Box) details);
+            Box nuDetail = nuMp4Path.getPath(path);
             if (nuDetail != null) {
                 showDetails(nuDetail);
             } else {
@@ -277,18 +290,19 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
             detailPanel.removeAll();
             detailPanel.add(detailPane, BorderLayout.CENTER);
             detailPanel.revalidate();
-            IsoBufferWrapper displayMe;
+            ByteBuffer displayMe;
             if (object instanceof com.coremedia.iso.boxes.Box) {
-                displayMe = ((com.coremedia.iso.boxes.Box) object).getIsoFile().getOriginalIso().
-                        getSegment(((com.coremedia.iso.boxes.Box) object).getOffset(),
-                                ((com.coremedia.iso.boxes.Box) object).getSize());
+                displayMe = ByteBuffer.allocate(l2i(((Box) object).getSize()));
+                try {
+                    ((Box) object).getBox(new ByteBufferByteChannel(displayMe));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             } else {
-                displayMe = new IsoBufferWrapperImpl(new byte[]{});
+                displayMe = ByteBuffer.allocate(0);
             }
             rawDataSplitPane.setBottomComponent(new JHexEditor(displayMe));
 
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             setCursor(oldCursor);
 

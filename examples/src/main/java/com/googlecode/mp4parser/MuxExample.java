@@ -1,6 +1,5 @@
 package com.googlecode.mp4parser;
 
-import com.coremedia.iso.IsoBufferWrapperImpl;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.Movie;
@@ -15,6 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channels;
 
 /**
  * Muxes 2 audio tracks with a video track.
@@ -23,9 +23,9 @@ public class MuxExample {
     public static void main(String[] args) throws IOException {
 
 
-        Movie countVideo = new MovieCreator().build(new IsoBufferWrapperImpl(readFully(MuxExample.class.getResourceAsStream("/count-video.mp4"))));
-        Movie countAudioDeutsch = new MovieCreator().build(new IsoBufferWrapperImpl(readFully(MuxExample.class.getResourceAsStream("/count-deutsch-audio.mp4"))));
-        Movie countAudioEnglish = new MovieCreator().build(new IsoBufferWrapperImpl(readFully(MuxExample.class.getResourceAsStream("/count-english-audio.mp4"))));
+        Movie countVideo = new MovieCreator().build(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-video.mp4")));
+        Movie countAudioDeutsch = new MovieCreator().build(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-deutsch-audio.mp4")));
+        Movie countAudioEnglish = new MovieCreator().build(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-english-audio.mp4")));
 
         Track audioTrackDeutsch = countAudioDeutsch.getTracks().get(0);
         audioTrackDeutsch.getTrackMetaData().setLanguage("deu");

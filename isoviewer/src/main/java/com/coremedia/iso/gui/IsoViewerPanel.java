@@ -18,7 +18,9 @@ package com.coremedia.iso.gui;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.coremedia.iso.gui.hex.JHexEditor;
 import com.googlecode.mp4parser.ByteBufferByteChannel;
@@ -174,10 +176,12 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
 
         JList jlist = new JList();
         jlist.setCellRenderer(new SampleListRenderer());
-        jlist.setModel(new SampleListModel(new SampleList(tb)));
+
+        SampleDescriptionBox sampleDescriptionBox = tb.getMediaBox().getMediaInformationBox().getSampleTableBox().getSampleDescriptionBox();
+        jlist.setModel(new SampleListModel(new SampleList(tb), tb.getTrackHeaderBox().getTrackId(), sampleDescriptionBox.getSampleEntry()));
         jlist.setLayoutOrientation(JList.VERTICAL);
         jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        jlist.setPrototypeCellValue(ByteBuffer.allocate(1000));
+        jlist.setPrototypeCellValue(new SampleListModel.Entry(ByteBuffer.allocate(1000), 1000000000, 0, null));
         JScrollPane jScrollPane = new JScrollPane();
         jScrollPane.getViewport().add(jlist);
         detailPane.add(new JLabel(String.format(trackViewDetailPaneHeader, tb.getTrackHeaderBox().getTrackId())), BorderLayout.PAGE_START);
@@ -185,7 +189,7 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
         jlist.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    rawDataSplitPane.setBottomComponent(new JHexEditor((ByteBuffer) ((JList) e.getSource()).getSelectedValue()));
+                    rawDataSplitPane.setBottomComponent(new JHexEditor(((SampleListModel.Entry  )((JList) e.getSource()).getSelectedValue()).sample));
 
                 }
             }

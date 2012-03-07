@@ -1,7 +1,6 @@
 package com.googlecode.mp4parser;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
@@ -40,7 +39,7 @@ public class SubTitleExample {
 
         IsoFile out = new DefaultMp4Builder().build(countVideo);
         FileOutputStream fos = new FileOutputStream(new File("output.mp4"));
-        out.getBox(new IsoOutputStream(fos));
+        out.getBox(fos.getChannel());
         fos.close();
     }
 

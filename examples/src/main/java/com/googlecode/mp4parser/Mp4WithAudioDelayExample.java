@@ -1,14 +1,12 @@
 package com.googlecode.mp4parser;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.IsoOutputStream;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,9 +42,8 @@ public class Mp4WithAudioDelayExample {
 
         IsoFile out = new DefaultMp4Builder().build(video);
         FileOutputStream fos = new FileOutputStream(new File(String.format("output.mp4")));
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
-        out.getBox(new IsoOutputStream(bos));
-        bos.close();
+        out.getBox(fos.getChannel());
+        fos.close();
     }
 
 

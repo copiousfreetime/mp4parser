@@ -20,8 +20,6 @@ public class BoxJTree extends JTree implements PropertySupport {
         setRootVisible(false);
         setLargeModel(true);
         setName("boxTree");
-        putClientProperty("JTree.lineStyle", "Angled");
-        UIManager.put("Tree.line", Color.GRAY);
     }
 
     @Override

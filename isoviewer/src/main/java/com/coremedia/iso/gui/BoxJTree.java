@@ -6,26 +6,31 @@ import com.googlecode.mp4parser.util.Path;
 import org.jdesktop.application.session.PropertySupport;
 
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.tree.TreePath;
+import java.awt.Color;
 import java.awt.Component;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Created by IntelliJ IDEA.
- * User: sannies
- * Date: 11/4/11
- * Time: 10:16 PM
- * To change this template use File | Settings | File Templates.
- */
 public class BoxJTree extends JTree implements PropertySupport {
     public BoxJTree() {
-        setCellRenderer(new BoxNodeRenderer());
         setRootVisible(false);
         setLargeModel(true);
         setName("boxTree");
+        putClientProperty("JTree.lineStyle", "Angled");
+        UIManager.put("Tree.line", Color.GRAY);
+    }
+
+    @Override
+    public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        if (value instanceof Box) {
+            return ((Box) value).getType();
+        } else {
+            return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);    //To change body of overridden methods use File | Settings | File Templates.
+        }
     }
 
     public Object getSessionState(Component c) {
@@ -64,4 +69,6 @@ public class BoxJTree extends JTree implements PropertySupport {
             }
         }
     }
+
+
 }

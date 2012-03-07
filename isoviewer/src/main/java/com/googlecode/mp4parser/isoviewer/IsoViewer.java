@@ -25,11 +25,7 @@ public class IsoViewer extends SingleFrameApplication {
     File openInitially = null;
 
     public IsoViewer() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
     }
 
     @Override

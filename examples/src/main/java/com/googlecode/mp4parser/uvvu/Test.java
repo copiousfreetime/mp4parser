@@ -23,7 +23,7 @@ public class Test {
 
     public static String walk(ContainerBox cb, String s) {
         for (Box box : cb.getBoxes()) {
-            System.err.println(s + box.getType());
+            System.err.println(s + box.getType() + " - " + box.getSize() );
             if (box instanceof  ContainerBox) {
                 walk((ContainerBox) box, " " + s);
             }

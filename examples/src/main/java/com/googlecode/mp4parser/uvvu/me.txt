@@ -1,88 +1,88 @@
-ftyp
-pdin
-bloc
-moov
- mvhd
- ainf
- meta
-  hdlr
-  xml 
-  iloc
-  idat
- trak
-  tkhd
-  mdia
-   mdhd
-   hdlr
-   minf
-    vmhd
-    dinf
-     dref
-      url 
-    stbl
-     stsd
-      avc1
-       pasp
-       avcC
-       btrt
-     stts
-     stsc
-     stsz
-     stco
- mvex
-  trex
- free
-moof
- mfhd
- traf
-  tfhd
-  tfdt
-  trun
-  avcn
-  trik
-mdat
-moof
- mfhd
- traf
-  tfhd
-  tfdt
-  trun
-  avcn
-  trik
-mdat
-moof
- mfhd
- traf
-  tfhd
-  tfdt
-  trun
-  avcn
-  trik
-mdat
-moof
- mfhd
- traf
-  tfhd
-  tfdt
-  trun
-  avcn
-  trik
-mdat
-moof
- mfhd
- traf
-  tfhd
-  tfdt
-  trun
-  avcn
-  trik
-mdat
-moof
- mfhd
- traf
-  tfhd
-  tfdt
-  trun
-  avcn
-  trik
-mdat
+ftyp - 28
+pdin - 60
+bloc - 1036
+moov - 66327
+ mvhd - 108
+ ainf - 49
+ meta - 81
+  hdlr - 33
+  xml  - 12
+  iloc - 16
+  idat - 8
+ trak - 498
+  tkhd - 92
+  mdia - 398
+   mdhd - 32
+   hdlr - 33
+   minf - 325
+    vmhd - 20
+    dinf - 36
+     dref - 28
+      url  - 12
+    stbl - 261
+     stsd - 185
+      avc1 - 169
+       pasp - 16
+       avcC - 47
+       btrt - 20
+     stts - 16
+     stsc - 16
+     stsz - 20
+     stco - 16
+ mvex - 40
+  trex - 32
+ free - 65543
+moof - 867
+ mfhd - 16
+ traf - 843
+  tfhd - 20
+  tfdt - 16
+  trun - 740
+  avcn - 47
+  trik - 12
+mdat - 5480895
+moof - 867
+ mfhd - 16
+ traf - 843
+  tfhd - 20
+  tfdt - 16
+  trun - 740
+  avcn - 47
+  trik - 12
+mdat - 152588
+moof - 867
+ mfhd - 16
+ traf - 843
+  tfhd - 20
+  tfdt - 16
+  trun - 740
+  avcn - 47
+  trik - 12
+mdat - 150419
+moof - 867
+ mfhd - 16
+ traf - 843
+  tfhd - 20
+  tfdt - 16
+  trun - 740
+  avcn - 47
+  trik - 12
+mdat - 387350
+moof - 807
+ mfhd - 16
+ traf - 783
+  tfhd - 20
+  tfdt - 16
+  trun - 680
+  avcn - 47
+  trik - 12
+mdat - 181491
+moof - 207
+ mfhd - 16
+ traf - 183
+  tfhd - 20
+  tfdt - 16
+  trun - 80
+  avcn - 47
+  trik - 12
+mdat - 44421

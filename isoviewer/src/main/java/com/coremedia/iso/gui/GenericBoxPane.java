@@ -308,7 +308,7 @@ public class GenericBoxPane extends JPanel {
                             }
                         });
                         jScrollPane.getViewport().add(jl);
-                        add(name, jScrollPane);
+                        add(name + " (" + finalLength + " entries)", jScrollPane);
 
                     }
 

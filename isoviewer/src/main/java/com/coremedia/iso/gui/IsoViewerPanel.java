@@ -53,10 +53,13 @@ import java.awt.Cursor;
 import java.awt.Frame;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -100,6 +103,7 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
         IsoFile dummy = new IsoFile();
         tree = new BoxJTree();
         tree.setModel(new IsoFileTreeModel(dummy));
+
         tree.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 com.coremedia.iso.boxes.Box node = (com.coremedia.iso.boxes.Box) e.getPath().getLastPathComponent();
@@ -189,7 +193,7 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
         jlist.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    rawDataSplitPane.setBottomComponent(new JHexEditor(((SampleListModel.Entry  )((JList) e.getSource()).getSelectedValue()).sample));
+                    rawDataSplitPane.setBottomComponent(new JHexEditor(((SampleListModel.Entry) ((JList) e.getSource()).getSelectedValue()).sample));
 
                 }
             }
@@ -295,18 +299,26 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
             detailPanel.add(detailPane, BorderLayout.CENTER);
             detailPanel.revalidate();
             ByteBuffer displayMe;
-            if (object instanceof com.coremedia.iso.boxes.Box) {
+            if (object instanceof com.coremedia.iso.boxes.Box && !(object instanceof IsoFile)) {
                 displayMe = ByteBuffer.allocate(l2i(((Box) object).getSize()));
                 try {
                     ((Box) object).getBox(new ByteBufferByteChannel(displayMe));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+            } else if (object instanceof IsoFile) {
+                FileChannel fc = new FileInputStream(this.file).getChannel();
+                displayMe = fc.map(FileChannel.MapMode.READ_ONLY, 0, Math.min(this.file.length(), Integer.MAX_VALUE));
+                fc.close();
             } else {
                 displayMe = ByteBuffer.allocate(0);
             }
             rawDataSplitPane.setBottomComponent(new JHexEditor(displayMe));
 
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             setCursor(oldCursor);
 

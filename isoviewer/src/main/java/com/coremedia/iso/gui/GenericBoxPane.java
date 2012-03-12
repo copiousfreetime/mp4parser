@@ -25,6 +25,7 @@ import com.coremedia.iso.gui.transferhelper.TransferHelperFactory;
 import com.coremedia.iso.gui.transferhelper.TransferValue;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -206,6 +207,14 @@ public class GenericBoxPane extends JPanel {
                             editors.add(new StringTransferValue(jtf, box, propertyDescriptor.getWriteMethod()));
                             add(name, jtf);
                             editable = true;
+                        } else {
+                            add(name, new NonEditableJTextField(value.toString()));
+                        }
+                    } else if (value.getClass().equals(Boolean.class)) {
+                        if (propertyDescriptor.getWriteMethod() != null) {
+                            JCheckBox jCheckBox = new JCheckBox(value.toString(), null, (Boolean) value);
+                            add(name, jCheckBox);
+                            editable = false;
                         } else {
                             add(name, new NonEditableJTextField(value.toString()));
                         }

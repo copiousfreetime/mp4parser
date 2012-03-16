@@ -6,6 +6,7 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.AC3TrackImpl;
+import com.googlecode.mp4parser.authoring.tracks.EC3TrackImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,8 +35,8 @@ public class MagnusTestMuxVideoWithAudio {
         }
 
         FileInputStream fin = new FileInputStream(args[1]);
-        AC3TrackImpl ac3 = new AC3TrackImpl(fin);
-        movie.addTrack(ac3);
+        EC3TrackImpl ec3 = new EC3TrackImpl(fin);
+        movie.addTrack(ec3);
 
         IsoFile out = new DefaultMp4Builder().build(movie);
         FileOutputStream fos = new FileOutputStream(new File(args[2]));

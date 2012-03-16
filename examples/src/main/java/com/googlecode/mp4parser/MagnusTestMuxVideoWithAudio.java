@@ -21,7 +21,7 @@ public class MagnusTestMuxVideoWithAudio {
 
     public static void main(String[] args) throws IOException {
         Movie movie = new Movie();
-        Movie invideo = new MovieCreator().build(Channels.newChannel(new FileInputStream(args[0])));
+        Movie invideo = MovieCreator.build(Channels.newChannel(new FileInputStream(args[0])));
         List<Track> tracks = invideo.getTracks();
 
         for (Track t : tracks) {

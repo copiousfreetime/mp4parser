@@ -23,7 +23,7 @@ import java.util.Properties;
  */
 public class MuxVideoWithAmf0 {
     public static void main(String[] args) throws IOException {
-        Movie video = new MovieCreator().build(Channels.newChannel(Mp4WithAudioDelayExample.class.getResourceAsStream("/example-sans-amf0.mp4")));
+        Movie video = MovieCreator.build(Channels.newChannel(Mp4WithAudioDelayExample.class.getResourceAsStream("/example-sans-amf0.mp4")));
 
         Properties props = new Properties();
         props.load(MuxVideoWithAmf0.class.getResourceAsStream("/amf0track.properties"));

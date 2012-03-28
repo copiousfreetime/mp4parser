@@ -19,7 +19,7 @@ import java.nio.channels.Channels;
  */
 public class SubTitleExample {
     public static void main(String[] args) throws IOException {
-        Movie countVideo = new MovieCreator().build(Channels.newChannel(SubTitleExample.class.getResourceAsStream("/count-video.mp4")));
+        Movie countVideo = MovieCreator.build(Channels.newChannel(SubTitleExample.class.getResourceAsStream("/count-video.mp4")));
 
         TextTrackImpl subTitleEng = new TextTrackImpl();
         subTitleEng.getTrackMetaData().setLanguage("eng");

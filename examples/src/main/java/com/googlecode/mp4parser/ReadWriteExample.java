@@ -19,10 +19,10 @@ public class ReadWriteExample {
 
 
     public static void main(String[] args) throws IOException {
-        MovieCreator mc = new MovieCreator();
+
 
         //Movie video = mc.build(Channels.newChannel(ReadWriteExample.class.getResourceAsStream("/smoothstreaming/video-128h-75kbps.mp4")));
-        Movie video = mc.build(new FileInputStream("/home/sannies/scm/svn/mp4parser/Solekai022_854_29_640x75_MaxSdSubtitle.uvu").getChannel());
+        Movie video = MovieCreator.build(new FileInputStream("/home/sannies/scm/svn/mp4parser/Solekai022_854_29_640x75_MaxSdSubtitle.uvu").getChannel());
 
         //IsoFile out1 = new FragmentedMp4Builder().build(video);
         IsoFile out2 = new DefaultMp4Builder().build(video);

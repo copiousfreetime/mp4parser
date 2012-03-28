@@ -22,9 +22,9 @@ public class MuxExample {
     public static void main(String[] args) throws IOException {
 
 
-        Movie countVideo = new MovieCreator().build(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-video.mp4")));
-        Movie countAudioDeutsch = new MovieCreator().build(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-deutsch-audio.mp4")));
-        Movie countAudioEnglish = new MovieCreator().build(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-english-audio.mp4")));
+        Movie countVideo = MovieCreator.build(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-video.mp4")));
+        Movie countAudioDeutsch = MovieCreator.build(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-deutsch-audio.mp4")));
+        Movie countAudioEnglish = MovieCreator.build(Channels.newChannel(MuxExample.class.getResourceAsStream("/count-english-audio.mp4")));
 
         Track audioTrackDeutsch = countAudioDeutsch.getTracks().get(0);
         audioTrackDeutsch.getTrackMetaData().setLanguage("deu");

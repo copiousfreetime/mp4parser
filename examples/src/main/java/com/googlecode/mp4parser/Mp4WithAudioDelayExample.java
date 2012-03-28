@@ -23,8 +23,8 @@ public class Mp4WithAudioDelayExample {
     public static void main(String[] args) throws IOException {
 
 
-        Movie video = new MovieCreator().build(Channels.newChannel(Mp4WithAudioDelayExample.class.getResourceAsStream("/count-video.mp4")));
-        Movie audio = new MovieCreator().build(Channels.newChannel(Mp4WithAudioDelayExample.class.getResourceAsStream("/count-english-audio.mp4")));
+        Movie video = MovieCreator.build(Channels.newChannel(Mp4WithAudioDelayExample.class.getResourceAsStream("/count-video.mp4")));
+        Movie audio = MovieCreator.build(Channels.newChannel(Mp4WithAudioDelayExample.class.getResourceAsStream("/count-english-audio.mp4")));
 
         List<Track> videoTracks = video.getTracks();
         video.setTracks(new LinkedList<Track>());

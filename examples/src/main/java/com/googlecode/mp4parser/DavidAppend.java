@@ -24,12 +24,11 @@ import java.util.List;
 public class DavidAppend {
 
     public static void main(String[] args) throws IOException {
-        MovieCreator mc = new MovieCreator();
 
         List<Movie> movies = new LinkedList<Movie>();
-        movies.add(mc.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/davidappend/v1.mp4"))));
-        movies.add(mc.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/davidappend/v2.mp4"))));
-        movies.add(mc.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/davidappend/v2.mp4"))));
+        movies.add(MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/davidappend/v1.mp4"))));
+        movies.add(MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/davidappend/v2.mp4"))));
+        movies.add(MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/davidappend/v2.mp4"))));
 
 
         List<Track> videoTracks = new LinkedList<Track>();

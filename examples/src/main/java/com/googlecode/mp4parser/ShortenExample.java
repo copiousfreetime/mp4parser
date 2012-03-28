@@ -26,7 +26,7 @@ public class ShortenExample {
     public static void main(String[] args) throws IOException {
         //Movie movie = new MovieCreator().build(new RandomAccessFile("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov", "r").getChannel());
         ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov")));
-        Movie movie = new MovieCreator().build(in);
+        Movie movie = MovieCreator.build(in);
         in.close();
 
         List<Track> tracks = movie.getTracks();

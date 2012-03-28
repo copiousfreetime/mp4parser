@@ -20,10 +20,10 @@ import java.util.List;
  */
 public class AppendExample {
     public static void main(String[] args) throws IOException {
-        MovieCreator mc = new MovieCreator();
 
-        Movie video = mc.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-video.mp4")));
-        Movie audio = mc.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-english-audio.mp4")));
+
+        Movie video = MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-video.mp4")));
+        Movie audio = MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-english-audio.mp4")));
 
         List<Track> videoTracks = video.getTracks();
         video.setTracks(new LinkedList<Track>());

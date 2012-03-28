@@ -20,7 +20,7 @@ import java.util.Properties;
 
 public class DumpAmf0TrackToPropertyFile {
     public static void main(String[] args) throws IOException {
-        Movie movie = new MovieCreator().build(Channels.newChannel(DumpAmf0TrackToPropertyFile.class.getResourceAsStream("/example.f4v")));
+        Movie movie = MovieCreator.build(Channels.newChannel(DumpAmf0TrackToPropertyFile.class.getResourceAsStream("/example.f4v")));
 
 
         for (Track track : movie.getTracks()) {

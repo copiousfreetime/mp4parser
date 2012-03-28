@@ -13,9 +13,8 @@ import java.util.Iterator;
  */
 public class ReadExample {
     public static void main(String[] args) throws IOException {
-        MovieCreator mc = new MovieCreator();
 
-        Movie video = mc.build(new RandomAccessFile("/home/sannies/scm/svn/mp4parser-release/output.fmp4", "rw").getChannel());
+        Movie video = MovieCreator.build(new RandomAccessFile("/home/sannies/scm/svn/mp4parser-release/output.fmp4", "rw").getChannel());
 
 
         Iterator<ByteBuffer> iter = video.getTracks().get(0).getSamples().subList(55, 65).iterator();

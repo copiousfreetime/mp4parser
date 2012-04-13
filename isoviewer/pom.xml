@@ -4,7 +4,7 @@
     <artifactId>isoviewer</artifactId>
     <packaging>jar</packaging>
     <name>ISO Viewer</name>
-    <version>2.0-SNAPSHOT</version>
+    <version>1.0-RC-2-SNAPSHOT</version>
     <description>The ISO Viewer is a UI Tool for viewing ISO Box files (see ISO/IEC 14496-12). Useful for looking into
         Apple Quicktime Movies, DCF files, PDCF files, MP4 files and other ISO Box files.
     </description>
@@ -28,6 +28,14 @@
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
 

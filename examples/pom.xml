@@ -7,7 +7,7 @@
 
     <groupId>examples</groupId>
     <artifactId>examples</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>1.0-RC-2-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
@@ -34,6 +34,13 @@
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>

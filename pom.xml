@@ -4,9 +4,9 @@
     <groupId>com.coremedia.drm</groupId>
     <artifactId>all</artifactId>
     <packaging>pom</packaging>
-    <version>2-SNAPSHOT</version>
-    <name>IsoBox4j - All</name>
-    <url>https://contributions.coremedia.com/isobox4j</url>
+    <version>1.0-RC-2-SNAPSHOT</version>
+    <name>MP4 Parser ALL</name>
+    <url>http://code.google.com/p/mp4parser/</url>
     <licenses>
         <license>
             <name>Apache License Version 2.0</name>
@@ -61,4 +61,8 @@
             </plugin>
         </plugins>
     </build>
+    <scm>
+        <url>http://code.google.com/p/mp4parser/source/browse/</url>
+        <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/</connection>
+    </scm>
 </project>

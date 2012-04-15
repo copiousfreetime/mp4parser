@@ -5,12 +5,12 @@
 
     <groupId>examples</groupId>
     <artifactId>examples</artifactId>
-    <version>1.0-RC-2</version>
+    <version>1.0-RC-3-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.0-RC-2</version>
+            <version>1.0-RC-3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>xom</groupId>

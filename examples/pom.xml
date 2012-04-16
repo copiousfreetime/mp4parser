@@ -7,6 +7,7 @@
 
     <groupId>examples</groupId>
     <artifactId>examples</artifactId>
+    <name>IsoParser Examples</name>
     <version>1.0-RC-2-SNAPSHOT</version>
     <dependencies>
         <dependency>

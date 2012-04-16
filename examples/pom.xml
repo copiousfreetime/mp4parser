@@ -46,4 +46,11 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>localfs</id>
+            <url>file://${project.basedir}/target/release</url>
+        </repository>
+    </distributionManagement>
+
 </project>

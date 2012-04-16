@@ -52,5 +52,8 @@
             <url>file://${project.basedir}/target/release</url>
         </repository>
     </distributionManagement>
-
+    <scm>
+        <url>http://code.google.com/p/mp4parser/source/browse/</url>
+        <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/examples</connection>
+    </scm>
 </project>

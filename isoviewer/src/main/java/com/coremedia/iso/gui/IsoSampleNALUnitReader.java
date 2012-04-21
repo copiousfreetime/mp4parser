@@ -26,7 +26,7 @@ import com.coremedia.iso.IsoTypeReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * Input stream that automatically unwraps NAL units and allows for NAL unit

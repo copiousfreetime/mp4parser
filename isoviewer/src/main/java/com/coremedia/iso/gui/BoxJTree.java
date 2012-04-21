@@ -6,9 +6,7 @@ import com.googlecode.mp4parser.util.Path;
 import org.jdesktop.application.session.PropertySupport;
 
 import javax.swing.JTree;
-import javax.swing.UIManager;
 import javax.swing.tree.TreePath;
-import java.awt.Color;
 import java.awt.Component;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -40,7 +38,7 @@ public class BoxJTree extends JTree implements PropertySupport {
 
             while (treePathEnumeration.hasMoreElements()) {
                 TreePath treePath = treePathEnumeration.nextElement();
-                openPath.add(oldMp4Path.createPath((com.coremedia.iso.boxes.Box) treePath.getLastPathComponent()));
+                openPath.add(oldMp4Path.createPath((Box) treePath.getLastPathComponent()));
             }
         }
         return openPath;

@@ -1,9 +1,8 @@
 package com.coremedia.iso.gui.transferhelper;
 
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.Box;
 
 import javax.swing.*;
-import javax.swing.Box;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
@@ -20,7 +19,7 @@ public class IntegerTransferValue implements TransferValue {
     Method writeMethod;
     com.coremedia.iso.boxes.Box box;
 
-    public IntegerTransferValue(JFormattedTextField source, com.coremedia.iso.boxes.Box box, Method writeMethod) {
+    public IntegerTransferValue(JFormattedTextField source, Box box, Method writeMethod) {
         this.source = source;
         this.writeMethod = writeMethod;
         this.box = box;

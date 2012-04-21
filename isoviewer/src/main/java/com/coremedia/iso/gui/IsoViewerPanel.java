@@ -20,10 +20,9 @@ import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
 import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.mdat.SampleList;
 import com.coremedia.iso.gui.hex.JHexEditor;
-import com.googlecode.mp4parser.ByteBufferByteChannel;
+import com.googlecode.mp4parser.util.ByteBufferByteChannel;
 import com.googlecode.mp4parser.util.Path;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Resource;
@@ -66,7 +65,7 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import static com.coremedia.iso.boxes.CastUtils.l2i;
+import static com.googlecode.mp4parser.util.CastUtils.l2i;
 
 /**
  * The main UI class for the ISO viewer. Contains all other UI components.
@@ -106,7 +105,7 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
 
         tree.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
-                com.coremedia.iso.boxes.Box node = (com.coremedia.iso.boxes.Box) e.getPath().getLastPathComponent();
+                Box node = (Box) e.getPath().getLastPathComponent();
                 showDetails(node);
             }
         });
@@ -292,14 +291,14 @@ public class IsoViewerPanel extends JPanel implements PropertySupport {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             JComponent detailPane = new JPanel();
-            if (object instanceof com.coremedia.iso.boxes.Box) {
-                detailPane = new GenericBoxPane((com.coremedia.iso.boxes.Box) object);
+            if (object instanceof Box) {
+                detailPane = new GenericBoxPane((Box) object);
             }
             detailPanel.removeAll();
             detailPanel.add(detailPane, BorderLayout.CENTER);
             detailPanel.revalidate();
             ByteBuffer displayMe;
-            if (object instanceof com.coremedia.iso.boxes.Box && !(object instanceof IsoFile)) {
+            if (object instanceof Box && !(object instanceof IsoFile)) {
                 displayMe = ByteBuffer.allocate(l2i(((Box) object).getSize()));
                 try {
                     ((Box) object).getBox(new ByteBufferByteChannel(displayMe));

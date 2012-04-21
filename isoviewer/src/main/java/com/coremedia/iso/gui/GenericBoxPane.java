@@ -16,7 +16,7 @@
 
 package com.coremedia.iso.gui;
 
-import com.coremedia.iso.boxes.AbstractBox;
+import com.googlecode.mp4parser.AbstractBox;
 import com.coremedia.iso.boxes.Box;
 import com.coremedia.iso.boxes.FullBox;
 import com.coremedia.iso.boxes.UnknownBox;
@@ -100,7 +100,7 @@ public class GenericBoxPane extends JPanel {
             "sampleSizeAtIndex",
             "numOfBytesToFirstChild");
 
-    public GenericBoxPane(com.coremedia.iso.boxes.Box box) {
+    public GenericBoxPane(Box box) {
         this.box = box;
         gridBagLayout = new GridBagLayout();
         gridBagConstraints = new GridBagConstraints();

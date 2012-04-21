@@ -1,6 +1,5 @@
 package com.coremedia.iso.gui.transferhelper;
 
-import com.coremedia.iso.boxes.*;
 import com.coremedia.iso.boxes.Box;
 
 import javax.swing.*;

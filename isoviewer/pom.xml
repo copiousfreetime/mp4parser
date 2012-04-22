@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.coremedia.drm.isobox4j</groupId>
     <artifactId>isoviewer</artifactId>
@@ -43,6 +44,44 @@
         </extensions>
         <plugins>
             <plugin>
+                <groupId>com.googlecode.maven-gcu-plugin</groupId>
+                <artifactId>maven-gcu-plugin</artifactId>
+                <version>1.1</version>
+                <configuration>
+                    <serverId>mp4parser-svn</serverId>
+                    <failsOnError>true</failsOnError>
+                    <projectName>mp4parser</projectName>
+                    <overwrite>true</overwrite>
+                    <uploads>
+                        <upload>
+                            <file>${project.build.directory}/${project.artifactId}-${project.version}.${project.packaging}</file>
+                            <summary>${project.name} ${project.version} executable jar</summary>
+                            <labels>
+                                <label>Featured</label>
+                                <label>Type-Executable</label>
+                            </labels>
+                        </upload>
+                        <upload>
+                            <file>${project.build.outputDirectory}/isoviewer.jnlp</file>
+                            <summary>${project.name} ${project.version} JNLP Webstart File</summary>
+                            <labels>
+                                <label>Featured</label>
+                                <label>Type-Executable</label>
+                            </labels>
+                        </upload>
+                    </uploads>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <phase>deploy</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+<!--            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>wagon-maven-plugin</artifactId>
                 <version>1.0-beta-4</version>
@@ -73,7 +112,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.1</version>
@@ -161,4 +200,5 @@
         <url>http://code.google.com/p/mp4parser/source/browse/</url>
         <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/isoviewer</connection>
     </scm>
+
 </project>

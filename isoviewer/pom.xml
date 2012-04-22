@@ -34,13 +34,13 @@
         </resources>
         <filters>
         </filters>
-            <extensions>
-                <extension>
-                    <groupId>com.google.code.maven-svn-wagon</groupId>
-                    <artifactId>maven-svn-wagon</artifactId>
-                    <version>1.4</version>
-                </extension>
-            </extensions>
+        <extensions>
+            <extension>
+                <groupId>com.google.code.maven-svn-wagon</groupId>
+                <artifactId>maven-svn-wagon</artifactId>
+                <version>1.4</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.googlecode.mp4parser</groupId>
     <artifactId>androidtest</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0-RC-3-SNAPSHOT</version>
     <packaging>apk</packaging>
     <name>androidtest</name>
 
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.0-RC-1-SNAPSHOT</version>
+            <version>1.0-RC-3-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>

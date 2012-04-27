@@ -58,6 +58,14 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.2.2</version>
+                <configuration>
+                    <releaseProfiles>android</releaseProfiles>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <distributionManagement>

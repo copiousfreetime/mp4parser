@@ -35,23 +35,16 @@
         </resources>
         <filters>
         </filters>
-        <extensions>
-            <extension>
-                <groupId>com.google.code.maven-svn-wagon</groupId>
-                <artifactId>maven-svn-wagon</artifactId>
-                <version>1.4</version>
-            </extension>
-        </extensions>
+
         <plugins>
             <plugin>
                 <groupId>com.googlecode.maven-gcu-plugin</groupId>
                 <artifactId>maven-gcu-plugin</artifactId>
-                <version>1.1</version>
+                <version>1.2-SNAPSHOT</version>
                 <configuration>
                     <serverId>mp4parser-svn</serverId>
                     <failsOnError>true</failsOnError>
                     <projectName>mp4parser</projectName>
-                    <overwrite>true</overwrite>
                     <uploads>
                         <upload>
                             <file>${project.build.directory}/${project.artifactId}-${project.version}.${project.packaging}</file>
@@ -63,6 +56,7 @@
                         </upload>
                         <upload>
                             <file>${project.build.outputDirectory}/isoviewer.jnlp</file>
+                            <name>isoviewer-${project.version}.jnlp</name>
                             <summary>${project.name} ${project.version} JNLP Webstart File</summary>
                             <labels>
                                 <label>Featured</label>
@@ -81,38 +75,6 @@
                 </executions>
             </plugin>
 
-<!--            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>wagon-maven-plugin</artifactId>
-                <version>1.0-beta-4</version>
-                <executions>
-                    <execution>
-                        <id>jar-upload</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>upload-single</goal>
-                        </goals>
-                        <configuration>
-                            <fromFile>${project.build.directory}/${project.build.finalName}.jar</fromFile>
-                            <serverId>mp4parser-svn</serverId>
-                            <url>svn:https://mp4parser.googlecode.com/svn/downloads/</url>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>jnlp-upload</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>upload-single</goal>
-                        </goals>
-                        <configuration>
-                            <fromFile>${project.build.outputDirectory}/isoviewer.jnlp</fromFile>
-                            <serverId>mp4parser-svn</serverId>
-                            <toFile>${project.build.finalName}.jnlp</toFile>
-                            <url>svn:https://mp4parser.googlecode.com/svn/downloads/</url>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>-->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.1</version>
@@ -171,7 +133,6 @@
                         </manifest>
                     </archive>
                 </configuration>
-
             </plugin>
 
         </plugins>

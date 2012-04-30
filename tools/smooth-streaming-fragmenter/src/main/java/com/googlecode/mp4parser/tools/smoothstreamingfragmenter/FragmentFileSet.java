@@ -27,7 +27,7 @@ public class FragmentFileSet {
             usage = "output directory - if no output directory is given the " +
                     "current working directory is used.",
             metaVar = "PATH")
-    protected File outputDir = new File("./fragments");
+    protected File outputDir = new File("./smooth");
 
     public static void main(String[] args) throws IOException {
         FragmentFileSet fragmentFileSet = new FragmentFileSet();
@@ -37,7 +37,7 @@ public class FragmentFileSet {
 
     public void run() throws IOException {
         FlatPackageWriterImpl flatPackageWriter = new FlatPackageWriterImpl();
-        flatPackageWriter.setOutputDirectory(new File("smooth"));
+        flatPackageWriter.setOutputDirectory(outputDir);
         Movie movie = new Movie();
         for (File input : inputFiles) {
             Movie m = MovieCreator.build(new FileInputStream(input).getChannel());

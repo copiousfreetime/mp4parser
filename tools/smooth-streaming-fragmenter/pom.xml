@@ -14,6 +14,7 @@
     <artifactId>smooth-streaming-fragmenter</artifactId>
     <version>1.0-RC-3-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <name>Fragmenter for MS Smooth Streaming</name>
 
     <dependencies>
         <dependency>

@@ -3,10 +3,14 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>examples</groupId>
     <artifactId>examples</artifactId>
     <name>IsoParser Examples</name>
     <version>1.0-RC-4-SNAPSHOT</version>
+    <parent>
+        <groupId>com.googlecode.mp4parser</groupId>
+        <artifactId>mp4parser-project</artifactId>
+        <version>1.0-RC-4-SNAPSHOT</version>
+    </parent>
     <dependencies>
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>

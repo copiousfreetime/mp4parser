@@ -29,6 +29,9 @@ public class FragmentFileSet {
             metaVar = "PATH")
     protected File outputDir = new File("./smooth");
 
+    @Option(name = "--debug", aliases = "-d", usage = "output files in between the stages of the process")
+    boolean debug;
+
     public static void main(String[] args) throws IOException {
         FragmentFileSet fragmentFileSet = new FragmentFileSet();
         fragmentFileSet.parseCmdLine(args);
@@ -37,6 +40,7 @@ public class FragmentFileSet {
 
     public void run() throws IOException {
         FlatPackageWriterImpl flatPackageWriter = new FlatPackageWriterImpl();
+        flatPackageWriter.setWriteSingleFile(debug);
         flatPackageWriter.setOutputDirectory(outputDir);
         Movie movie = new Movie();
         for (File input : inputFiles) {

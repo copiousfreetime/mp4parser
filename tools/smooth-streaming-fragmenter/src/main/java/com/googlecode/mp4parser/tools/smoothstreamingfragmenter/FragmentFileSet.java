@@ -40,7 +40,7 @@ public class FragmentFileSet {
 
     public void run() throws IOException {
         FlatPackageWriterImpl flatPackageWriter = new FlatPackageWriterImpl();
-        flatPackageWriter.setWriteSingleFile(debug);
+        flatPackageWriter.setDebugOutput(debug);
         flatPackageWriter.setOutputDirectory(outputDir);
         Movie movie = new Movie();
         for (File input : inputFiles) {

@@ -17,6 +17,9 @@
         <module>examples</module>
         <module>tools</module>
     </modules>
+    <prerequisites>
+        <maven>3.0</maven>
+    </prerequisites>
     <profiles>
         <profile>
             <id>android</id>

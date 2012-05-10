@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.googlecode.mp4parser</groupId>
         <artifactId>tools</artifactId>
-        <version>1.0-RC-7-SNAPSHOT</version>
+        <version>1.0-RC-7</version>
     </parent>
 
     <groupId>com.googlecode.mp4parser</groupId>
     <artifactId>smooth-streaming-fragmenter</artifactId>
-    <version>1.0-RC-7-SNAPSHOT</version>
+    <version>1.0-RC-7</version>
     <packaging>jar</packaging>
     <name>Fragmenter for MS Smooth Streaming</name>
 
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.0-RC-7-SNAPSHOT</version>
+            <version>1.0-RC-7</version>
         </dependency>
         <dependency>
             <groupId>args4j</groupId>

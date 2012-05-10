@@ -3,7 +3,7 @@
     <groupId>com.googlecode.mp4parser</groupId>
     <artifactId>mp4parser-project</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-RC-6-SNAPSHOT</version>
+    <version>1.0-RC-7-SNAPSHOT</version>
     <name>MP4 Parser ALL</name>
     <url>http://code.google.com/p/mp4parser/</url>
     <licenses>

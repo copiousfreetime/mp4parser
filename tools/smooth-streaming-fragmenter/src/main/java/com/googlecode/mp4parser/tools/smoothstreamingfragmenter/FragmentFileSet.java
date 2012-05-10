@@ -44,6 +44,7 @@ public class FragmentFileSet {
         flatPackageWriter.setOutputDirectory(outputDir);
         Movie movie = new Movie();
         for (File input : inputFiles) {
+            System.err.println(input.getAbsolutePath());
             Movie m = MovieCreator.build(new FileInputStream(input).getChannel());
             for (Track track : m.getTracks()) {
                 movie.addTrack(track);

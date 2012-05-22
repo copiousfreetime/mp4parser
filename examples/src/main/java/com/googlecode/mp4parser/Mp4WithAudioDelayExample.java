@@ -46,15 +46,4 @@ public class Mp4WithAudioDelayExample {
         fos.close();
     }
 
-
-    static byte[] readFully(InputStream is) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[2048];
-        int n = 0;
-        while (-1 != (n = is.read(buffer))) {
-            baos.write(buffer, 0, n);
-        }
-        return baos.toByteArray();
-    }
-
 }

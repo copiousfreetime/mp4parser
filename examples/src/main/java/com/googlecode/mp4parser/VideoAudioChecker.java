@@ -27,7 +27,7 @@ public class VideoAudioChecker {
 
     private enum TYPE {
         AUDIO,
-        VIDEO;
+        VIDEO
     }
 
 }

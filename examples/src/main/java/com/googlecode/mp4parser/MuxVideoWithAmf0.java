@@ -9,11 +9,9 @@ import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.Amf0Track;
 import org.apache.commons.codec.binary.Base64;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.util.HashMap;
 import java.util.Properties;
@@ -45,15 +43,4 @@ public class MuxVideoWithAmf0 {
         fos.close();
 
     }
-
-    static byte[] readFully(InputStream is) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[2048];
-        int n = 0;
-        while (-1 != (n = is.read(buffer))) {
-            baos.write(buffer, 0, n);
-        }
-        return baos.toByteArray();
-    }
-
 }

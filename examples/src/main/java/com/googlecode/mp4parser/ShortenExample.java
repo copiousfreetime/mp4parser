@@ -25,9 +25,8 @@ import java.util.List;
 public class ShortenExample {
     public static void main(String[] args) throws IOException {
         //Movie movie = new MovieCreator().build(new RandomAccessFile("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov", "r").getChannel());
-        ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov")));
+        ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/Downloads/MythE4-s10e07/mythbusters.s10e07-killers.mp4")));
         Movie movie = MovieCreator.build(in);
-        in.close();
 
         List<Track> tracks = movie.getTracks();
         movie.setTracks(new LinkedList<Track>());

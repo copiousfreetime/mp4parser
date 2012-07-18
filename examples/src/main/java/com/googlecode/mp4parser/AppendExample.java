@@ -25,7 +25,6 @@ public class AppendExample {
         Movie[] inMovies = new Movie[]{MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-deutsch-audio.mp4"))),
                 MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-english-audio.mp4")))};
 
-
         List<Track> videoTracks = new LinkedList<Track>();
         List<Track> audioTracks = new LinkedList<Track>();
 
@@ -48,7 +47,6 @@ public class AppendExample {
         if (videoTracks.size() > 0) {
             result.addTrack(new AppendTrack(videoTracks.toArray(new Track[videoTracks.size()])));
         }
-
 
         IsoFile out = new DefaultMp4Builder().build(result);
 

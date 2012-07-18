@@ -22,37 +22,40 @@ public class AppendExample {
     public static void main(String[] args) throws IOException {
 
 
-        Movie video = MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-video.mp4")));
-        Movie audio = MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-english-audio.mp4")));
-
-        List<Track> videoTracks = video.getTracks();
-        video.setTracks(new LinkedList<Track>());
-
-        List<Track> audioTracks = audio.getTracks();
+        Movie[] inMovies = new Movie[]{MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-deutsch-audio.mp4"))),
+                MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-english-audio.mp4")))};
 
 
-        for (Track videoTrack : videoTracks) {
-            video.addTrack(new AppendTrack(videoTrack, videoTrack));
+        List<Track> videoTracks = new LinkedList<Track>();
+        List<Track> audioTracks = new LinkedList<Track>();
+
+        for (Movie m : inMovies) {
+            for (Track t : m.getTracks()) {
+                if (t.getHandler().equals("soun")) {
+                    audioTracks.add(t);
+                }
+                if (t.getHandler().equals("vide")) {
+                    videoTracks.add(t);
+                }
+            }
         }
-        for (Track audioTrack : audioTracks) {
-            video.addTrack(new AppendTrack(audioTrack, audioTrack));
+
+        Movie result = new Movie();
+
+        if (audioTracks.size() > 0) {
+            result.addTrack(new AppendTrack(audioTracks.toArray(new Track[audioTracks.size()])));
+        }
+        if (videoTracks.size() > 0) {
+            result.addTrack(new AppendTrack(videoTracks.toArray(new Track[videoTracks.size()])));
         }
 
-        IsoFile out1 = new FragmentedMp4Builder().build(video);
-        IsoFile out2 = new DefaultMp4Builder().build(video);
 
-        {
-            FileChannel fc = new RandomAccessFile(String.format("output1.mp4"), "rw").getChannel();
-            fc.position(0);
-            out1.getBox(fc);
-            fc.close();
-        }
-        {
-            FileChannel fc = new RandomAccessFile(String.format("output2.mp4"), "rw").getChannel();
-            fc.position(0);
-            out2.getBox(fc);
-            fc.close();
-        }
+        IsoFile out = new DefaultMp4Builder().build(result);
+
+        FileChannel fc = new RandomAccessFile(String.format("output.mp4"), "rw").getChannel();
+        fc.position(0);
+        out.getBox(fc);
+        fc.close();
 
 
     }

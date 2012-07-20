@@ -1,4 +1,4 @@
-package com.googlecode.mp4parser.formats;
+package com.googlecode.mp4parser.muxformats;
 
 import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.authoring.Movie;

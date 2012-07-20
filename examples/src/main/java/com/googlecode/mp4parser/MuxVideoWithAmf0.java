@@ -21,7 +21,7 @@ import java.util.Properties;
  */
 public class MuxVideoWithAmf0 {
     public static void main(String[] args) throws IOException {
-        Movie video = MovieCreator.build(Channels.newChannel(Mp4WithAudioDelayExample.class.getResourceAsStream("/example-sans-amf0.mp4")));
+        Movie video = MovieCreator.build(Channels.newChannel(MuxVideoWithAmf0.class.getResourceAsStream("/example-sans-amf0.mp4")));
 
         Properties props = new Properties();
         props.load(MuxVideoWithAmf0.class.getResourceAsStream("/amf0track.properties"));
@@ -30,7 +30,7 @@ public class MuxVideoWithAmf0 {
             samples.put(Long.parseLong(key), Base64.decodeBase64(props.getProperty(key)));
         }
         Track amf0Track = new Amf0Track(samples);
-        amf0Track.getTrackMetaData().setStartTime(2400);
+        amf0Track.getTrackMetaData();
         video.addTrack(amf0Track);
 
         FragmentedMp4Builder fragmentedMp4Builder = new FragmentedMp4Builder();

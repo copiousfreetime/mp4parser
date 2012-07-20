@@ -1,8 +1,9 @@
-package com.googlecode.mp4parser;
+package com.googlecode.mp4parser.stuff;
 
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.HandlerBox;
+import com.googlecode.mp4parser.SubTitleExample;
 
 import java.io.IOException;
 import java.nio.channels.Channels;

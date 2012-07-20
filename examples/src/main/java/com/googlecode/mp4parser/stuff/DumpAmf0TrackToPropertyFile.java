@@ -1,4 +1,4 @@
-package com.googlecode.mp4parser;
+package com.googlecode.mp4parser.stuff;
 
 import com.coremedia.iso.boxes.NullMediaHeaderBox;
 import com.coremedia.iso.boxes.TimeToSampleBox;
@@ -7,11 +7,9 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import org.apache.commons.codec.binary.Base64;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.Iterator;

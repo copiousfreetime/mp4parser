@@ -23,9 +23,11 @@ import java.util.List;
  * Shortens/Crops a track
  */
 public class ShortenExample {
+
+
     public static void main(String[] args) throws IOException {
         //Movie movie = new MovieCreator().build(new RandomAccessFile("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov", "r").getChannel());
-        ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/Downloads/MythBusters.S10E10.Bubble.Pack.Plunge.HDTV.x264-YesTV/mythbusters.1010-yestv.mp4")));
+        ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/Downloads/Wipeout.US.S05E09.Hotties.versus.Nerds.2.0.HDTV.x264-BAJSKORV.mp4")));
         Movie movie = MovieCreator.build(in);
 
         List<Track> tracks = movie.getTracks();
@@ -33,7 +35,7 @@ public class ShortenExample {
         // remove all tracks we will create new tracks from the old
 
         double startTime = 35.000;
-        double endTime = 145.000;
+        double endTime = 35.000;
 
         boolean timeCorrected = false;
 
@@ -49,8 +51,8 @@ public class ShortenExample {
 
                     throw new RuntimeException("The startTime has already been corrected by another track with SyncSample. Not Supported.");
                 }
-                startTime = correctTimeToNextSyncSample(track, startTime);
-                endTime = correctTimeToNextSyncSample(track, endTime);
+                startTime = correctTimeToSyncSample(track, startTime, false);
+                endTime = correctTimeToSyncSample(track, endTime, true);
                 timeCorrected = true;
             }
         }
@@ -97,7 +99,7 @@ public class ShortenExample {
         System.err.println("Writing IsoFile speed : " + (new File(String.format("output-%f-%f.mp4", startTime, endTime)).length() / (start3 - start2) / 1000) + "MB/s");
     }
 
-    private static double correctTimeToNextSyncSample(Track track, double cutHere) {
+    private static double correctTimeToSyncSample(Track track, double cutHere, boolean next) {
         double[] timeOfSyncSamples = new double[track.getSyncSamples().length];
         long currentSample = 0;
         double currentTime = 0;
@@ -112,10 +114,16 @@ public class ShortenExample {
                 currentSample++;
             }
         }
+        double previous = 0;
         for (double timeOfSyncSample : timeOfSyncSamples) {
             if (timeOfSyncSample > cutHere) {
-                return timeOfSyncSample;
+                if (next) {
+                    return timeOfSyncSample;
+                } else {
+                    return previous;
+                }
             }
+            previous = timeOfSyncSample;
         }
         return timeOfSyncSamples[timeOfSyncSamples.length - 1];
     }

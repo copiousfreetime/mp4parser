@@ -27,15 +27,15 @@ public class ShortenExample {
 
     public static void main(String[] args) throws IOException {
         //Movie movie = new MovieCreator().build(new RandomAccessFile("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov", "r").getChannel());
-        ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/Downloads/Wipeout.US.S05E09.Hotties.versus.Nerds.2.0.HDTV.x264-BAJSKORV.mp4")));
+        ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/Downloads/Arquivo/video.MOV")));
         Movie movie = MovieCreator.build(in);
 
         List<Track> tracks = movie.getTracks();
         movie.setTracks(new LinkedList<Track>());
         // remove all tracks we will create new tracks from the old
 
-        double startTime = 35.000;
-        double endTime = 35.000;
+        double startTime = (double) getDuration(tracks.get(0)) / tracks.get(0).getTrackMetaData().getTimescale();
+        double endTime = (double) getDuration(tracks.get(0)) / tracks.get(0).getTrackMetaData().getTimescale();
 
         boolean timeCorrected = false;
 
@@ -97,6 +97,14 @@ public class ShortenExample {
         System.err.println("Building IsoFile took : " + (start2 - start1) + "ms");
         System.err.println("Writing IsoFile took  : " + (start3 - start2) + "ms");
         System.err.println("Writing IsoFile speed : " + (new File(String.format("output-%f-%f.mp4", startTime, endTime)).length() / (start3 - start2) / 1000) + "MB/s");
+    }
+
+    protected static long getDuration(Track track) {
+        long duration = 0;
+        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
+            duration += entry.getCount() * entry.getDelta();
+        }
+        return duration;
     }
 
     private static double correctTimeToSyncSample(Track track, double cutHere, boolean next) {

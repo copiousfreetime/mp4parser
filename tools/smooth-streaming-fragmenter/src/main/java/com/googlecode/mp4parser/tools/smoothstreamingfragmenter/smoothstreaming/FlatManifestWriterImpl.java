@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.googlecode.mp4parser.authoring.builder.smoothstreaming;
+package com.googlecode.mp4parser.tools.smoothstreamingfragmenter.smoothstreaming;
 
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.boxes.*;
@@ -25,7 +25,6 @@ import com.googlecode.mp4parser.Version;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
-import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import nu.xom.*;
 

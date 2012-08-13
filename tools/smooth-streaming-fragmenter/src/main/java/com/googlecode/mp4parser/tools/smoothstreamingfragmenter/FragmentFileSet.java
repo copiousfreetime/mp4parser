@@ -3,7 +3,7 @@ package com.googlecode.mp4parser.tools.smoothstreamingfragmenter;
 
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.builder.smoothstreaming.FlatPackageWriterImpl;
+import com.googlecode.mp4parser.tools.smoothstreamingfragmenter.smoothstreaming.FlatPackageWriterImpl;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;

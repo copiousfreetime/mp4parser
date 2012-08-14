@@ -48,7 +48,6 @@ public class FragmentFileSet {
             System.err.println(input.getAbsolutePath());
             Movie m = MovieCreator.build(new FileInputStream(input).getChannel());
             for (Track track : m.getTracks()) {
-                ((Mp4TrackImpl)track).comment = input.getAbsolutePath();
                 movie.addTrack(track);
             }
 

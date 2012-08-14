@@ -2,6 +2,7 @@ package com.googlecode.mp4parser.tools.smoothstreamingfragmenter;
 
 
 import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Mp4TrackImpl;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.tools.smoothstreamingfragmenter.smoothstreaming.FlatPackageWriterImpl;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
@@ -39,7 +40,7 @@ public class FragmentFileSet {
     }
 
     public void run() throws IOException {
-        FlatPackageWriterImpl flatPackageWriter = new FlatPackageWriterImpl(0);
+        FlatPackageWriterImpl flatPackageWriter = new FlatPackageWriterImpl(4);
         flatPackageWriter.setDebugOutput(debug);
         flatPackageWriter.setOutputDirectory(outputDir);
         Movie movie = new Movie();
@@ -47,6 +48,7 @@ public class FragmentFileSet {
             System.err.println(input.getAbsolutePath());
             Movie m = MovieCreator.build(new FileInputStream(input).getChannel());
             for (Track track : m.getTracks()) {
+                ((Mp4TrackImpl)track).comment = input.getAbsolutePath();
                 movie.addTrack(track);
             }
 

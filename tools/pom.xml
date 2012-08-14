@@ -12,6 +12,7 @@
     <modules>
         <module>smooth-streaming-fragmenter</module>
         <module>isoviewer</module>
+        <module>smooth-streaming-downloader</module>
     </modules>
 
 

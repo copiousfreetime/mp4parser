@@ -55,11 +55,11 @@ public class FragmentFileSetTest {
     public void testCommandLine() throws IOException {
         File tmpDir = createTmpDir();
         File outputDir = createTmpDir();
-       // copyResource("/smoothstreaming/audio-96000.mp4", tmpDir);
+        copyResource("/smoothstreaming/audio-96000.mp4", tmpDir);
         copyResource("/smoothstreaming/video-128h-75kbps.mp4", tmpDir);
-       // copyResource("/smoothstreaming/video-192h-155kbps.mp4", tmpDir);
-       // copyResource("/smoothstreaming/video-240h-231kbps.mp4", tmpDir);
-       // copyResource("/smoothstreaming/video-320h-388kbps.mp4", tmpDir);
+        copyResource("/smoothstreaming/video-192h-155kbps.mp4", tmpDir);
+        copyResource("/smoothstreaming/video-240h-231kbps.mp4", tmpDir);
+        copyResource("/smoothstreaming/video-320h-388kbps.mp4", tmpDir);
 
         FragmentFileSet fragmentFileSet = new FragmentFileSet();
         File inputs[] = tmpDir.listFiles();

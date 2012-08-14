@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SmoothStreamingMedia MajorVersion="2" MinorVersion="1" Duration="0">
+    <!--isoparser-1.0-RC-13-SNAPSHOT-->
+    <StreamIndex Type="video" TimeScale="10000000" Chunks="5" Url="video/{bitrate}/{start time}" QualityLevels="1">
+        <QualityLevel Index="0" Bitrate="70090" FourCC="AVC1" MaxWidth="192" MaxHeight="128" CodecPrivateData="000000016742C00BD903046C0440000003004000000C83C50A920000000168CB8CB2" NALUnitLengthField="4"/>
+        <c n="0" d="24000000"/>
+        <c n="1" d="24000000"/>
+        <c n="2" d="24000000"/>
+        <c n="3" d="24000000"/>
+        <c n="4" d="24000000"/>
+    </StreamIndex>
+</SmoothStreamingMedia>

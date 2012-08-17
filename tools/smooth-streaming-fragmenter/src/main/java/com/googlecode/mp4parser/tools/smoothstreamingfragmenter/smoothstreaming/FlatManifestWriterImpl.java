@@ -27,6 +27,7 @@ import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.adaptivestreaming.AbstractManifestWriter;
 import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
+import com.googlecode.mp4parser.boxes.DTSSpecificBox;
 import com.googlecode.mp4parser.boxes.EC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.AudioSpecificConfig;
@@ -338,7 +339,123 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
     }
 
     private AudioQuality getDtsAudioQuality(Track track, AudioSampleEntry ase) {
-        return null;  //To change body of created methods use File | Settings | File Templates.
+        final DTSSpecificBox dtsSpecificBox = ase.getBoxes(DTSSpecificBox.class).get(0);
+        if (dtsSpecificBox == null) {
+            throw new RuntimeException("DTS track misses DTSSpecificBox!");
+        }
+        byte dWChannelMaskFirstByte = 0;
+        byte dWChannelMaskSecondByte = 0;
+
+        final ByteBuffer waveformatex = ByteBuffer.allocate(22);
+        final int frameDuration = dtsSpecificBox.getFrameDuration();
+        short samplesPerBlock = 0;
+        switch (frameDuration) {
+            case 0:
+                samplesPerBlock = 512;
+                break;
+            case 1:
+                samplesPerBlock = 1024;
+                break;
+            case 2:
+                samplesPerBlock = 2048;
+                break;
+            case 3:
+                samplesPerBlock = 4096;
+                break;
+        }
+        waveformatex.putShort(samplesPerBlock);
+        waveformatex.putInt(dtsSpecificBox.getChannelLayout());
+        waveformatex.put(new byte[]{(byte)0xAE, (byte)0xE4, (byte)0xBF, (byte)0x5E, (byte)0x61, (byte)0x5E, (byte)0x41, (byte)0x87, (byte)0x92, (byte)0xFC, (byte)0xA4, (byte)0x81, (byte)0x26, (byte)0x99, (byte)0x02, (byte)0x11}); //DTS-HD GUID
+
+        final ByteBuffer dtsCodecPrivateData= ByteBuffer.allocate(8);
+        dtsCodecPrivateData.put((byte) dtsSpecificBox.getStreamConstruction());
+        dtsCodecPrivateData.putInt(dtsSpecificBox.getChannelLayout());
+        byte dtsFlags = (byte) (dtsSpecificBox.getMultiAssetFlag() << 1);
+        dtsFlags |= dtsSpecificBox.getLBRDurationMod();
+        dtsCodecPrivateData.put(dtsFlags);
+        dtsCodecPrivateData.put(new byte[]{0x00, 0x00}); //reserved
+
+        AudioQuality l = new AudioQuality();
+        l.fourCC = getFormat(ase);
+        l.bitrate = dtsSpecificBox.getAvgBitRate();
+        l.audioTag = 65534;
+        l.samplingRate = dtsSpecificBox.getDTSSamplingFrequency();
+        l.channels = getNumChannels(dtsSpecificBox);
+        l.bitPerSample = 16;
+        l.packetSize = track.getSamples().get(0).limit(); //assuming all are same size
+        l.codecPrivateData = Hex.encodeHex(waveformatex.array()) + Hex.encodeHex(dtsCodecPrivateData.array());
+        return l;
+
+    }
+
+    private int getNumChannels(DTSSpecificBox dtsSpecificBox) {
+        final int channelLayout = dtsSpecificBox.getChannelLayout();
+        int numChannels = 0;
+        if ((channelLayout & 0x0001) == 0x0001) {
+            //0001h Center in front of listener 1
+            numChannels += 1;
+        }
+        if ((channelLayout & 0x0002) == 0x0002) {
+            //0002h Left/Right in front 2
+            numChannels += 2;
+        }
+        if ((channelLayout & 0x0004) == 0x0004) {
+            //0004h Left/Right surround on side in rear 2
+            numChannels += 2;
+        }
+        if ((channelLayout & 0x0008) == 0x0008) {
+            //0008h Low frequency effects subwoofer 1
+            numChannels += 1;
+        }
+        if ((channelLayout & 0x0010) == 0x0010) {
+            //0010h Center surround in rear 1
+            numChannels += 1;
+        }
+        if ((channelLayout & 0x0020) == 0x0020) {
+            //0020h Left/Right height in front 2
+            numChannels += 2;
+        }
+        if ((channelLayout & 0x0040) == 0x0040) {
+            //0040h Left/Right surround in rear 2
+            numChannels += 2;
+        }
+        if ((channelLayout & 0x0080) == 0x0080) {
+            //0080h Center Height in front 1
+            numChannels += 1;
+        }
+        if ((channelLayout & 0x0100) == 0x0100) {
+            //0100h Over the listener’s head 1
+            numChannels += 1;
+        }
+        if ((channelLayout & 0x0200) == 0x0200) {
+            //0200h Between left/right and center in front 2
+            numChannels += 2;
+        }
+        if ((channelLayout & 0x0400) == 0x0400) {
+            //0400h Left/Right on side in front 2
+            numChannels += 2;
+        }
+        if ((channelLayout & 0x0800) == 0x0800) {
+            //0800h Left/Right surround on side 2
+            numChannels += 2;
+        }
+        if ((channelLayout & 0x1000) == 0x1000) {
+            //1000h Second low frequency effects subwoofer 1
+            numChannels += 1;
+        }
+        if ((channelLayout & 0x2000) == 0x2000) {
+            //2000h Left/Right height on side 2
+            numChannels += 2;
+        }
+        if ((channelLayout & 0x4000) == 0x4000) {
+            //4000h Center height in rear 1
+            numChannels += 1;
+        }
+        if ((channelLayout & 0x8000) == 0x8000) {
+            //8000h Left/Right height in rear 2
+            numChannels += 2;
+        }
+        return numChannels;
     }
 
     private String getAudioCodecPrivateData(AudioSpecificConfig audioSpecificConfig) {

@@ -31,10 +31,18 @@ import com.googlecode.mp4parser.boxes.DTSSpecificBox;
 import com.googlecode.mp4parser.boxes.EC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.AudioSpecificConfig;
-import nu.xom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -89,77 +97,100 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
 
             }
         }
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = null;
+        try {
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new IOException(e);
+        }
+        Document document = documentBuilder.newDocument();
 
-        Element smoothStreamingMedia = new Element("SmoothStreamingMedia");
-        smoothStreamingMedia.addAttribute(new Attribute("MajorVersion", "2"));
-        smoothStreamingMedia.addAttribute(new Attribute("MinorVersion", "1"));
+
+        Element smoothStreamingMedia = document.createElement("SmoothStreamingMedia");
+        document.appendChild(smoothStreamingMedia);
+        smoothStreamingMedia.setAttribute("MajorVersion", "2");
+        smoothStreamingMedia.setAttribute("MinorVersion", "1");
 // silverlight ignores the timescale attr        smoothStreamingMedia.addAttribute(new Attribute("TimeScale", Long.toString(movieTimeScale)));
-        smoothStreamingMedia.addAttribute(new Attribute("Duration", "0"));
-        smoothStreamingMedia.appendChild(new Comment(Version.VERSION));
-        Element videoStreamIndex = new Element("StreamIndex");
-        videoStreamIndex.addAttribute(new Attribute("Type", "video"));
-        videoStreamIndex.addAttribute(new Attribute("TimeScale", Long.toString(videoTimescale))); // silverlight ignores the timescale attr
-        videoStreamIndex.addAttribute(new Attribute("Chunks", Integer.toString(videoFragmentsDurations.length)));
-        videoStreamIndex.addAttribute(new Attribute("Url", "video/{bitrate}/{start time}"));
-        videoStreamIndex.addAttribute(new Attribute("QualityLevels", Integer.toString(videoQualities.size())));
+        smoothStreamingMedia.setAttribute("Duration", "0");
+
+        smoothStreamingMedia.appendChild(document.createComment(Version.VERSION));
+        Element videoStreamIndex = document.createElement("StreamIndex");
+        videoStreamIndex.setAttribute("Type", "video");
+        videoStreamIndex.setAttribute("TimeScale", Long.toString(videoTimescale)); // silverlight ignores the timescale attr
+        videoStreamIndex.setAttribute("Chunks", Integer.toString(videoFragmentsDurations.length));
+        videoStreamIndex.setAttribute("Url", "video/{bitrate}/{start time}");
+        videoStreamIndex.setAttribute("QualityLevels", Integer.toString(videoQualities.size()));
         smoothStreamingMedia.appendChild(videoStreamIndex);
 
         for (int i = 0; i < videoQualities.size(); i++) {
             VideoQuality vq = videoQualities.get(i);
-            Element qualityLevel = new Element("QualityLevel");
-            qualityLevel.addAttribute(new Attribute("Index", Integer.toString(i)));
-            qualityLevel.addAttribute(new Attribute("Bitrate", Long.toString(vq.bitrate)));
-            qualityLevel.addAttribute(new Attribute("FourCC", vq.fourCC));
-            qualityLevel.addAttribute(new Attribute("MaxWidth", Long.toString(vq.width)));
-            qualityLevel.addAttribute(new Attribute("MaxHeight", Long.toString(vq.height)));
-            qualityLevel.addAttribute(new Attribute("CodecPrivateData", vq.codecPrivateData));
-            qualityLevel.addAttribute(new Attribute("NALUnitLengthField", Integer.toString(vq.nalLength)));
+            Element qualityLevel = document.createElement("QualityLevel");
+            qualityLevel.setAttribute("Index", Integer.toString(i));
+            qualityLevel.setAttribute("Bitrate", Long.toString(vq.bitrate));
+            qualityLevel.setAttribute("FourCC", vq.fourCC);
+            qualityLevel.setAttribute("MaxWidth", Long.toString(vq.width));
+            qualityLevel.setAttribute("MaxHeight", Long.toString(vq.height));
+            qualityLevel.setAttribute("CodecPrivateData", vq.codecPrivateData);
+            qualityLevel.setAttribute("NALUnitLengthField", Integer.toString(vq.nalLength));
             videoStreamIndex.appendChild(qualityLevel);
         }
 
         for (int i = 0; i < videoFragmentsDurations.length; i++) {
-            Element c = new Element("c");
-            c.addAttribute(new Attribute("n", Integer.toString(i)));
-            c.addAttribute(new Attribute("d", Long.toString(videoFragmentsDurations[i])));
+            Element c = document.createElement("c");
+            c.setAttribute("n", Integer.toString(i));
+            c.setAttribute("d", Long.toString(videoFragmentsDurations[i]));
             videoStreamIndex.appendChild(c);
         }
 
         if (audioFragmentsDurations != null) {
-            Element audioStreamIndex = new Element("StreamIndex");
-            audioStreamIndex.addAttribute(new Attribute("Type", "audio"));
-            audioStreamIndex.addAttribute(new Attribute("TimeScale", Long.toString(audioTimescale))); // silverlight ignores the timescale attr
-            audioStreamIndex.addAttribute(new Attribute("Chunks", Integer.toString(audioFragmentsDurations.length)));
-            audioStreamIndex.addAttribute(new Attribute("Url", "audio/{bitrate}/{start time}"));
-            audioStreamIndex.addAttribute(new Attribute("QualityLevels", Integer.toString(audioQualities.size())));
+            Element audioStreamIndex = document.createElement("StreamIndex");
+            audioStreamIndex.setAttribute("Type", "audio");
+            audioStreamIndex.setAttribute("TimeScale", Long.toString(audioTimescale)); // silverlight ignores the timescale attr
+            audioStreamIndex.setAttribute("Chunks", Integer.toString(audioFragmentsDurations.length));
+            audioStreamIndex.setAttribute("Url", "audio/{bitrate}/{start time}");
+            audioStreamIndex.setAttribute("QualityLevels", Integer.toString(audioQualities.size()));
             smoothStreamingMedia.appendChild(audioStreamIndex);
 
             for (int i = 0; i < audioQualities.size(); i++) {
                 AudioQuality aq = audioQualities.get(i);
-                Element qualityLevel = new Element("QualityLevel");
-                qualityLevel.addAttribute(new Attribute("Index", Integer.toString(i)));
-                qualityLevel.addAttribute(new Attribute("FourCC", aq.fourCC));
-                qualityLevel.addAttribute(new Attribute("Bitrate", Long.toString(aq.bitrate)));
-                qualityLevel.addAttribute(new Attribute("AudioTag", Integer.toString(aq.audioTag)));
-                qualityLevel.addAttribute(new Attribute("SamplingRate", Long.toString(aq.samplingRate)));
-                qualityLevel.addAttribute(new Attribute("Channels", Integer.toString(aq.channels)));
-                qualityLevel.addAttribute(new Attribute("BitsPerSample", Integer.toString(aq.bitPerSample)));
-                qualityLevel.addAttribute(new Attribute("PacketSize", Integer.toString(aq.packetSize)));
-                qualityLevel.addAttribute(new Attribute("CodecPrivateData", aq.codecPrivateData));
+                Element qualityLevel = document.createElement("QualityLevel");
+                qualityLevel.setAttribute("Index", Integer.toString(i));
+                qualityLevel.setAttribute("FourCC", aq.fourCC);
+                qualityLevel.setAttribute("Bitrate", Long.toString(aq.bitrate));
+                qualityLevel.setAttribute("AudioTag", Integer.toString(aq.audioTag));
+                qualityLevel.setAttribute("SamplingRate", Long.toString(aq.samplingRate));
+                qualityLevel.setAttribute("Channels", Integer.toString(aq.channels));
+                qualityLevel.setAttribute("BitsPerSample", Integer.toString(aq.bitPerSample));
+                qualityLevel.setAttribute("PacketSize", Integer.toString(aq.packetSize));
+                qualityLevel.setAttribute("CodecPrivateData", aq.codecPrivateData);
                 audioStreamIndex.appendChild(qualityLevel);
             }
             for (int i = 0; i < audioFragmentsDurations.length; i++) {
-                Element c = new Element("c");
-                c.addAttribute(new Attribute("n", Integer.toString(i)));
-                c.addAttribute(new Attribute("d", Long.toString(audioFragmentsDurations[i])));
+                Element c = document.createElement("c");
+                c.setAttribute("n", Integer.toString(i));
+                c.setAttribute("d", Long.toString(audioFragmentsDurations[i]));
                 audioStreamIndex.appendChild(c);
             }
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Serializer serializer = new Serializer(baos);
-        serializer.setIndent(4);
-        serializer.write(customizeManifest(new Document(smoothStreamingMedia)));
 
-        return baos.toString("UTF-8");
+        document.setXmlStandalone(true);
+        Source source = new DOMSource(document);
+        StringWriter stringWriter = new StringWriter();
+        Result result = new StreamResult(stringWriter);
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = null;
+        try {
+            transformer = factory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.transform(source, result);
+        } catch (TransformerConfigurationException e) {
+            throw new IOException(e);
+        } catch (TransformerException e) {
+            throw new IOException(e);
+        }
+        return stringWriter.getBuffer().toString();
+
 
     }
 

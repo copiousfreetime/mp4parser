@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.googlecode.mp4parser.tools.smoothstreamingfragmenter.smoothstreaming;
+package com.googlecode.mp4parser.authoring.adaptivestreaming;
 
 import com.coremedia.iso.Hex;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
@@ -25,7 +25,6 @@ import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.Version;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.adaptivestreaming.AbstractManifestWriter;
 import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
 import com.googlecode.mp4parser.boxes.DTSSpecificBox;
 import com.googlecode.mp4parser.boxes.EC3SpecificBox;
@@ -65,7 +64,6 @@ public class FlatManifestWriterImpl extends AbstractManifestWriter {
         return manifest;
     }
 
-    @Override
     public String getManifest(Movie movie) throws IOException {
 
         LinkedList<VideoQuality> videoQualities = new LinkedList<VideoQuality>();

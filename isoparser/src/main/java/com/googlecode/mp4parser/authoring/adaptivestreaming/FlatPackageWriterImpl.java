@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.googlecode.mp4parser.tools.smoothstreamingfragmenter.smoothstreaming;
+package com.googlecode.mp4parser.authoring.adaptivestreaming;
 
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.Box;
@@ -22,8 +22,6 @@ import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
-import com.googlecode.mp4parser.authoring.adaptivestreaming.ManifestWriter;
-import com.googlecode.mp4parser.authoring.adaptivestreaming.PackageWriter;
 import com.googlecode.mp4parser.authoring.builder.*;
 import com.googlecode.mp4parser.authoring.tracks.ChangeTimeScaleTrack;
 

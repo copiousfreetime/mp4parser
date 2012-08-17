@@ -17,6 +17,7 @@ package com.googlecode.mp4parser.tools.smoothstreamingfragmenter.smoothstreaming
 
 
 public class AudioQuality {
+    String fourCC;
     long bitrate;
     int audioTag;
     long samplingRate;

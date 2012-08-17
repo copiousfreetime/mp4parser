@@ -16,38 +16,34 @@
 package com.googlecode.mp4parser.tools.smoothstreamingfragmenter.smoothstreaming;
 
 import com.coremedia.iso.Hex;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.SampleDescriptionBox;
+import com.coremedia.iso.boxes.SoundMediaHeaderBox;
+import com.coremedia.iso.boxes.VideoMediaHeaderBox;
 import com.coremedia.iso.boxes.h264.AvcConfigurationBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
-import com.coremedia.iso.boxes.sampleentry.SampleEntry;
 import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
 import com.googlecode.mp4parser.Version;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.adaptivestreaming.AbstractManifestWriter;
 import com.googlecode.mp4parser.authoring.builder.FragmentIntersectionFinder;
+import com.googlecode.mp4parser.boxes.EC3SpecificBox;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
+import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.AudioSpecificConfig;
 import nu.xom.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static com.googlecode.mp4parser.util.CastUtils.l2i;
-
-public class FlatManifestWriterImpl implements ManifestWriter {
+public class FlatManifestWriterImpl extends AbstractManifestWriter {
     private static final Logger LOG = Logger.getLogger(FlatManifestWriterImpl.class.getName());
 
-
-    private FragmentIntersectionFinder intersectionFinder;
-    private long[] audioFragmentsDurations;
-    private long[] videoFragmentsDurations;
-
-    public FlatManifestWriterImpl(FragmentIntersectionFinder intersectionFinder) {
-        this.intersectionFinder = intersectionFinder;
+    protected FlatManifestWriterImpl(FragmentIntersectionFinder intersectionFinder) {
+        super(intersectionFinder);
     }
 
     /**
@@ -60,6 +56,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         return manifest;
     }
 
+    @Override
     public String getManifest(Movie movie) throws IOException {
 
         LinkedList<VideoQuality> videoQualities = new LinkedList<VideoQuality>();
@@ -67,8 +64,6 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
         LinkedList<AudioQuality> audioQualities = new LinkedList<AudioQuality>();
         long audioTimescale = -1;
-
-
 
         for (Track track : movie.getTracks()) {
             if (track.getMediaHeaderBox() instanceof VideoMediaHeaderBox) {
@@ -124,7 +119,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         for (int i = 0; i < videoFragmentsDurations.length; i++) {
             Element c = new Element("c");
             c.addAttribute(new Attribute("n", Integer.toString(i)));
-            c.addAttribute(new Attribute("d", Long.toString((long) (videoFragmentsDurations[i] ))));
+            c.addAttribute(new Attribute("d", Long.toString(videoFragmentsDurations[i])));
             videoStreamIndex.appendChild(c);
         }
 
@@ -141,6 +136,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
                 AudioQuality aq = audioQualities.get(i);
                 Element qualityLevel = new Element("QualityLevel");
                 qualityLevel.addAttribute(new Attribute("Index", Integer.toString(i)));
+                qualityLevel.addAttribute(new Attribute("FourCC", aq.fourCC));
                 qualityLevel.addAttribute(new Attribute("Bitrate", Long.toString(aq.bitrate)));
                 qualityLevel.addAttribute(new Attribute("AudioTag", Integer.toString(aq.audioTag)));
                 qualityLevel.addAttribute(new Attribute("SamplingRate", Long.toString(aq.samplingRate)));
@@ -153,7 +149,7 @@ public class FlatManifestWriterImpl implements ManifestWriter {
             for (int i = 0; i < audioFragmentsDurations.length; i++) {
                 Element c = new Element("c");
                 c.addAttribute(new Attribute("n", Integer.toString(i)));
-                c.addAttribute(new Attribute("d", Long.toString((long) (audioFragmentsDurations[i] ))));
+                c.addAttribute(new Attribute("d", Long.toString(audioFragmentsDurations[i])));
                 audioStreamIndex.appendChild(c);
             }
         }
@@ -168,38 +164,187 @@ public class FlatManifestWriterImpl implements ManifestWriter {
 
     private AudioQuality getAudioQuality(Track track, AudioSampleEntry ase) {
         if (getFormat(ase).equals("mp4a")) {
-            AudioQuality l = new AudioQuality();
-            l.bitrate = getBitrate(track);
-            l.audioTag = 255;
-            l.samplingRate = ase.getSampleRate();
-            l.channels = ase.getChannelCount();
-            l.bitPerSample = ase.getSampleSize();
-            l.packetSize = 4;
-            l.codecPrivateData = getAudioCodecPrivateData(ase.getBoxes(ESDescriptorBox.class).get(0));
-            //Index="0" Bitrate="103000" AudioTag="255" SamplingRate="44100" Channels="2" BitsPerSample="16" packetSize="4" CodecPrivateData=""
-            return l;
+            return getAacAudioQuality(track, ase);
+        } else if (getFormat(ase).equals("ec-3")) {
+            return getEc3AudioQuality(track, ase);
+        } else if (getFormat(ase).startsWith("dts")) {
+            return getDtsAudioQuality(track, ase);
         } else {
             throw new InternalError("I don't know what to do with audio of type " + getFormat(ase));
         }
 
     }
 
-    public long getBitrate(Track track) {
-        long bitrate = 0;
-        for (ByteBuffer sample : track.getSamples()) {
-            bitrate += sample.limit();
+    private AudioQuality getAacAudioQuality(Track track, AudioSampleEntry ase) {
+        AudioQuality l = new AudioQuality();
+        final ESDescriptorBox esDescriptorBox = ase.getBoxes(ESDescriptorBox.class).get(0);
+        final AudioSpecificConfig audioSpecificConfig = esDescriptorBox.getEsDescriptor().getDecoderConfigDescriptor().getAudioSpecificInfo();
+        if (audioSpecificConfig.getSbrPresentFlag() == 1) {
+            l.fourCC = "AACH";
+        } else if (audioSpecificConfig.getPsPresentFlag() == 1) {
+            l.fourCC = "AACP"; //I'm not sure if that's what MS considers as AAC+ - because actually AAC+ and AAC-HE should be the same...
+        } else {
+            l.fourCC = "AACL";
         }
-        bitrate *= 8; // from bytes to bits
-        bitrate /= ((double) getDuration(track)) / track.getTrackMetaData().getTimescale(); // per second
-        return bitrate;
+        l.bitrate = getBitrate(track);
+        l.audioTag = 255;
+        l.samplingRate = ase.getSampleRate();
+        l.channels = ase.getChannelCount();
+        l.bitPerSample = ase.getSampleSize();
+        l.packetSize = 4;
+        l.codecPrivateData = getAudioCodecPrivateData(audioSpecificConfig);
+        //Index="0" Bitrate="103000" AudioTag="255" SamplingRate="44100" Channels="2" BitsPerSample="16" packetSize="4" CodecPrivateData=""
+        return l;
     }
 
+    private AudioQuality getEc3AudioQuality(Track track, AudioSampleEntry ase) {
+        final EC3SpecificBox ec3SpecificBox = ase.getBoxes(EC3SpecificBox.class).get(0);
+        if (ec3SpecificBox == null) {
+            throw new RuntimeException("EC-3 track misses EC3SpecificBox!");
+        }
 
-    private String getAudioCodecPrivateData(ESDescriptorBox esDescriptorBox) {
-        byte[] configByteArray = esDescriptorBox.getEsDescriptor().getDecoderConfigDescriptor().getAudioSpecificInfo().getConfigBytes();
+        short nfchans = 0; //full bandwidth channels
+        short lfechans = 0;
+        byte dWChannelMaskFirstByte = 0;
+        byte dWChannelMaskSecondByte = 0;
+        for (EC3SpecificBox.Entry entry : ec3SpecificBox.getEntries()) {
+            /*
+            Table 4.3: Audio coding mode
+            acmod Audio coding mode Nfchans Channel array ordering
+            000 1 + 1 2 Ch1, Ch2
+            001 1/0 1 C
+            010 2/0 2 L, R
+            011 3/0 3 L, C, R
+            100 2/1 3 L, R, S
+            101 3/1 4 L, C, R, S
+            110 2/2 4 L, R, SL, SR
+            111 3/2 5 L, C, R, SL, SR
+
+            Table F.2: Chan_loc field bit assignments
+            Bit Location
+            0 Lc/Rc pair
+            1 Lrs/Rrs pair
+            2 Cs
+            3 Ts
+            4 Lsd/Rsd pair
+            5 Lw/Rw pair
+            6 Lvh/Rvh pair
+            7 Cvh
+            8 LFE2
+            */
+            switch (entry.acmod) {
+                case 0: //1+1; Ch1, Ch2
+                    nfchans += 2;
+                    throw new RuntimeException("Smooth Streaming doesn't support DDP 1+1 mode");
+                case 1: //1/0; C
+                    nfchans += 1;
+                    if (entry.num_dep_sub > 0) {
+                        DependentSubstreamMask dependentSubstreamMask = new DependentSubstreamMask(dWChannelMaskFirstByte, dWChannelMaskSecondByte, entry).process();
+                        dWChannelMaskFirstByte |= dependentSubstreamMask.getdWChannelMaskFirstByte();
+                        dWChannelMaskSecondByte |= dependentSubstreamMask.getdWChannelMaskSecondByte();
+                    } else {
+                        dWChannelMaskFirstByte |= 0x20;
+                    }
+                    break;
+                case 2: //2/0; L, R
+                    nfchans += 2;
+                    if (entry.num_dep_sub > 0) {
+                        DependentSubstreamMask dependentSubstreamMask = new DependentSubstreamMask(dWChannelMaskFirstByte, dWChannelMaskSecondByte, entry).process();
+                        dWChannelMaskFirstByte |= dependentSubstreamMask.getdWChannelMaskFirstByte();
+                        dWChannelMaskSecondByte |= dependentSubstreamMask.getdWChannelMaskSecondByte();
+                    } else {
+                        dWChannelMaskFirstByte |= 0xC0;
+                    }
+                    break;
+                case 3: //3/0; L, C, R
+                    nfchans += 3;
+                    if (entry.num_dep_sub > 0) {
+                        DependentSubstreamMask dependentSubstreamMask = new DependentSubstreamMask(dWChannelMaskFirstByte, dWChannelMaskSecondByte, entry).process();
+                        dWChannelMaskFirstByte |= dependentSubstreamMask.getdWChannelMaskFirstByte();
+                        dWChannelMaskSecondByte |= dependentSubstreamMask.getdWChannelMaskSecondByte();
+                    } else {
+                        dWChannelMaskFirstByte |= 0xE0;
+                    }
+                    break;
+                case 4: //2/1; L, R, S
+                    nfchans += 3;
+                    if (entry.num_dep_sub > 0) {
+                        DependentSubstreamMask dependentSubstreamMask = new DependentSubstreamMask(dWChannelMaskFirstByte, dWChannelMaskSecondByte, entry).process();
+                        dWChannelMaskFirstByte |= dependentSubstreamMask.getdWChannelMaskFirstByte();
+                        dWChannelMaskSecondByte |= dependentSubstreamMask.getdWChannelMaskSecondByte();
+                    } else {
+                        dWChannelMaskFirstByte |= 0xC0;
+                        dWChannelMaskSecondByte |= 0x80;
+                    }
+                    break;
+                case 5: //3/1; L, C, R, S
+                    nfchans += 4;
+                    if (entry.num_dep_sub > 0) {
+                        DependentSubstreamMask dependentSubstreamMask = new DependentSubstreamMask(dWChannelMaskFirstByte, dWChannelMaskSecondByte, entry).process();
+                        dWChannelMaskFirstByte |= dependentSubstreamMask.getdWChannelMaskFirstByte();
+                        dWChannelMaskSecondByte |= dependentSubstreamMask.getdWChannelMaskSecondByte();
+                    } else {
+                        dWChannelMaskFirstByte |= 0xE0;
+                        dWChannelMaskSecondByte |= 0x80;
+                    }
+                    break;
+                case 6: //2/2; L, R, SL, SR
+                    nfchans += 4;
+                    if (entry.num_dep_sub > 0) {
+                        DependentSubstreamMask dependentSubstreamMask = new DependentSubstreamMask(dWChannelMaskFirstByte, dWChannelMaskSecondByte, entry).process();
+                        dWChannelMaskFirstByte |= dependentSubstreamMask.getdWChannelMaskFirstByte();
+                        dWChannelMaskSecondByte |= dependentSubstreamMask.getdWChannelMaskSecondByte();
+                    } else {
+                        dWChannelMaskFirstByte |= 0xCC;
+                    }
+                    break;
+                case 7: //3/2; L, C, R, SL, SR
+                    nfchans += 5;
+                    if (entry.num_dep_sub > 0) {
+                        DependentSubstreamMask dependentSubstreamMask = new DependentSubstreamMask(dWChannelMaskFirstByte, dWChannelMaskSecondByte, entry).process();
+                        dWChannelMaskFirstByte |= dependentSubstreamMask.getdWChannelMaskFirstByte();
+                        dWChannelMaskSecondByte |= dependentSubstreamMask.getdWChannelMaskSecondByte();
+                    } else {
+                        dWChannelMaskFirstByte |= 0xEC;
+                    }
+                    break;
+            }
+            if (entry.lfeon == 1) {
+                lfechans ++;
+                dWChannelMaskFirstByte |= 0x10;
+            }
+        }
+
+        final ByteBuffer waveformatex = ByteBuffer.allocate(22);
+        waveformatex.put(new byte[]{0x00, 0x06}); //1536 wSamplesPerBlock - little endian
+        waveformatex.put(dWChannelMaskFirstByte);
+        waveformatex.put(dWChannelMaskSecondByte);
+        waveformatex.put(new byte[]{0x00, 0x00}); //pad dwChannelMask to 32bit
+        waveformatex.put(new byte[]{(byte)0xAF, (byte)0x87, (byte)0xFB, (byte)0xA7, 0x02, 0x2D, (byte)0xFB, 0x42, (byte)0xA4, (byte)0xD4, 0x05, (byte)0xCD, (byte)0x93, (byte)0x84, 0x3B, (byte)0xDD}); //SubFormat - Dolby Digital Plus GUID
+
+        final ByteBuffer dec3Content = ByteBuffer.allocate((int) ec3SpecificBox.getContentSize());
+        ec3SpecificBox.getContent(dec3Content);
+
+        AudioQuality l = new AudioQuality();
+        l.fourCC = "EC-3";
+        l.bitrate = getBitrate(track);
+        l.audioTag = 65534;
+        l.samplingRate = ase.getSampleRate();
+        l.channels = nfchans + lfechans;
+        l.bitPerSample = 16;
+        l.packetSize = track.getSamples().get(0).limit(); //assuming all are same size
+        l.codecPrivateData = Hex.encodeHex(waveformatex.array()) + Hex.encodeHex(dec3Content.array()); //append EC3SpecificBox (big endian) at the end of waveformatex
+        return l;
+    }
+
+    private AudioQuality getDtsAudioQuality(Track track, AudioSampleEntry ase) {
+        return null;  //To change body of created methods use File | Settings | File Templates.
+    }
+
+    private String getAudioCodecPrivateData(AudioSpecificConfig audioSpecificConfig) {
+        byte[] configByteArray = audioSpecificConfig.getConfigBytes();
         return Hex.encodeHex(configByteArray);
     }
-
 
     private VideoQuality getVideoQuality(Track track, VisualSampleEntry vse) {
         VideoQuality l;
@@ -212,46 +357,10 @@ public class FlatManifestWriterImpl implements ManifestWriter {
             l.width = vse.getWidth();
             l.height = vse.getHeight();
             l.nalLength = avcConfigurationBox.getLengthSizeMinusOne() + 1;
-
         } else {
             throw new InternalError("I don't know how to handle video of type " + getFormat(vse));
         }
         return l;
-    }
-
-    private long[] checkFragmentsAlign(long[] referenceTimes, long[] checkTimes) throws IOException {
-
-        if (referenceTimes == null || referenceTimes.length == 0) {
-            return checkTimes;
-        }
-        long[] referenceTimesMinusLast = new long[referenceTimes.length - 1];
-        System.arraycopy(referenceTimes, 0, referenceTimesMinusLast, 0, referenceTimes.length - 1);
-        long[] checkTimesMinusLast = new long[checkTimes.length - 1];
-        System.arraycopy(checkTimes, 0, checkTimesMinusLast, 0, checkTimes.length - 1);
-
-        if (!Arrays.equals(checkTimesMinusLast, referenceTimesMinusLast)) {
-            String log = "";
-            log += (referenceTimes.length);
-            log += ("Reference     :  [");
-            for (long l : referenceTimes) {
-                log += (String.format("%10d,", l));
-            }
-            log += ("]");
-            LOG.warning(log);
-            log = "";
-
-            log += (checkTimes.length);
-            log += ("Current       :  [");
-            for (long l : checkTimes) {
-                log += (String.format("%10d,", l));
-            }
-            log += ("]");
-            LOG.warning(log);
-            throw new IOException("Track does not have the same fragment borders as its predecessor.");
-
-        } else {
-            return checkTimes;
-        }
     }
 
     private byte[] getAvcCodecPrivateData(AvcConfigurationBox avcConfigurationBox) {
@@ -274,53 +383,47 @@ public class FlatManifestWriterImpl implements ManifestWriter {
         return baos.toByteArray();
     }
 
-    private String getFormat(SampleEntry se) {
-        String type = se.getType();
-        if (type.equals("encv") || type.equals("enca") || type.equals("encv")) {
-            OriginalFormatBox frma = se.getBoxes(OriginalFormatBox.class, true).get(0);
-            type = frma.getDataFormat();
+    private class DependentSubstreamMask {
+        private byte dWChannelMaskFirstByte;
+        private byte dWChannelMaskSecondByte;
+        private EC3SpecificBox.Entry entry;
+
+        public DependentSubstreamMask(byte dWChannelMaskFirstByte, byte dWChannelMaskSecondByte, EC3SpecificBox.Entry entry) {
+            this.dWChannelMaskFirstByte = dWChannelMaskFirstByte;
+            this.dWChannelMaskSecondByte = dWChannelMaskSecondByte;
+            this.entry = entry;
         }
-        return type;
-    }
 
-    /**
-     * Calculates the length of each fragment in the given <code>track</code> (as part of <code>movie</code>).
-     *
-     * @param track target of calculation
-     * @param movie the <code>track</code> must be part of this <code>movie</code>
-     * @return the duration of each fragment in track timescale
-     */
-    public long[] calculateFragmentDurations(Track track, Movie movie) {
-        long[] startSamples = intersectionFinder.sampleNumbers(track, movie);
-        long[] durations = new long[startSamples.length];
-        int currentFragment = 0;
-        int currentSample = 1; // sync samples start with 1 !
+        public byte getdWChannelMaskFirstByte() {
+            return dWChannelMaskFirstByte;
+        }
 
-        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            for (int max = currentSample + l2i(entry.getCount()); currentSample < max; currentSample++) {
-                // in this loop we go through the entry.getCount() samples starting from current sample.
-                // the next entry.getCount() samples have the same decoding time.
-                if (currentFragment != startSamples.length - 1 && currentSample == startSamples[currentFragment + 1]) {
-                    // we are not in the last fragment && the current sample is the start sample of the next fragment
-                    currentFragment++;
-                }
-                durations[currentFragment] += entry.getDelta();
+        public byte getdWChannelMaskSecondByte() {
+            return dWChannelMaskSecondByte;
+        }
 
-
+        public DependentSubstreamMask process() {
+            switch (entry.chan_loc) {
+                case 0:
+                    dWChannelMaskFirstByte |= 0x3;
+                    break;
+                case 1:
+                    dWChannelMaskFirstByte |= 0xC;
+                    break;
+                case 2:
+                    dWChannelMaskSecondByte |= 0x80;
+                    break;
+                case 3:
+                    dWChannelMaskSecondByte |= 0x8;
+                    break;
+                case 6:
+                    dWChannelMaskSecondByte |= 0x5;
+                    break;
+                case 7:
+                    dWChannelMaskSecondByte |= 0x2;
+                    break;
             }
+            return this;
         }
-        return durations;
-
     }
-
-
-    protected static long getDuration(Track track) {
-        long duration = 0;
-        for (TimeToSampleBox.Entry entry : track.getDecodingTimeEntries()) {
-            duration += entry.getCount() * entry.getDelta();
-        }
-        return duration;
-    }
-
-
 }

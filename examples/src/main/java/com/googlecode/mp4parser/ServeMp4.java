@@ -7,34 +7,53 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Shortens/Crops a track
+ * Created with IntelliJ IDEA.
+ * User: sannies
+ * Date: 10/28/12
+ * Time: 11:08 AM
+ * To change this template use File | Settings | File Templates.
  */
-public class ShortenExample {
+public class ServeMp4 extends AbstractHandler {
+
+    Movie movie;
+
+    public static void main(String[] args) throws Exception {
+        Movie movie = MovieCreator.build(new FileInputStream(new File("/home/sannies/CSI.S13E02.HDTV.x264-LOL.mp4")).getChannel());
 
 
-    public static void main(String[] args) throws IOException {
-        //Movie movie = new MovieCreator().build(new RandomAccessFile("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov", "r").getChannel());
-        ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/CSI.S13E02.HDTV.x264-LOL.mp4")));
-        Movie movie = MovieCreator.build(in);
+        Server server = new Server(8080);
+        server.setHandler(new ServeMp4(movie));
+        server.start();
+        server.join();
+    }
 
+    public ServeMp4(Movie movie) {
+        this.movie = movie;
+    }
+
+    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        String start = request.getParameter("start");
         List<Track> tracks = movie.getTracks();
         movie.setTracks(new LinkedList<Track>());
         // remove all tracks we will create new tracks from the old
 
-        double startTime = 0;
+        double startTime = Double.parseDouble(start);
         double endTime = (double) getDuration(tracks.get(0)) / tracks.get(0).getTrackMetaData().getTimescale();
 
         boolean timeCorrected = false;
@@ -85,19 +104,14 @@ public class ShortenExample {
             }
             movie.addTrack(new CroppedTrack(track, startSample, endSample));
         }
-        long start1 = System.currentTimeMillis();
+
         IsoFile out = new DefaultMp4Builder().build(movie);
-        long start2 = System.currentTimeMillis();
-        FileOutputStream fos = new FileOutputStream(String.format("output-%f-%f.mp4", startTime, endTime));
-        FileChannel fc = fos.getChannel();
-        out.getBox(fc);
-        fc.close();
-        fos.close();
-        long start3 = System.currentTimeMillis();
-        System.err.println("Building IsoFile took : " + (start2 - start1) + "ms");
-        System.err.println("Writing IsoFile took  : " + (start3 - start2) + "ms");
-        System.err.println("Writing IsoFile speed : " + (new File(String.format("output-%f-%f.mp4", startTime, endTime)).length() / (start3 - start2) / 1000) + "MB/s");
+        response.setHeader("content-type", "video/mp4");
+        out.getBox(Channels.newChannel(response.getOutputStream()));
+
+
     }
+
 
     protected static long getDuration(Track track) {
         long duration = 0;
@@ -135,6 +149,5 @@ public class ShortenExample {
         }
         return timeOfSyncSamples[timeOfSyncSamples.length - 1];
     }
-
 
 }

@@ -12,9 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,8 +25,7 @@ public class ShortenExample {
 
     public static void main(String[] args) throws IOException {
         //Movie movie = new MovieCreator().build(new RandomAccessFile("/home/sannies/suckerpunch-distantplanet_h1080p/suckerpunch-distantplanet_h1080p.mov", "r").getChannel());
-        ReadableByteChannel in = Channels.newChannel((new FileInputStream("/home/sannies/CSI.S13E02.HDTV.x264-LOL.mp4")));
-        Movie movie = MovieCreator.build(in);
+        Movie movie = MovieCreator.build(new FileInputStream("/home/sannies/CSI.S13E02.HDTV.x264-LOL.mp4").getChannel());
 
         List<Track> tracks = movie.getTracks();
         movie.setTracks(new LinkedList<Track>());

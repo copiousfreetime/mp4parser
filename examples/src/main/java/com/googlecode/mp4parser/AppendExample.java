@@ -4,13 +4,12 @@ import com.coremedia.iso.IsoFile;
 import com.googlecode.mp4parser.authoring.Movie;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
-import com.googlecode.mp4parser.authoring.builder.FragmentedMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,10 +19,11 @@ import java.util.List;
  */
 public class AppendExample {
     public static void main(String[] args) throws IOException {
+        String audioDeutsch = AppendExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/count-deutsch-audio.mp4";
+        String audioEnglish = AppendExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/count-english-audio.mp4";
 
-
-        Movie[] inMovies = new Movie[]{MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-deutsch-audio.mp4"))),
-                MovieCreator.build(Channels.newChannel(AppendExample.class.getResourceAsStream("/count-english-audio.mp4")))};
+        Movie[] inMovies = new Movie[]{MovieCreator.build(new FileInputStream(audioDeutsch).getChannel()),
+                MovieCreator.build(new FileInputStream(audioEnglish).getChannel())};
 
         List<Track> videoTracks = new LinkedList<Track>();
         List<Track> audioTracks = new LinkedList<Track>();

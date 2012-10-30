@@ -9,9 +9,9 @@ import com.googlecode.mp4parser.authoring.builder.SyncSampleIntersectFinderImpl;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.Channels;
 
 /**
  * Muxes 2 audio tracks with a video track.
@@ -19,10 +19,14 @@ import java.nio.channels.Channels;
 public class MuxMp4SourcesExample {
     public static void main(String[] args) throws IOException {
 
+        String audioDeutsch = MuxMp4SourcesExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/count-deutsch-audio.mp4";
+        String audioEnglish = MuxMp4SourcesExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/count-english-audio.mp4";
+        String video = MuxMp4SourcesExample.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "/count-video.mp4";
 
-        Movie countVideo = MovieCreator.build(Channels.newChannel(MuxMp4SourcesExample.class.getResourceAsStream("/count-video.mp4")));
-        Movie countAudioDeutsch = MovieCreator.build(Channels.newChannel(MuxMp4SourcesExample.class.getResourceAsStream("/count-deutsch-audio.mp4")));
-        Movie countAudioEnglish = MovieCreator.build(Channels.newChannel(MuxMp4SourcesExample.class.getResourceAsStream("/count-english-audio.mp4")));
+
+        Movie countVideo = MovieCreator.build(new FileInputStream(video).getChannel());
+        Movie countAudioDeutsch = MovieCreator.build(new FileInputStream(audioDeutsch).getChannel());
+        Movie countAudioEnglish = MovieCreator.build(new FileInputStream(audioEnglish).getChannel());
 
         Track audioTrackDeutsch = countAudioDeutsch.getTracks().get(0);
         audioTrackDeutsch.getTrackMetaData().setLanguage("deu");

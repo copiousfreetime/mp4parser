@@ -31,7 +31,7 @@ public class DumpAmf0TrackToPropertyFile {
                     for (int i = 0; i < entry.getCount(); i++) {
                         ByteBuffer sample = samples.next();
                         byte[] sampleBytes = new byte[sample.limit()];
-                        sample.rewind();
+                        sample.reset();
                         sample.get(sampleBytes);
                         properties.put("" + time, new String(Base64.encodeBase64(sampleBytes, false, false)));
                         time += entry.getDelta();

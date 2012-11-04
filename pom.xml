@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.googlecode.mp4parser</groupId>
     <artifactId>mp4parser-project</artifactId>
@@ -67,12 +68,6 @@
             </plugin>
         </plugins>
     </build>
-    <distributionManagement>
-        <repository>
-            <id>localfs</id>
-            <url>file://${project.basedir}/target/release</url>
-        </repository>
-    </distributionManagement>
     <scm>
         <url>http://code.google.com/p/mp4parser/source/browse/</url>
         <connection>scm:svn:https://mp4parser.googlecode.com/svn/trunk/</connection>

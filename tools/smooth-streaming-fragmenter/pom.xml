@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -57,7 +58,7 @@
             <plugin>
                 <groupId>com.googlecode.maven-gcu-plugin</groupId>
                 <artifactId>maven-gcu-plugin</artifactId>
-                <version>1.2-CL</version>
+                <version>1.1</version>
                 <configuration>
                     <serverId>mp4parser-svn</serverId>
                     <failsOnError>true</failsOnError>
@@ -91,7 +92,8 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.googlecode.mp4parser.tools.smoothstreamingfragmenter.FragmentFileSet</mainClass>
+                            <mainClass>com.googlecode.mp4parser.tools.smoothstreamingfragmenter.FragmentFileSet
+                            </mainClass>
                         </manifest>
                     </archive>
                 </configuration>

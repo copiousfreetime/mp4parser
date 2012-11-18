@@ -28,6 +28,8 @@ public class Mp4ParserPerformance extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Debug.startMethodTracing();
+        Debug.startAllocCounting();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         TextView tv = (TextView) findViewById(R.id.text);
@@ -64,7 +66,7 @@ public class Mp4ParserPerformance extends Activity {
             long a = System.currentTimeMillis();
             tv.append("1");
 //            Movie movie = new MovieCreator().build(new RandomAccessFileIsoBufferWrapperImpl(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov")));
-            Movie movie = new MovieCreator().build(new RandomAccessFile(new File(sdCard, "suckerpunch-distantplanet_h1080p.mov").getAbsolutePath(), "r").getChannel());
+            Movie movie = MovieCreator.build(new RandomAccessFile(new File(sdCard, "Movies/a.mp4").getAbsolutePath(), "r").getChannel());
             tv.append("2");
             Log.v("PERF", "Parsing took " + (System.currentTimeMillis() - a));
             text += "Parsing took " + Long.toString(System.currentTimeMillis() - a) + "\n";
@@ -73,7 +75,7 @@ public class Mp4ParserPerformance extends Activity {
             // remove all tracks we will create new tracks from the old
 
             double startTime = 35.000;
-            double endTime = 145.000;
+            double endTime = 60 * 20;
 
             boolean timeCorrected = false;
 

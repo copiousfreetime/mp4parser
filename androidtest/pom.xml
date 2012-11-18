@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.googlecode.mp4parser</groupId>
     <artifactId>androidtest</artifactId>
-    <version>1.0-RC-3-SNAPSHOT</version>
+    <version>1.0-RC-16-SNAPSHOT</version>
     <packaging>apk</packaging>
     <name>androidtest</name>
 
@@ -17,7 +18,7 @@
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.0-RC-3-SNAPSHOT</version>
+            <version>1.0-RC-16-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>
@@ -28,7 +29,7 @@
                 <plugin>
                     <groupId>com.jayway.maven.plugins.android.generation2</groupId>
                     <artifactId>android-maven-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.4.0</version>
                     <extensions>true</extensions>
                 </plugin>
             </plugins>
@@ -39,11 +40,10 @@
                 <artifactId>android-maven-plugin</artifactId>
                 <configuration>
                     <sdk>
-                        <platform>9</platform>
-                        <path>/home/sannies/opt/android-sdk-linux</path>
+                        <platform>16</platform>
                     </sdk>
                     <emulator>
-                        <avd>9</avd>
+                        <avd>16</avd>
                     </emulator>
                 </configuration>
             </plugin>

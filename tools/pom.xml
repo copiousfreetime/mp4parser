@@ -3,7 +3,7 @@
     <parent>
         <artifactId>mp4parser-project</artifactId>
         <groupId>com.googlecode.mp4parser</groupId>
-        <version>1.0-RC-18-SNAPSHOT</version>
+        <version>1.0-RC-18</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>

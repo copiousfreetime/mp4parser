@@ -19,7 +19,7 @@ import java.io.IOException;
 public class AacExample {
     public static void main(String[] args) throws IOException {
 //        AACTrackImpl aacTrack = new AACTrackImpl(Ac3Example.class.getResourceAsStream("/sample.aac"));
-        AACTrackImpl aacTrack = new AACTrackImpl(new FileInputStream("/Users/magnus/Projects/castlabs/cff/Solekai015_1920_29_75x75_v2/Solekai_BeautifulTension_15sec_160k.aac"));
+        AACTrackImpl aacTrack = new AACTrackImpl(new FileInputStream("/Users/magnus/Projects/castlabs/cff/Solekai015_1920_29_75x75_v2/Solekai_BeautifulTension_15sec_160k.aac").getChannel());
         Movie m = new Movie();
         m.addTrack(aacTrack);
         DefaultMp4Builder mp4Builder = new DefaultMp4Builder();

@@ -24,7 +24,7 @@ public class H264Example {
     public static void main(String[] args) throws IOException {
 //        AACTrackImpl aacTrack = new AACTrackImpl(Ac3Example.class.getResourceAsStream("/sample.aac"));
         H264TrackImpl h264Track = new H264TrackImpl(new FileInputStream("/Users/magnus/Projects/castlabs/cff/DTS_Paint_HD1/DTS_Paint_HD1.h264"));
-        AACTrackImpl aacTrack = new AACTrackImpl(new FileInputStream("/Users/magnus/Projects/castlabs/cff/DTS_Paint_HD1/DTS_Paint.aac"));
+        AACTrackImpl aacTrack = new AACTrackImpl(new FileInputStream("/Users/magnus/Projects/castlabs/cff/DTS_Paint_HD1/DTS_Paint.aac").getChannel());
 //        H264TrackImpl h264Track = new H264TrackImpl(new FileInputStream("/Users/magnus/Projects/castlabs/cff/Dolby_Countdown_1920x1080p_H264_Stereo_AAC_51_DDPlus/Dolby_Countdown_1920x1080p.h264"));
 //        AACTrackImpl aacTrack = new AACTrackImpl(new FileInputStream("/Users/magnus/Projects/castlabs/cff/Dolby_Countdown_1920x1080p_H264_Stereo_AAC_51_DDPlus/Dolby_Countdown_Stereo.aac"));
         Movie m = new Movie();
